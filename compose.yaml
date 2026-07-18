@@ -1,0 +1,103 @@
+# SyncText — ft_transcendence
+# Usage: make setup && make up
+# Requires: .env, secrets/db_password.txt, secrets/<DOMAIN_NAME>.crt, secrets/<DOMAIN_NAME>.key
+
+name: synctext
+
+services:
+  nginx:
+    build:
+      context: services/nginx
+      dockerfile: Dockerfile
+    container_name: synctext-nginx
+    restart: unless-stopped
+    ports:
+      - "443:443"
+    env_file: .env
+    secrets:
+      - server_certificate
+      - server_key
+    # optional: share uploaded files if nginx serves them
+    volumes:
+      # - <name_on_host>:<folder_in_container>
+      - uploads:/var/www/uploads:ro # read-only
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - synctext
+
+  frontend:
+    build:
+      context: services/frontend
+      dockerfile: Dockerfile
+    container_name: synctext-frontend
+    restart: unless-stopped
+    networks:
+      - synctext
+
+  backend:
+    build:
+      context: services/backend
+      dockerfile: Dockerfile
+    container_name: synctext-backend
+    restart: unless-stopped
+    env_file: .env
+    secrets:
+      - db_password
+    volumes:
+    # - <name_on_host>:<folder_in_container>
+      - uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - synctext
+
+  db:
+    # we can use mysql or mariadb if you prefer
+    image: postgres:16-alpine
+    container_name: synctext-db
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      POSTGRES_DB: ${DB_NAME:-synctext}
+      POSTGRES_USER: ${DB_USER:-synctext}
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    secrets:
+      - db_password
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - synctext
+
+  # --- Bonus ---
+  # vault:
+  #   image: hashicorp/vault:1.17
+  #   container_name: synctext-vault
+  #   ...
+  #
+  # waf:  # or fold ModSecurity into nginx image
+  #   ...
+
+secrets:
+  db_password:
+    file: secrets/db_password.txt
+  server_certificate:
+    file: secrets/${DOMAIN_NAME:-localhost}.crt
+  server_key:
+    file: secrets/${DOMAIN_NAME:-localhost}.key
+
+volumes:
+  db_data:
+  uploads:
+
+networks:
+  synctext:
+    name: synctext-network
