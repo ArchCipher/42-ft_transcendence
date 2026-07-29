@@ -24,9 +24,16 @@
 - Choose language, frameworks, database, container
 - Choose major and minor modules (14 points) + create GitHub issues
 - Assign modules/issues
-- Assign roles
 
 Note: Techincal choices and modules chosen below are not final. Scope and technical choices per module may change as the team learns more during the project.
+
+---
+
+## Roles
+
+- PO: Kiruthika Murugananthan (intra: kmurugan)
+- PM: Tom Murua (intra: tmurua)
+- Team Lead: Umberto Ponci (intra:uponci)
 
 ---
 
@@ -57,6 +64,8 @@ Bonus:
 1. WAF/ModSecurity + Vault (Major)
 2. Monitoring system with Prometheus and Grafana (Major)
 3. 2FA (Two-Factor Authentication) system (Minor)
+4. Advanced search
+5. Support for additional browsers
 
 ---
 
@@ -155,6 +164,7 @@ Choice: Nest WebSocket gateway + yjs + y-protocols - one backend, clear WebSocke
 [y-protocols github](https://github.com/yjs/y-protocols)
 [hocuspocus github](https://github.com/ueberdosis/hocuspocus)
 [y-websocket github](https://github.com/yjs/y-websocket)
+[Beginner's Guide to WebSockets](https://www.youtube.com/watch?v=8ARodQ4Wlf4)
 
 ## Relational Database
 
