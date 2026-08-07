@@ -8,6 +8,6 @@ export default function oldDoc(){
         <h1>HERE GOES AN EXISTING DOC WIHT AUTHENTHICATION</h1>
         <p>the [slug]  is the doc unique id that will be part of the link</p>
     </div>
-    
+
     )
 }
