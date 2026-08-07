@@ -1,7 +1,8 @@
 import "server-only";
 import argon2 from "argon2";
 
-// passowrd storage - argon2id with OWASP recommended minimum config
+// password storage - argon2id with OWASP recommended minimum config
+
 const OPTIONS: argon2.HashOptions = {
     type: argon2.argon2id,
     memoryCost: 19456,
