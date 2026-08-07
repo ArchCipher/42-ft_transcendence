@@ -1,0 +1,84 @@
+name: synctext # docker compose project name
+
+services:
+  web: # next.js application
+    build: # build image from the synctext Dockerfile
+      context: ./synctext
+      dockerfile: Dockerfile
+
+    container_name: synctext-web
+
+    restart: unless-stopped
+
+    env_file: # load application configuration from local environment file
+      - .env
+
+    networks:
+      - synctext
+
+  db: # postgresql database
+    image: postgres:16-alpine
+
+    container_name: synctext-db
+
+    restart: unless-stopped
+
+    environment: # postgres reads its initial db configuration from these variables
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+
+    volumes: # keep database data when container is created again
+      - db_data:/var/lib/postgresql/data
+
+    healthcheck: # check that postgres is ready to accept connections
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+    networks:
+      - synctext
+
+  nginx: # public https entry point for the application
+    build:
+      context: ./services/nginx
+      dockerfile: Dockerfile
+
+    container_name: synctext-nginx
+
+    restart: unless-stopped
+
+    env_file: # provides DOMAIN_NAME to the nginx config template
+      - .env
+
+    environment:
+      NGINX_ENVSUBST_FILTER: "^DOMAIN_NAME$"
+
+    ports:
+      - "443:443"
+
+    secrets:
+      - server_certificate
+      - server_key
+
+    depends_on:
+      - web
+
+    networks:
+      - synctext
+
+secrets:
+  server_certificate:
+    file: secrets/${DOMAIN_NAME:-localhost}.crt
+
+  server_key:
+    file: secrets/${DOMAIN_NAME:-localhost}.key
+
+volumes:
+  db_data:
+
+networks:
+  synctext:
+    name: synctext-network
