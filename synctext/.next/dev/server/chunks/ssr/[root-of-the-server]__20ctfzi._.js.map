@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 10, "column": 0}, "map": {"version":3,"sources":["file:///home/ubo/42/sync_text/synctext/app/doc/[slug]/page.tsx"],"sourcesContent":["//logic here\n\n\n//frontned in react function here\nexport default function oldDoc(){\n    return (\n    <div>\n        <h1>HERE GOES AN EXISTING DOC WIHT AUTHENTHICATION</h1>\n        <p>the [slug]  is the doc unique id that will be part of the link</p>\n    </div>\n    \n    )\n}"],"names":["oldDoc"],"mappings":"AAAA,YAAY;AAGZ,iCAAiC;;;;;;;AAClB,SAASA;IACpB,qBACA,0PAAC;;0BACG,0PAAC;0BAAG;;;;;;0BACJ,0PAAC;0BAAE;;;;;;;;;;;;AAIX"}},
+    {"offset": {"line": 53, "column": 0}, "map": {"version":3,"sources":["file:///home/ubo/42/sync_text/synctext/app/favicon.ico.mjs%20(structured%20image%20object)"],"sourcesContent":["import src from \"IMAGE\";\nexport default { src, width: 256, height: 256 }\n"],"names":["src","width","height"],"mappings":";;;;AAAA;;uCACe;IAAEA,KAAAA,+IAAG;IAAEC,OAAO;IAAKC,QAAQ;AAAI"}}]
+}

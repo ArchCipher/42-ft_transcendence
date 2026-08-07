@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 13, "column": 0}, "map": {"version":3,"sources":["file:///home/ubo/42/sync_text/synctext/app/favicon.ico.mjs%20(structured%20image%20object)"],"sourcesContent":["import src from \"IMAGE\";\nexport default { src, width: 256, height: 256 }\n"],"names":["src","width","height"],"mappings":";;;;AAAA;;uCACe;IAAEA,KAAAA,+IAAG;IAAEC,OAAO;IAAKC,QAAQ;AAAI"}},
+    {"offset": {"line": 28, "column": 0}, "map": {"version":3,"sources":["file:///home/ubo/42/sync_text/synctext/app/new/[slug]/page.tsx"],"sourcesContent":["//logic here\n\n\n//frontned in react function here\nexport default function newDoc(){\n    return (\n        <div>\n            <h1>HERE GOES NEW DOC WIHTOUT AUTH</h1>\n            <p>the [slug]  is the doc unique id that will be part of the link</p>\n        </div>\n    )\n}"],"names":["newDoc"],"mappings":"AAAA,YAAY;AAGZ,iCAAiC;;;;;;;AAClB,SAASA;IACpB,qBACI,0PAAC;;0BACG,0PAAC;0BAAG;;;;;;0BACJ,0PAAC;0BAAE;;;;;;;;;;;;AAGf"}}]
+}
