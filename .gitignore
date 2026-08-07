@@ -1,3 +1,4 @@
 en.subject.pdf
 .env
 secrets
+node_modules/
