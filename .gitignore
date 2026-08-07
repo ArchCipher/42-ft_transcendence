@@ -2,3 +2,10 @@ en.subject.pdf
 .env
 secrets
 node_modules/
+.next/
+
+# Package-manager and framework-generated files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
