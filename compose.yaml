@@ -2,9 +2,9 @@ name: synctext # docker compose project name
 
 services:
   web: # next.js application
-    build: # build image from the synctext Dockerfile
-      context: ./synctext
-      dockerfile: Dockerfile
+    build: # build image from the synctext Dockerfile, context at repo root
+      context: .
+      dockerfile: synctext/Dockerfile
 
     container_name: synctext-web
 
@@ -13,12 +13,34 @@ services:
     env_file: # load application configuration from local environment file
       - .env
 
-    depends_on: # wait until postgres is ready before starting next.js
+    environment:
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+
+    depends_on: # wait until migrations have been applied before starting next.js
+      migrate:
+        condition: service_completed_successfully
+
+    networks:
+      - frontend
+      - backend
+
+  migrate: # applies database migrations, then exits
+    build:
+      context: .
+      dockerfile: packages/db/Dockerfile
+
+    container_name: synctext-migrate
+
+    restart: "no" # one-shot task, not a long-running service
+
+    environment:
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+
+    depends_on: # wait until postgres is ready before applying migrations
       db:
         condition: service_healthy
 
     networks:
-      - frontend
       - backend
 
   db: # postgresql database
