@@ -13,8 +13,13 @@ services:
     env_file: # load application configuration from local environment file
       - .env
 
+    depends_on: # wait until postgres is ready before starting next.js
+      db:
+        condition: service_healthy
+
     networks:
-      - synctext
+      - frontend
+      - backend
 
   db: # postgresql database
     image: postgres:16-alpine
@@ -39,7 +44,7 @@ services:
       start_period: 10s
 
     networks:
-      - synctext
+      - backend
 
   nginx: # public https entry point for the application
     build:
@@ -67,7 +72,7 @@ services:
       - web
 
     networks:
-      - synctext
+      - frontend
 
 secrets:
   server_certificate:
@@ -80,5 +85,8 @@ volumes:
   db_data:
 
 networks:
-  synctext:
-    name: synctext-network
+  frontend:
+    name: synctext-frontend-network
+
+  backend:
+    name: synctext-backend-network
