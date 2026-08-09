@@ -43,6 +43,40 @@ services:
     networks:
       - backend
 
+  collab: # hocuspocus websocket server for real-time document sync
+    build:
+      context: .
+      dockerfile: services/collab/Dockerfile
+
+    container_name: synctext-collab
+
+    restart: unless-stopped
+
+    environment:
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      COLLAB_JWT_SECRET: ${COLLAB_JWT_SECRET}
+      STORE_DEBOUNCE_MS: ${STORE_DEBOUNCE_MS}
+      STORE_MAX_DEBOUNCE_MS: ${STORE_MAX_DEBOUNCE_MS}
+
+    # give in-memory Yjs documents time to flush to postgres on shutdown
+    # instead of being killed mid-write (default grace period is 10s)
+    stop_grace_period: 30s
+
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:1234/healthz || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+    depends_on: # wait until migrations have been applied before starting
+      migrate:
+        condition: service_completed_successfully
+
+    networks:
+      - frontend # reachable from nginx
+      - backend # reachable to postgres
+
   db: # postgresql database
     image: postgres:16-alpine
 
@@ -90,8 +124,12 @@ services:
       - server_certificate
       - server_key
 
+    volumes: # static demo client, served at /demo/ — see services/collab/demo/
+      - ./services/collab/demo:/usr/share/nginx/html/demo:ro
+
     depends_on:
       - web
+      - collab
 
     networks:
       - frontend

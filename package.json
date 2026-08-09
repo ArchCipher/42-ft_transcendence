@@ -3,6 +3,7 @@
   "private": true,
   "workspaces": [
     "synctext",
-    "packages/db"
+    "packages/db",
+    "services/collab"
   ]
 }

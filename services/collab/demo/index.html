@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>collab demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 2rem auto; padding: 0 1rem; }
+    #editor { border: 1px solid #ccc; border-radius: 4px; padding: 0.5rem 0.75rem; min-height: 12rem; }
+    #editor .ProseMirror { outline: none; }
+    #status { font-weight: bold; }
+    .connected { color: green; }
+    .disconnected { color: crimson; }
+
+    /* default look for @tiptap/extension-collaboration-caret's built-in
+       render()/selectionRender() — reuse this block as-is in the real app */
+    .collaboration-carets__caret {
+      position: relative;
+      margin-left: -1px;
+      margin-right: -1px;
+      border-left: 1px solid #0d0d0d;
+      border-right: 1px solid #0d0d0d;
+      word-break: normal;
+      pointer-events: none;
+    }
+    .collaboration-carets__label {
+      position: absolute;
+      top: -1.4em;
+      left: -1px;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: normal;
+      user-select: none;
+      white-space: nowrap;
+      color: #fff;
+      padding: 0.1rem 0.3rem;
+      border-radius: 3px 3px 3px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>collab demo</h1>
+  <p>
+    Status: <span id="status" class="disconnected">connecting…</span>
+    — Peers online: <span id="peers">1</span>
+  </p>
+  <p>
+    Document id: <input id="docId" size="24" readonly />
+    (open this same page with <code>?doc=&lt;id&gt;</code> in the address bar
+    of another tab, or just open two tabs on this exact URL, to see the sync)
+  </p>
+  <div id="editor"></div>
+
+  <script type="module">
+    // ============================================================
+    // REUSABLE PART — this is the code to carry over into the real
+    // Next.js editor component. There, swap the CDN imports below for:
+    //
+    //   import { useEditor, EditorContent } from "@tiptap/react"
+    //   import StarterKit from "@tiptap/starter-kit"
+    //   import Collaboration from "@tiptap/extension-collaboration"
+    //   import CollaborationCaret from "@tiptap/extension-collaboration-caret"
+    //   import { HocuspocusProvider } from "@hocuspocus/provider"
+    //   import * as Y from "yjs"
+    //
+    // Note: synctext/package.json doesn't list
+    // @tiptap/extension-collaboration-caret yet — add it when this part
+    // gets ported over (`npm install @tiptap/extension-collaboration-caret
+    // -w synctext`). The other five are already there, installed via npm —
+    // no CDN, no version-pinning tricks needed there. This page only uses
+    // esm.sh (a CDN that serves npm packages as browser ES modules)
+    // because it has no build step of its own.
+    // ============================================================
+    import { Editor } from "https://esm.sh/@tiptap/core@3.29.2?deps=yjs@13.6.32";
+    import StarterKit from "https://esm.sh/@tiptap/starter-kit@3.29.2?deps=yjs@13.6.32,@tiptap/core@3.29.2";
+    import Collaboration from "https://esm.sh/@tiptap/extension-collaboration@3.29.2?deps=yjs@13.6.32,@tiptap/core@3.29.2";
+    import CollaborationCaret from "https://esm.sh/@tiptap/extension-collaboration-caret@3.29.2?deps=yjs@13.6.32,@tiptap/core@3.29.2";
+    import { HocuspocusProvider } from "https://esm.sh/@hocuspocus/provider@4.5.0?deps=yjs@13.6.32";
+    import * as Y from "https://esm.sh/yjs@13.6.32";
+
+    // one random name/color per browser tab, so two tabs of the same demo
+    // are visibly distinguishable — in the real app this comes from the
+    // logged-in user's profile instead
+    const randomUser = () => {
+      const colors = ["#f94144", "#f3722c", "#43aa8b", "#577590", "#9b5de5"];
+      return {
+        name: `User ${Math.floor(Math.random() * 1000)}`,
+        color: colors[Math.floor(Math.random() * colors.length)],
+      };
+    };
+
+    const params = new URLSearchParams(location.search);
+    const docId = params.get("doc") || "demo-doc";
+    document.getElementById("docId").value = docId;
+
+    // --- Y.Doc + HocuspocusProvider: identical in the real app ---
+    const ydoc = new Y.Doc();
+
+    const provider = new HocuspocusProvider({
+      // same-origin, works whether this page is opened through nginx
+      // (https, port 443, the real path) or directly against the collab
+      // container while developing
+      url: (location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/collab",
+      name: docId,
+      document: ydoc,
+      onStatus: ({ status }) => {
+        const el = document.getElementById("status");
+        el.textContent = status;
+        el.className = status === "connected" ? "connected" : "disconnected";
+      },
+      onAwarenessUpdate: ({ states }) => {
+        document.getElementById("peers").textContent = states.length;
+      },
+    });
+
+    // --- extensions array: identical to what goes into useEditor() later.
+    // The Editor(element: ...) / EditorContent split below only exists
+    // because there's no React here — in the real app, useEditor() takes
+    // this exact same `extensions` list and <EditorContent editor={editor} />
+    // renders it, instead of pointing at a raw DOM element. ---
+    const editor = new Editor({
+      element: document.getElementById("editor"),
+      extensions: [
+        // Yjs is now the source of truth for undo/redo, so Tiptap's own
+        // history extension must be disabled — running both would create
+        // two conflicting undo stacks.
+        StarterKit.configure({ history: false }),
+        Collaboration.configure({ document: ydoc }),
+        // reads/writes presence (name, color, cursor position) through
+        // provider.awareness — this is why it takes `provider`, not
+        // `document` like Collaboration above
+        CollaborationCaret.configure({ provider, user: randomUser() }),
+      ],
+    });
+    // ============================================================
+    // END REUSABLE PART.
+    // ============================================================
+
+    // Cleanup specific to this static page. In React this is just the
+    // function returned from the same useEffect that creates the
+    // editor/provider — the framework calls it on unmount.
+    window.addEventListener("beforeunload", () => {
+      editor.destroy();
+      provider.destroy();
+    });
+  </script>
+</body>
+</html>
