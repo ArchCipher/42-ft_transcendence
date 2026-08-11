@@ -4,6 +4,22 @@ import { useState } from "react";
 
 import './Dashboard.css';
 
+
+export default function MainPage() {
+
+  const [search, setSearch] = useState("");
+
+  return (
+    <div className="MainPage">
+      <Header />
+      <ControlBar search={search} setSearch={setSearch} />
+      <Dashboard search={search} />
+    </div>
+  );
+}
+
+// header
+
 function Header() {
   return (
     <header className="Header">
@@ -29,13 +45,7 @@ function UserName () {
   );
 }
 
-function AddDoc({ onAdd }) {
-  return (
-    <button className="AddDoc" onClick={onAdd}>
-      +
-    </button>
-  );
-}
+// TODO: replace mock data with documents fetched from backend/database.
 
 function FilterBox() {
   return (
@@ -104,23 +114,9 @@ function ControlBar({ search, setSearch }) {
   );
 }
 
-function DocumentCard({ title, onDelete }) {
-  return (
-    <div className="DocumentCard">
-      <button className="DeleteDoc" onClick={onDelete}>×</button>
 
-      <div className="DocumentIcon">
-        <img src="/assets/doc-icon.png"
-        alt="Document icon"
-        className="DocumentIcon" />
-      </div>
+// docs
 
-      <span className="DocumentTitle">
-        { title }
-      </span>
-    </div>
-  );
-}
 
 function Dashboard({ search }) {
   
@@ -160,16 +156,33 @@ function Dashboard({ search }) {
   );
 }
 
-export default function MainPage() {
-
-  const [search, setSearch] = useState("");
-
+function AddDoc({ onAdd }) {
   return (
-    <div className="MainPage">
-      <Header />
-      <ControlBar search={search} setSearch={setSearch} />
-      <Dashboard search={search} />
+    <button className="AddDoc" onClick={onAdd}>
+      +
+    </button>
+  );
+}
+
+function DocumentCard({ title, onDelete }) {
+  return (
+    <div className="DocumentCard">
+      <button className="DeleteDoc" onClick={onDelete}>×</button>
+
+      <div className="DocumentIcon">
+        <img src="/assets/doc-icon.png"
+        alt="Document icon"
+        className="DocumentIcon" />
+      </div>
+
+      <span className="DocumentTitle">
+        { title }
+      </span>
     </div>
   );
 }
+
+
+
+
 

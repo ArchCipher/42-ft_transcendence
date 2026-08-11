@@ -5,6 +5,15 @@
   --accent: #6fd3ff;
 }
 
+.MainPage {
+  min-height: 100vh;
+  padding: 10px 20px;
+  background-image: url('/assets/space-background.png');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
 .Header {
   display: flex;
   justify-content: space-between;
@@ -75,14 +84,7 @@
   object-fit: cover;
 }
 
-.MainPage {
-  min-height: 100vh;
-  padding: 10px 20px;
-  background-image: url('/assets/space-background.png');
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
-}
+
 
 .ControlBar {
   display: flex;
