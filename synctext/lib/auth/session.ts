@@ -2,6 +2,7 @@ import "server-only";
 
 import {createHash, randomBytes} from "node:crypto";
 import {cookies} from "next/headers";
+import { db } from "@/lib/db"; // TODO: add prisma here!!!
 
 // Cookie name must match in setSessionCookie(), getSessionToken(), clearSessionCookie
 export const SESSION_COOKIE_NAME = "session";
@@ -64,4 +65,22 @@ export async function getSessionToken(): Promise<string | null> {
 export async function clearSessionCookie(): Promise<void> {
     const store = await cookies();
     store.delete(SESSION_COOKIE_NAME);
+}
+
+// Validate token from request cookie: on every use update `lastUsedAt`, so that
+// `online status` and `idle-timeout` works
+export async function validateSession(token: string | null): Promise<string | null>  {
+    if (!token) return null;
+
+    const session = await db.session.findUnique({
+        where: { tokenHash: hashSessionToken(token) },
+        include: { user: true },
+    });
+    if (!session || session.revokedAt !== null || session.expiresAt >= new Date())
+        return null;
+    await db.session.update({
+        where: { id: session.id },
+        data: { lastIssuedAt: new Date() },
+      });
+    return session;
 }

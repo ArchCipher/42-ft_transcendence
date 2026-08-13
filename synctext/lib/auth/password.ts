@@ -10,9 +10,17 @@ const OPTIONS: argon2.HashOptions = {
     parallelism: 1,
   };
 
+let dummyHash: string | null = null;
+
+export async function getDummyHash(): Promise<string> {
+  if (dummyHash === null)
+    dummyHash = await hashPassword("dummy-password-never-matches");
+  return dummyHash;
+}
+
 // argon2.hash embeds random salt in the output string
 export async function hashPassword(password: string): Promise<string> {
-return argon2.hash(password, OPTIONS);
+  return argon2.hash(password, OPTIONS);
 }
 
 export async function verifyPassword(

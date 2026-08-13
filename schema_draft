@@ -98,3 +98,11 @@ usedAt TIMESTAMP NULL
 
 NOTE:
 1. password reset should work only if usedAt is NULL and expiresAt > now()
+
+Table 10 - emailVerificationTokens
+id SERIAL PK
+userId FK -> users.id 
+tokenHash TEXT UNIQUE
+createdAt TIMESTAMP DEFAULT now()
+expiresAt TIMESTAMP NOT NULL -- 24 hrs from createdAt
+usedAt TIMESTAMP NULL
