@@ -1,12 +1,73 @@
 import type { NextConfig } from "next";
 import path from "node:path";
 
+/*
+Every response gets the Content-Security-Policy header, telling the browser
+"only load code / styles / connections from these origins". This is the safety
+net for XSS: even if a malicious doc slips past sanitizing, the browser refuses
+to run inline scripts or send data to malicious websites.
+
+Directives explained:
+  default-src 'self'          fallback for anything not listed below
+  script-src 'self'           no inline scripts -> XSS safety net
+  style-src 'self' 'unsafe-inline'  Tiptap/Tailwind inline styles
+  img-src 'self' data:        images from our server or inline base64 (pasted images in editor)
+  font-src 'self' data:       fonts if we self-host them
+  connect-src 'self' ws://... Hocuspocus WebSocket (set real wss://... URL in prod)
+  frame-ancestors 'self'      block framing/clickjacking
+  base-uri 'self'             stop attackers rewriting <base> to load scripts from their domain
+*/
+
+const isProd = process.env.NODE_ENV === "production";
+
+const securityHeaders = isProd
+  ? [
+      {
+        key: "Content-Security-Policy",
+        value: [
+          "default-src 'self'",
+          "script-src 'self'",
+          "style-src 'self' 'unsafe-inline'",
+          "img-src 'self' data:",
+          "font-src 'self' data:",
+          "connect-src 'self' ws://localhost:1234", // TODO: add hocuspocus server URL
+          "object-src 'none'",
+          "form-action 'self'",
+          "frame-ancestors 'self'",
+          "base-uri 'self'",
+        ].join("; "),
+      },
+    ]
+  : [];
+
+// Extra headers for defense-in-depth
+const otherHeaders = [
+  {
+    key: "X-Frame-Options",
+    value: "DENY", // older browser fallback for frame-ancestors (clickjacking)
+  },
+  {
+    key: "Referrer-Policy",
+    value: "strict-origin-when-cross-origin", // default in most browsers
+  },
+];
+
 const nextConfig: NextConfig = {
   output: "standalone",
   // the workspace root is one level up from synctext/, so file tracing
   // for the standalone build can see packages/db
   outputFileTracingRoot: path.join(__dirname, ".."),
   serverExternalPackages: ["@prisma/client", "@prisma/adapter-pg", "pg"],
+
+  // Headers: securityHeaders, otherHeaders
+  async headers() {
+    return [
+      {
+        source: "/(.*)", // apply to every route
+        headers: [...securityHeaders, ...otherHeaders],
+      },
+    ];
+  },
 };
 
 export default nextConfig;
