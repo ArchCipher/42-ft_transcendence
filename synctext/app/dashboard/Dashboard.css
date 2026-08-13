@@ -125,7 +125,7 @@
   min-height: 100vh;
   background-color: var(--panel-bg);
   border: 1px solid var(--panel-border);
-  border-radius: 10px;
+  border-radius: 12px;
   backdrop-filter: blur(3px);
   padding: 24px;
 

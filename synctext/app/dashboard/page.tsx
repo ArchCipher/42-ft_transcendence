@@ -153,18 +153,17 @@ function Dashboard({ search }: DashboardProps) {
 
   return (
     <main className="Dashboard">
-      {documents
-        .filter((doc) =>
-          doc.title.toLowerCase().includes(search.toLowerCase())
-        )
+      {documents.filter((doc) =>
+          doc.title.toLowerCase().includes(search.toLowerCase()))
         .map((doc) => (
           <DocumentCard
             key={doc.id}
             title={doc.title}
             onDelete={() => deleteDocument(doc.id)}
-          />
-        ))}
-          <AddDoc onAdd={addDocument} />
+          />)
+          )
+      }
+      <AddDoc onAdd={addDocument} />
     </main>
   );
 }
