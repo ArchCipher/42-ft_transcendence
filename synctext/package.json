@@ -44,7 +44,8 @@
     "server-only": "^0.0.1",
     "y-protocols": "^1.0.7",
     "react-hotkeys-hook": "^5.3.3",
-    "yjs": "^13.6.32"
+    "yjs": "^13.6.32",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@base-ui/react": "^1.7.0",
@@ -59,5 +60,9 @@
     "sass": "^1.102.0",
     "tailwindcss": "^4.3.3",
     "typescript": "^5"
+  },
+  "allowScripts": {
+    "argon2@0.45.1": true,
+    "unrs-resolver@1.12.2": true
   }
 }
