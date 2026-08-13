@@ -14,6 +14,9 @@
   background-attachment: fixed;
 }
 
+/*  ---------------------------- */
+
+
 .Header {
   display: flex;
   justify-content: space-between;
@@ -59,6 +62,9 @@
   font-size: 17px;
 }
 
+/*  ---------------------------- */
+
+
 .UserMenu {
   background-color: var(--panel-bg);
   border: 1px solid var(--panel-border);
@@ -84,7 +90,7 @@
   object-fit: cover;
 }
 
-
+/*  ---------------------------- */
 
 .ControlBar {
   display: flex;
@@ -136,6 +142,9 @@
   align-content: start;
 }
 
+/*  ---------------------------- */
+
+
 .AddDoc {
   width: 140px;
   height: 140px;
@@ -183,3 +192,113 @@
   white-space: normal;
   overflow-wrap: break-word;
 }
+
+/*  pop-up for naming docs */
+
+.CreateDocOverlay {
+  position: fixed;
+  inset: 0;                /* top 0, bottom 0 etc....center of the screan */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.CreateDoc {
+  width: 700px;
+  height: 470px;
+
+  background-image: url('/assets/title-window3.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+
+  position: relative;
+}
+
+.CloseCreateDoc {
+  position: absolute;
+  bottom: 380px;
+  left: 85%;
+  transform: translateX(-50%);
+
+  width: 36px;
+  height: 36px;
+
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.CreateDocButton {
+  position: absolute;
+
+  left: 28.5%;
+  bottom: 70px;
+
+  width: 300px;
+  height: 65px;
+
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.CreateDocTitle {
+  position: absolute;
+  top: 149px;
+  left: 149px;
+
+  outline: none;
+  box-shadow: none;
+  color: white;
+  font-size: 18px;
+  text-align: center;
+  padding: 0;
+
+  width: 410px;
+  height: 45px;
+  background: transparent;
+  border: none;
+}
+
+.CreateDocGroup {
+  position: absolute;
+  top: 257px;
+  left: 149px;
+
+  outline: none;
+  box-shadow: none;
+  color: white;
+  font-size: 18px;
+  text-align: center;
+  padding: 0;
+
+  appearance: none;
+
+  width: 410px;
+  height: 45px;
+  background: transparent;
+  border: none;
+}
+
+.DocIcon {
+  position: absolute;
+  top: 141px;
+  left: 80px;
+  width: 75px;
+  height: 65px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.GroupIcon {
+  position: absolute;
+  top: 249px;
+  left: 90px;
+  width: 55px;
+  height: 65px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+/*  ---------------------------- */

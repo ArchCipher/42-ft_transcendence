@@ -133,15 +133,15 @@ type DashboardProps = {
 
 function Dashboard({ search }: DashboardProps) {
   
-  const [documents, setDocuments] = useState([
-    { id: 1, title: "Document 1" },
-    { id: 2, title: "Document 2" },
-  ]);
+  const [documents, setDocuments] = useState([]);
 
-  function addDocument() {
+  const [isCreating, setIsCreating] = useState(false); 
+  const [newTitle, setNewTitle] = useState("");  // const for naming docs
+
+  function addDocument(title) {
     const newDocument = {
       id: Date.now(),
-      title: "Untitled document",
+      title: title,
     };
 
     setDocuments([...documents, newDocument]);
@@ -151,7 +151,16 @@ function Dashboard({ search }: DashboardProps) {
     setDocuments(documents.filter((doc) => doc.id !== id));
   }
 
+  function createDocument() {
+    if (!newTitle.trim())
+      return;
+    addDocument(newTitle);
+    setIsCreating(false); // reset pop-up window
+    setNewTitle("");
+  }
+
   return (
+    <>
     <main className="Dashboard">
       {documents.filter((doc) =>
           doc.title.toLowerCase().includes(search.toLowerCase()))
@@ -160,11 +169,52 @@ function Dashboard({ search }: DashboardProps) {
             key={doc.id}
             title={doc.title}
             onDelete={() => deleteDocument(doc.id)}
-          />)
-          )
-      }
-      <AddDoc onAdd={addDocument} />
+          />
+        ))}
+          <AddDoc onAdd={() => setIsCreating(true)} />
     </main>
+    {isCreating && (                            // if iscreating is true, pop-up
+      <div className="CreateDocOverlay">
+        <div className="CreateDoc">
+          <img
+            src="/assets/doc-icon.png"
+            alt="Document icon"
+            className="DocIcon"
+          />
+
+          <img
+            src="/assets/group-icon.png"
+            alt="Group icon"
+            className="GroupIcon"
+          />
+          <button
+            className="CloseCreateDoc"          //close window
+            onClick={() => {
+              setIsCreating(false);
+              setNewTitle("");
+            }}
+          />
+          <button
+            className="CreateDocButton"
+            onClick={createDocument}
+          >
+          </button>
+          <input
+            className="CreateDocTitle"
+            type="text"
+            placeholder="Document title"
+            value={newTitle}
+            onChange={(e) => setNewTitle(e.target.value)}
+          />
+          <select className="CreateDocGroup">
+            <option value="">None</option>
+            <option value="wu-tang clan">Wu-Tang</option>
+            <option value="transcendence">Transcendence</option>
+          </select>
+        </div>
+      </div>
+    )}
+    </>
   );
 }
 
