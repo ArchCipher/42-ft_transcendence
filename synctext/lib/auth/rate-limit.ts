@@ -13,7 +13,7 @@ export interface RateLimitConfig {
     // how long the key stays blocked once the threshold is hit (ms)
     lockoutMs: number;
   }
-  
+
   const FIFTEEN_MINUTES = 15 * 60 * 1000;
 
   /*
@@ -25,7 +25,7 @@ export interface RateLimitConfig {
     maxFailures: 10,
     lockoutMs: FIFTEEN_MINUTES,
   };
-  
+
   /*
   Per-account: higher budget than per-IP so a distributed attack (many IPs,
   one target account) needs a LOT more attempts before the account is locked,
@@ -36,17 +36,17 @@ export interface RateLimitConfig {
     maxFailures: 20,
     lockoutMs: FIFTEEN_MINUTES,
   };
-  
+
   interface Bucket {
     failures: number[]; // timestamps of failed attempts in current window
     lockedUntil: number; // ms the key is blocked (0 = allowed)
   }
-  
+
   export class MemoryRateLimiter {
     private readonly buckets = new Map<string, Bucket>();
-  
+
     constructor(private readonly config: RateLimitConfig) {}
-  
+
     // ms the key is still blocked (0 = allowed)
     async blockedRemaining(key: string, now: number = Date.now()): Promise<number> {
       const bucket = this.buckets.get(key);
@@ -67,16 +67,16 @@ export interface RateLimitConfig {
     */
     async recordFailure(key: string, now: number = Date.now()): Promise<boolean> {
       const bucket = this.buckets.get(key) ?? { failures: [], lockedUntil: 0 };
-  
+
       if (bucket.lockedUntil > now) return false; // already locked: fixed duration
-  
+
       // sliding window: drop attempts older than the observation window (create
       // new array where `now - t < this.config.windowMs` is true)
       bucket.failures = bucket.failures.filter(
         (t) => now - t < this.config.windowMs,
       );
       bucket.failures.push(now);
-  
+
       if (bucket.failures.length < this.config.maxFailures) {
         this.buckets.set(key, bucket);
         return false;
@@ -90,7 +90,7 @@ export interface RateLimitConfig {
       this.buckets.set(key, bucket);
       return true;
     }
-  
+
     /*
     Forget a key entirely. Triggered on SUCCESSFUL authentication and on a
     successful password reset.
@@ -98,13 +98,13 @@ export interface RateLimitConfig {
     async clear(key: string): Promise<void> {
       this.buckets.delete(key);
     }
-  
+
     // For tests: number of keys currently tracked.
     size(): number {
       return this.buckets.size;
     }
   }
-  
+
   // Singleton instances shared by all auth routes (same process -> shared state)
   export const ipLimiter = new MemoryRateLimiter(IP_LIMIT);
   export const accountLimiter = new MemoryRateLimiter(ACCOUNT_LIMIT);

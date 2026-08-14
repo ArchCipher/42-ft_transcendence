@@ -101,7 +101,7 @@ NOTE:
 
 Table 10 - emailVerificationTokens
 id SERIAL PK
-userId FK -> users.id 
+userId FK -> users.id
 tokenHash TEXT UNIQUE
 createdAt TIMESTAMP DEFAULT now()
 expiresAt TIMESTAMP NOT NULL -- 24 hrs from createdAt
