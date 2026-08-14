@@ -127,6 +127,14 @@
   border-radius: 10px;
 }
 
+.SearchBox input {
+  padding: 10px 16px;
+  background-color: var(--panel-bg);
+  color: var(--text-main);
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+}
+
 .Dashboard {
   min-height: 100vh;
   background-color: var(--panel-bg);
@@ -172,7 +180,7 @@
 }
 
 .AddDoc:hover {
-  background-color: #f3f4f6;
+  background-color: rgba(66, 134, 139, 0.2);
   border-color: var(--accent);
 }
 
@@ -301,4 +309,55 @@
   pointer-events: none;
 }
 
-/*  ---------------------------- */
+/*  ---------- DELETE ------------- */
+
+.DeleteDocOverlay {
+  position: fixed;
+  inset: 0;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.DeleteDocPopup {
+  width: 520px;
+  height: 360px;
+
+  background-image: url('/assets/delete-window1.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+
+  position: relative;
+}
+
+.CloseDeleteDoc {
+  position: absolute;
+  top: 65px;
+  right: 100px;
+
+  width: 40px;
+  height: 40px;
+
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.ConfirmDeleteDoc {
+  position: absolute;
+  left: 50%;
+  bottom: 90px;
+  transform: translateX(-50%);
+
+  width: 200px;
+  height: 50px;
+
+  background: transparent;
+  border: none;
+  color: transparent;
+  cursor: pointer;
+}
+
+/* ------------------------------------*/

@@ -75,7 +75,7 @@ function GroupFilter() {
       <select>
         <option>All groups</option>
         <option>Transcendence</option>
-        <option>Audio Team</option>
+        <option>Wu tang Clan</option>
       </select>
     </div>
   );
@@ -87,9 +87,9 @@ function OrderBox() {
       <span>Ordered by</span>
 
       <select>
-        <option>Name</option>
-        <option>Modification date</option>
         <option>Creation date</option>
+        <option>Modification date</option>
+        <option>Name</option>
       </select>
     </div>
   );
@@ -137,11 +137,13 @@ function Dashboard({ search }: DashboardProps) {
 
   const [isCreating, setIsCreating] = useState(false); 
   const [newTitle, setNewTitle] = useState("");  // const for naming docs
+  const [documentToDelete, setDocumentToDelete] = useState(null); // for deleting docs
 
   function addDocument(title) {
     const newDocument = {
       id: Date.now(),
       title: title,
+      createdAt: Date.now(),
     };
 
     setDocuments([...documents, newDocument]);
@@ -152,6 +154,12 @@ function Dashboard({ search }: DashboardProps) {
   }
 
   function createDocument() {
+    const titleExists = documents.some(                                  // .some
+      (doc) => doc.title.toLowerCase() === newTitle.trim().toLowerCase());
+
+    if (titleExists)
+      return;
+
     if (!newTitle.trim())
       return;
     addDocument(newTitle);
@@ -159,61 +167,116 @@ function Dashboard({ search }: DashboardProps) {
     setNewTitle("");
   }
 
+  function renameDocument(id, newTitle) {      // rename doc
+    const titleExists = documents.some(
+      (doc) => doc.id !== id &&
+        doc.title.toLowerCase() === newTitle.trim().toLowerCase());
+
+    if (titleExists)
+      return;
+    
+    if (!newTitle.trim())
+      return;
+
+    setDocuments(documents.map((doc) =>
+        doc.id === id ? { ...doc, title: newTitle } : doc));
+  }
+
   return (
     <>
-    <main className="Dashboard">
-      {documents.filter((doc) =>
-          doc.title.toLowerCase().includes(search.toLowerCase()))
-        .map((doc) => (
-          <DocumentCard
-            key={doc.id}
-            title={doc.title}
-            onDelete={() => deleteDocument(doc.id)}
-          />
-        ))}
-          <AddDoc onAdd={() => setIsCreating(true)} />
-    </main>
-    {isCreating && (                            // if iscreating is true, pop-up
-      <div className="CreateDocOverlay">
-        <div className="CreateDoc">
-          <img
-            src="/assets/doc-icon.png"
-            alt="Document icon"
-            className="DocIcon"
-          />
+      <main className="Dashboard">
 
-          <img
-            src="/assets/group-icon.png"
-            alt="Group icon"
-            className="GroupIcon"
-          />
-          <button
-            className="CloseCreateDoc"          //close window
-            onClick={() => {
-              setIsCreating(false);
-              setNewTitle("");
-            }}
-          />
-          <button
-            className="CreateDocButton"
-            onClick={createDocument}
-          >
-          </button>
-          <input
-            className="CreateDocTitle"
-            type="text"
-            placeholder="Document title"
-            value={newTitle}
-            onChange={(e) => setNewTitle(e.target.value)}
-          />
-          <select className="CreateDocGroup">
-            <option value="">None</option>
-            <option value="wu-tang clan">Wu-Tang</option>
-            <option value="transcendence">Transcendence</option>
-          </select>
+        <AddDoc onAdd={() => setIsCreating(true)} />
+
+        {documents.filter((doc) =>
+            doc.title.toLowerCase().includes(search.toLowerCase()))
+          .sort((a, b) => b.createdAt - a.createdAt)
+          .map((doc) => (
+            <DocumentCard
+              key={doc.id}
+              id={doc.id}
+              title={doc.title}
+              onDelete={() => setDocumentToDelete(doc.id)}
+              onRename={renameDocument}
+            />
+          ))}
+
+      </main>
+
+      {isCreating && (
+        <div className="CreateDocOverlay">
+          <div className="CreateDoc">
+            <img
+              src="/assets/doc-icon.png"
+              alt="Document icon"
+              className="DocIcon"
+            />
+
+            <img
+              src="/assets/group-icon.png"
+              alt="Group icon"
+              className="GroupIcon"
+            />
+
+            <button
+              className="CloseCreateDoc"
+              onClick={() => {
+                setIsCreating(false);
+                setNewTitle("");
+              }}
+            />
+
+            <button
+              className="CreateDocButton"
+              onClick={createDocument}
+            />
+
+            <input
+              className="CreateDocTitle"
+              type="text"
+              placeholder="Document title"
+              value={newTitle}
+              autoFocus
+              onChange={(e) => setNewTitle(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  createDocument();
+                }
+              }}
+            />
+
+            <select className="CreateDocGroup">
+              <option value="">None</option>
+              <option value="wu-tang clan">Wu-Tang</option>
+              <option value="transcendence">Transcendence</option>
+            </select>
+
+          </div>
         </div>
-      </div>
-    )}
+      )}
+      {documentToDelete !== null && (
+        <div className="DeleteDocOverlay">
+          <div className="DeleteDocPopup">
+
+            <button
+              className="CloseDeleteDoc"
+              onClick={() => setDocumentToDelete(null)}
+            />
+
+            <button
+              className="ConfirmDeleteDoc"
+              autoFocus
+              onClick={() => {
+                deleteDocument(documentToDelete);
+                setDocumentToDelete(null);
+              }}
+            >
+              DELETE
+            </button>
+
+          </div>
+        </div>
+      )}
     </>
   );
 }
@@ -231,6 +294,7 @@ function AddDoc({ onAdd }: AddDocProps) {
   );
 }
 
+<<<<<<< HEAD
 
 type DocumentCardProps = {
   title: string;
@@ -238,6 +302,13 @@ type DocumentCardProps = {
 };
 
 function DocumentCard({ title, onDelete }: DocumentCardProps) {
+=======
+function DocumentCard({ id, title, onDelete, onRename }) {
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedTitle, setEditedTitle] = useState(title);
+
+>>>>>>> 6bd52ea (rename done, delete window done, details)
   return (
     <div className="DocumentCard">
       <button className="DeleteDoc" onClick={onDelete}>×</button>
@@ -251,9 +322,32 @@ function DocumentCard({ title, onDelete }: DocumentCardProps) {
           className="DocumentIcon" />
       </div>
 
-      <span className="DocumentTitle">
-        { title }
+      {isEditing ? (
+      <input
+        className="DocumentTitle"
+        value={editedTitle}
+        onChange={(e) => setEditedTitle(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            if (!editedTitle.trim()) {
+              setEditedTitle(title);
+              setIsEditing(false);
+              return;
+            }
+
+            onRename(id, editedTitle);
+            setIsEditing(false);
+          }
+        }}
+      />
+    ) : (
+      <span
+        className="DocumentTitle"
+        onDoubleClick={() => setIsEditing(true)}
+      >
+        {title}
       </span>
+    )}
     </div>
   );
 }
