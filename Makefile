@@ -60,6 +60,19 @@ test: ps
 	$(COMPOSE) images
 	$(COMPOSE) ls
 
+# this small target is used to run database migrations in development when you want to change the schema.
+# see the DEV.md for more information
+migrate-dev:
+	@test -n "$(NAME)" || (echo "Usage: make migrate-dev NAME=description"; exit 1)
+	$(COMPOSE) up -d --wait db # reuse the existing db container.
+	# run as the current user to avoid permission issues on files written by the migration
+	$(COMPOSE) run --rm \
+	-u "$$(id -u):$$(id -g)" \
+	-v "$(CURDIR)/packages/db:/app/packages/db" \
+	migrate \
+	npx prisma migrate dev --name "$(NAME)"
+
+
 # ---- cleanup -----------------------------------------------------------------
 
 # stop containers
@@ -72,4 +85,4 @@ fclean:
 # rebuild the project from a clean state
 re: fclean all
 
-.PHONY: all setup setup_env setup_cert up down logs ps test clean fclean re
+.PHONY: all setup setup_env setup_cert up down logs ps test migrate-dev clean fclean re
