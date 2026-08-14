@@ -16,6 +16,11 @@ node_modules/
 out/
 next-env.d.ts
 
+# Workspace build output
+
+dist/
+packages/db/src/generated/
+
 # Test and tooling output
 
 coverage/

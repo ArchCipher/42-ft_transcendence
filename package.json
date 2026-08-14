@@ -1,12 +1,8 @@
 {
-  "dependencies": {
-    "@hocuspocus/provider": "^4.5.0",
-    "@tiptap/extension-collaboration": "^3.29.2",
-    "@tiptap/pm": "^3.29.2",
-    "@tiptap/react": "^3.29.2",
-    "@tiptap/starter-kit": "^3.29.2",
-    "@tiptap/y-tiptap": "^3.0.8",
-    "y-protocols": "^1.0.7",
-    "yjs": "^13.6.32"
-  }
+  "name": "synctext",
+  "private": true,
+  "workspaces": [
+    "synctext",
+    "packages/db"
+  ]
 }
