@@ -108,7 +108,7 @@ export interface RateLimitConfig {
   // Singleton instances shared by all auth routes (same process -> shared state)
   export const ipLimiter = new MemoryRateLimiter(IP_LIMIT);
   export const accountLimiter = new MemoryRateLimiter(ACCOUNT_LIMIT);
-  
+
   /*
   Keys must be namespaced: IPs and accounts share the limiter instance space
   so that `ipKey(8.8.8.8)` doesn't collide with `accountKey(8.8.8.8)`.
