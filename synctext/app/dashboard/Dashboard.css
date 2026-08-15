@@ -88,6 +88,7 @@
 
 .ControlBar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   padding: 20px 40px;
@@ -129,7 +130,7 @@
   padding: 24px;
 
   display: grid;
-  grid-template-columns: repeat(6, 140px);
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   justify-content: space-evenly;
   row-gap: 32px;
   align-content: start;

@@ -90,7 +90,12 @@ function OrderBox() {
   );
 }
 
-function SearchBox({ search, setSearch }) {
+type SearchBoxProps = {
+  search: string;
+  setSearch: (value: string) => void;
+};
+
+function SearchBox({ search, setSearch }: SearchBoxProps) {
   return (
     <div className="SearchBox">
       <input
@@ -103,7 +108,7 @@ function SearchBox({ search, setSearch }) {
   );
 }
 
-function ControlBar({ search, setSearch }) {
+function ControlBar({ search, setSearch }: SearchBoxProps) {
   return (
     <div className="ControlBar">
       <FilterBox />
@@ -117,8 +122,11 @@ function ControlBar({ search, setSearch }) {
 
 // docs
 
+type DashboardProps = {
+  search: string;
+};
 
-function Dashboard({ search }) {
+function Dashboard({ search }: DashboardProps) {
   
   const [documents, setDocuments] = useState([
     { id: 1, title: "Document 1" },
@@ -134,7 +142,7 @@ function Dashboard({ search }) {
     setDocuments([...documents, newDocument]);
   }
 
-  function deleteDocument(id) {
+  function deleteDocument(id: number) {
     setDocuments(documents.filter((doc) => doc.id !== id));
   }
 
@@ -156,7 +164,12 @@ function Dashboard({ search }) {
   );
 }
 
-function AddDoc({ onAdd }) {
+
+type AddDocProps = {
+  onAdd: () => void;
+};
+
+function AddDoc({ onAdd }: AddDocProps) {
   return (
     <button className="AddDoc" onClick={onAdd}>
       +
@@ -164,7 +177,13 @@ function AddDoc({ onAdd }) {
   );
 }
 
-function DocumentCard({ title, onDelete }) {
+
+type DocumentCardProps = {
+  title: string;
+  onDelete: () => void;
+};
+
+function DocumentCard({ title, onDelete }: DocumentCardProps) {
   return (
     <div className="DocumentCard">
       <button className="DeleteDoc" onClick={onDelete}>×</button>
