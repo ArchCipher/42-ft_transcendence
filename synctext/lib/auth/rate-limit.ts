@@ -5,6 +5,8 @@ NOTE: in-memory state is per-process and lost on restart. If persistence
 is required, we should consider Redis to store in-memory cache state.
 */
 
+import { hashForLog } from "./verification";
+
 export interface RateLimitConfig {
   // observation window: failures older than this are forgotten (ms)
   windowMs: number;
@@ -83,7 +85,7 @@ export class MemoryRateLimiter {
     }
     bucket.lockedUntil = now + this.config.lockoutMs;
     bucket.failures = []; // window reset once locked
-    console.warn(`[rate-limit] lockout triggered for ${key}`, {
+    console.warn(`[rate-limit] lockout triggered for ${hashForLog(key)}`, {
       windowMs: this.config.windowMs,
       lockoutMs: this.config.lockoutMs,
     }) // LOG failures and lockouts

@@ -1,4 +1,4 @@
-import {createHash, randomBytes} from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 
 export const VERIFICATION_TTL_SECONDS = 24 * 60 * 60; // 1 day
 
@@ -26,4 +26,9 @@ export function verificationExpiresAt(): Date {
 export function verificationUrl(token: string) {
   const url = process.env.APP_URL ?? "http://localhost:3000";
   return `${url}/app/auth/verify-email?token=${encodeURIComponent(token)}`;
+}
+
+// Hash PII for logs
+export function hashForLog(value: string): string {
+  return createHash("sha256").update(value).digest("hex").slice(0, 16);
 }

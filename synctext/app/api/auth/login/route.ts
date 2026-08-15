@@ -1,9 +1,20 @@
 import { loginSchema, validationError } from "@/lib/auth/validation";
-import { clientIp, ipLimiter, accountLimiter, ipKey, accountKey } from "@/lib/auth/rate-limit";
+import {
+  clientIp,
+  ipLimiter,
+  accountLimiter,
+  ipKey,
+  accountKey,
+} from "@/lib/auth/rate-limit";
 import { getDummyHash, verifyPassword } from "@/lib/auth/password";
-import { generateSessionToken, hashSessionToken, sessionExpiresAt, setSessionCookie } from "@/lib/auth/session";
-import { createHash } from "node:crypto";
+import {
+  generateSessionToken,
+  hashSessionToken,
+  sessionExpiresAt,
+  setSessionCookie,
+} from "@/lib/auth/session";
 import { db } from "@/lib/db"; // TODO: add prisma here!!!
+import { hashForLog } from "@/lib/auth/verification";
 
 // Login Handler: validation -> rate limit -> auth -> session
 //
@@ -14,7 +25,12 @@ import { db } from "@/lib/db"; // TODO: add prisma here!!!
 
 export async function POST(request: Request) {
   // Early input validation
-  if (!(request.headers.get("content-type")?.split(";")[0].trim() === "application/json")) {
+  if (
+    !(
+      request.headers.get("content-type")?.split(";")[0].trim() ===
+      "application/json"
+    )
+  ) {
     return Response.json(
       { error: "Content-Type must be application/json" },
       { status: 415 },
@@ -41,11 +57,11 @@ export async function POST(request: Request) {
   const ip = clientIp(request);
 
   // rate limit by IP
-  if (await ipLimiter.blockedRemaining(ipKey(ip)) > 0)
+  if ((await ipLimiter.blockedRemaining(ipKey(ip))) > 0)
     return Response.json({ error: "Too many attempts" }, { status: 429 });
 
   // rate limit by account
-  if (await accountLimiter.blockedRemaining(accountKey(input.email)) > 0)
+  if ((await accountLimiter.blockedRemaining(accountKey(input.email))) > 0)
     return Response.json({ error: "Too many attempts" }, { status: 429 });
 
   // auth check
@@ -53,18 +69,23 @@ export async function POST(request: Request) {
 
   // timing oracle fix: ONE code path for both cases
   // unknown user -> verify against a fixed dummy hash (with same params)
-  const hash = user?.passwordHash ?? await getDummyHash();
+  const hash = user?.passwordHash ?? (await getDummyHash());
   const ok = await verifyPassword(input.password, hash);
 
   if (!ok) {
-    if (await ipLimiter.recordFailure(ipKey(ip))) // IP triggered
+    if (await ipLimiter.recordFailure(ipKey(ip)))
+      // IP triggered
       console.warn(`[rate-limit] lockout ip:${ip}`);
-    if (await accountLimiter.recordFailure(accountKey(input.email))) { // account triggered
+    if (await accountLimiter.recordFailure(accountKey(input.email))) {
+      // account triggered
       // redact PII in logs
-      const emailHash = createHash("sha256").update(input.email).digest("hex").slice(0, 16);
+      const emailHash = hashForLog(input.email);
       console.warn(`[rate-limit] lockout account:${emailHash}`);
     }
-    return Response.json({ error: "Invalid email or password" }, { status: 401 });
+    return Response.json(
+      { error: "Invalid email or password" },
+      { status: 401 },
+    );
   }
 
   // dummy hash never verifies, so reaching here means user exists
@@ -87,7 +108,7 @@ export async function POST(request: Request) {
     }), // revoke previous sessions
     db.session.create({
       data: {
-        token: tokenHash,
+        tokenHash,
         userId: user.id,
         expiresAt: sessionExpiresAt(),
         ip,
