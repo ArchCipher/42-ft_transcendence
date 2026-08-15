@@ -1,7 +1,7 @@
 import { registerSchema, validationError } from "@/lib/auth/validation";
 import { clientIp, ipLimiter, accountLimiter, ipKey, accountKey } from "@/lib/auth/rate-limit";
 import { hashPassword } from "@/lib/auth/password";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@synctext/db";
 import { generateVerificationToken, hashVerificationToken, verificationExpiresAt } from "@/lib/auth/verification";
 import { sendVerificationEmail } from "@/lib/auth/email";
 import { db } from "@/lib/db"; // TODO: add prisma here!!!
