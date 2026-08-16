@@ -12,6 +12,19 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Tiptap UI template and its supporting code are vendored upstream files.
+    "components/tiptap-*/**",
+    "hooks/use-composed-ref.ts",
+    "hooks/use-cursor-visibility.ts",
+    "hooks/use-element-rect.ts",
+    "hooks/use-is-breakpoint.ts",
+    "hooks/use-menu-navigation.ts",
+    "hooks/use-scrolling.ts",
+    "hooks/use-throttled-callback.ts",
+    "hooks/use-tiptap-editor.ts",
+    "hooks/use-unmount.ts",
+    "hooks/use-window-size.ts",
+    "lib/tiptap-utils.ts",
   ]),
 ]);
 
