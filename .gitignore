@@ -37,3 +37,5 @@ pnpm-debug.log*
 # OS and editor files
 
 .DS_Store
+synctext/package-lock.json
+packages/*/package-lock.json
