@@ -20,6 +20,19 @@ services:
       migrate:
         condition: service_completed_successfully
 
+    healthcheck: # check that next.js is ready to serve requests
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000').then(r=>process.exit(r.ok ? 0: 1)).catch(() => process.exit(1))"
+        ]
+      interval: 5s 
+      timeout: 5s 
+      retries: 10 
+      start_period: 10s 
+
     networks:
       - frontend
       - backend
@@ -91,7 +104,8 @@ services:
       - server_key
 
     depends_on:
-      - web
+      web:
+        condition: service_healthy
 
     networks:
       - frontend
