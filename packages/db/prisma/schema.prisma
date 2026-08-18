@@ -7,85 +7,86 @@ datasource db {
   provider = "postgresql"
 }
 
-// Enums for roles
+// ==========================================================================
+// ENUMS
+// ==========================================================================
 enum OrgRole {
   USER
   ADMIN
 }
 
-enum Role {
+enum DocRole {
   EDITOR
   VIEWER
 }
 
-
+// ==========================================================================
+// MODELS
+// ==========================================================================
 model User {
-  id              String    @id @default(cuid())
-  email           String    @unique
-  username        String    @unique
-  passwordHash    String?   // null = OAuth-only account
-  role            OrgRole   @default(USER)  // TBD not sure we want to keep that ?, the role depends on the orga, no? => table orgnisationMembers to come (T5 from K's proposal) 
-  avatarUrl       String?   // null = show default avatar
-  lastSeenAt      DateTime? // for "online status" // RGPD: Inform the user about storing this data
-  emailVerifiedAt DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id                String    @id @default(cuid())
+  email             String    @unique
+  username          String    @unique
+  passwordHash      String?   // null = OAuth-only account
+  role              OrgRole   @default(USER)  // global role (USER/ADMIN) => TBD : do we want to keep that ?
+  avatarUrl         String?   // null = show default avatar
+  lastSeenAt        DateTime? // for "online status" // RGPD: Inform the user about storing this data
+  emailVerifiedAt   DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   // Relations
-  sessions                Session[]
-  emailVerificationTokens EmailVerificationToken[]
-  ownedDocuments          Document[]  @relation("DocumentOwner")
-  collabDocuments         DocumentShare[] @relation("Collaborator")
+  sessions                Session[]                 @relation("UserSession")
+  emailVerificationTokens EmailVerificationToken[]  @relation("UserEmailVerification")
+  ownedDocuments          Document[]                @relation("DocumentOwner")
+  collabDocuments         DocumentShare[]           @relation("Collaborator")
 }
 
 model Document {
   id        String   @id @default(cuid())
   title     String
-  ystate    Bytes?   // Stores the state of the doc for collaboration => it's the only column owned by our collab service at the moment.
+  ystate    Bytes?   // Stores the state of the doc for collaboration
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Owner relation
   ownerId   String
   owner     User     @relation("DocumentOwner", fields: [ownerId], references: [id])
-  
+
   // Collaboration relation
   collab    DocumentShare[] @relation("Collaborator")
 }
 
-// DocumentShare model for managing document collaborations
 model DocumentShare {
-  id          String    @id @default(cuid())
-  role        Role      @default(VIEWER)
+  id          String   @id @default(cuid())
+  docRole     DocRole @default(VIEWER)
   userId      String
   documentId  String
-  user        User      @relation(fields: [userId], references: [id])
-  document    Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  user        User     @relation("Collaborator", fields: [userId], references: [id], onDelete: Cascade)
+  document    Document @relation("Collaborator",fields: [documentId], references: [id], onDelete: Cascade)
 
   @@unique([userId, documentId])
 }
 
-// Session model for user sessions
 model Session {
-  id         String    @id @default(cuid())
-  tokenHash  String    @unique
+  id         String   @id @default(cuid())
+  tokenHash  String   @unique
   userId     String
-  user       User      @relation(fields: [userId], references: [id])
+  user       User     @relation("UserSession", fields: [userId], references: [id], onDelete: Cascade)
   expiresAt  DateTime
   revokedAt  DateTime?
   lastUsedAt DateTime?
   ip         String?   // RGPD: Inform the user about storing this data
   userAgent  String?   // RGPD: Inform the user about storing this data
-  createdAt  DateTime  @default(now())
+  createdAt  DateTime @default(now())
 }
 
-// EmailVerificationToken model for email verification
 model EmailVerificationToken {
-  id        String    @id @default(cuid())
-  userId    String
-  user      User      @relation(fields: [userId], references: [id])
-  tokenHash String    @unique
-  expiresAt DateTime
-  usedAt    DateTime?
-  createdAt DateTime  @default(now())
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation("UserEmailVerification", fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash   String   @unique
+  expiresAt   DateTime
+  usedAt      DateTime?
+  createdAt   DateTime @default(now())
 }
