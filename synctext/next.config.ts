@@ -18,15 +18,12 @@ Directives explained:
   base-uri 'self'             stop attackers rewriting <base> to load scripts from their domain
 */
 
-const isProd = process.env.NODE_ENV === "production";
-
-const securityHeaders = isProd
-  ? [
+const securityHeaders = [
       {
         key: "Content-Security-Policy",
         value: [
           "default-src 'self'",
-          "script-src 'self'",
+          "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
           "style-src 'self' 'unsafe-inline'",
           "img-src 'self' data:",
           "font-src 'self' data:",
@@ -37,8 +34,7 @@ const securityHeaders = isProd
           "base-uri 'self'",
         ].join("; "),
       },
-    ]
-  : [];
+    ];
 
 // Extra headers for defense-in-depth
 const otherHeaders = [

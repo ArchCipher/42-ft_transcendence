@@ -6,7 +6,7 @@ id SERIAL PK
 email TEXT UNIQUE - NOT NULL
 username TEXT UNIQUE - NOT NULL
 passwordHash TEXT NULL -- null = OAuth (Google/42/Github) only account
-role TEXT DEFAULT 'user' -- 'user' | 'admin'
+orgRole TEXT DEFAULT 'user' -- 'user' | 'admin'
 avatarUrl TEXT NULL -- null = show default avatar
 lastSeenAt TIMESTAMP NULL -- for "online status"
 createdAt TIMESTAMP DEFAULT now()
