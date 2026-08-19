@@ -1,10 +1,9 @@
 import { registerSchema, validationError } from "@/lib/auth/validation";
 import { clientIp, ipLimiter, accountLimiter, ipKey, accountKey } from "@/lib/auth/rate-limit";
 import { hashPassword } from "@/lib/auth/password";
-import { Prisma } from "@synctext/db";
+import { prisma as db, Prisma } from "@synctext/db";
 import { generateVerificationToken, hashVerificationToken, verificationExpiresAt } from "@/lib/auth/verification";
 import { sendVerificationEmail } from "@/lib/auth/email";
-import { db } from "@/lib/db"; // TODO: add prisma here!!!
 
 // Register Handler: validation -> rate limit -> create user -> verification email
 // No session issued here - user authenticates AFTER verifying email ownership

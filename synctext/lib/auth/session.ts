@@ -2,7 +2,7 @@ import "server-only";
 
 import { createHash, randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
-import { db } from "@/lib/db"; // TODO: add prisma here!!!
+import { prisma as db } from "@synctext/db";
 import type { Session, User } from "@synctext/db";
 
 // Cookie name must match in setSessionCookie(), getSessionToken(), clearSessionCookie
