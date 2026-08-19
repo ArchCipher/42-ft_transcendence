@@ -1,6 +1,6 @@
 import { validationError, verifyEmailSchema } from "@/lib/auth/validation";
 import { hashVerificationToken } from "@/lib/auth/verification";
-import { db } from "@/lib/db"; // TODO: add prisma here!!!
+import { prisma as db } from "@synctext/db";
 
 export async function GET(request: Request) {
   const token = new URL(request.url).searchParams.get("token") ?? "";

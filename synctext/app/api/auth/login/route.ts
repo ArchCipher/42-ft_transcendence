@@ -13,7 +13,7 @@ import {
   sessionExpiresAt,
   setSessionCookie,
 } from "@/lib/auth/session";
-import { db } from "@/lib/db"; // TODO: add prisma here!!!
+import { prisma as db } from "@synctext/db";
 import { hashForLog } from "@/lib/auth/verification";
 
 // Login Handler: validation -> rate limit -> auth -> session
