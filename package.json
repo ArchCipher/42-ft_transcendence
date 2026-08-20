@@ -9,7 +9,8 @@
     "@prisma/engines@7.9.1": true,
     "argon2@0.45.1": true,
     "prisma@7.9.1": true,
-    "unrs-resolver@1.12.2": true
+    "unrs-resolver@1.12.2": true,
+    "@parcel/watcher@2.6.0": true
   },
   "devDependencies": {
     "@prisma/config": "^7.9.1"
