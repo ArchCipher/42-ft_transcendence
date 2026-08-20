@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import "./Login.css";
+import Image from "next/image";
 
 export default function Home() {
   return <MainPage />;
@@ -13,9 +14,11 @@ function MainPage() {
 
       <LoginBox />
 
-      <img
+      <Image
         src="/assets/humma-kavula.png"
         alt="Humma Kavula"
+        width={220}
+        height={220}
         className="HummaBanner"
       />  
     </div>
@@ -29,7 +32,7 @@ function Header() {
         <div className="BrandNumber">42</div>
 
         <div className="BrandText">
-          <h1>DON'T PANIC</h1>
+          <h1>DON&apos;T PANIC</h1>
           <p>All the documents in the universe</p>
         </div>
       </div>
