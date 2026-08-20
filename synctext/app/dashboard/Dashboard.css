@@ -1,0 +1,185 @@
+:root {
+  --panel-bg: rgba(8, 25, 55, 0.5);
+  --panel-border: rgba(100, 190, 255, 0.1);
+  --text-main: #ffffff;
+  --accent: #6fd3ff;
+}
+
+.MainPage {
+  min-height: 100vh;
+  padding: 10px 20px;
+  background-image: url('/assets/space-background.png');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+.Header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 10px 0 28px;
+}
+
+.Brand {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.BrandText {
+  height: 68px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.BrandNumber {
+  font-size: 78px;
+  font-weight: bold;
+  line-height: 0.85;
+}
+
+.BrandText h1 {
+  text-align: left;
+  margin: 0;
+  padding-top: 10px;
+  font-size: 24px;
+  color: var(--accent);
+  letter-spacing: 1px;
+}
+
+.BrandText p,
+.OrderBar span {
+  text-align: left;
+  margin: 0;
+  color: var(--text-main);
+  font-size: 17px;
+}
+
+.UserMenu {
+  background-color: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+
+  text-align: center;
+  padding: 10px 16px;
+
+  color: var(--text-main);
+  cursor: pointer;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.UserMenu img {
+  width: 48px;
+  height: 48px;
+
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+
+
+.ControlBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 40px;
+  gap: 20px;
+}
+
+.FilterBox,
+.OrderBox,
+.GroupFilter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 6px;
+}
+
+.FilterBox span,
+.OrderBox span,
+.GroupFilter span {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.FilterBox select,
+.OrderBox select,
+.GroupFilter select {
+  padding: 10px 16px;
+  background-color: var(--panel-bg);
+  color: var(--text-main);
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+}
+
+.Dashboard {
+  min-height: 100vh;
+  background-color: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  backdrop-filter: blur(3px);
+  padding: 24px;
+
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  justify-content: space-evenly;
+  row-gap: 32px;
+  align-content: start;
+}
+
+.AddDoc {
+  width: 140px;
+  height: 140px;
+
+  font-size: 40px;
+
+  background: transparent;
+  border: 1px dashed var(--accent);
+  border-radius: 10px;
+
+  cursor: pointer;
+}
+
+.DocumentCard {
+  width: 140px;
+  height: 140px;
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+}
+
+.AddDoc:hover {
+  background-color: #f3f4f6;
+  border-color: var(--accent);
+}
+
+.DocumentIcon {
+  width: 90px;
+  height: 90px;
+  object-fit: contain;
+}
+
+.DocumentTitle {
+  width: 140px;
+  text-align: center;
+
+  color: white;
+  font-size: 14px;
+
+  white-space: normal;
+  overflow-wrap: break-word;
+}
