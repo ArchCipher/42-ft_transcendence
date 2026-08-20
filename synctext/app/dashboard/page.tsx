@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import './Dashboard.css';
-
+import Image from "next/image";
 
 export default function MainPage() {
 
@@ -27,7 +27,7 @@ function Header() {
         <div className="BrandNumber">42</div>
 
         <div className="BrandText">
-          <h1>DON'T PANIC</h1>
+          <h1>DON&apos;T PANIC</h1>
           <p>All the documents in the universe</p>
         </div>
       </div>
@@ -39,7 +39,12 @@ function Header() {
 function UserName () {
   return (
     <button className="UserMenu">
-    <img src="/assets/Gianpic.jpg" alt="Gianluca" />
+    <Image
+      src="/assets/Gianpic.jpg"
+      alt="Gianluca"
+      width={48}
+      height={48}
+    />
     <span>Gianluca</span>
   </button>
   );
@@ -189,9 +194,12 @@ function DocumentCard({ title, onDelete }: DocumentCardProps) {
       <button className="DeleteDoc" onClick={onDelete}>×</button>
 
       <div className="DocumentIcon">
-        <img src="/assets/doc-icon.png"
-        alt="Document icon"
-        className="DocumentIcon" />
+        <Image
+          src="/assets/doc-icon.png"
+          alt="Document icon"
+          width={90}
+          height={90}
+          className="DocumentIcon" />
       </div>
 
       <span className="DocumentTitle">
