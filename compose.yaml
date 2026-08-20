@@ -97,7 +97,7 @@ services:
       NGINX_ENVSUBST_FILTER: "^DOMAIN_NAME$"
 
     ports:
-      - "443:443"
+      - "8443:443"
 
     secrets:
       - server_certificate
@@ -109,6 +109,26 @@ services:
 
     networks:
       - frontend
+
+  collab:
+    build:
+      context: .
+      dockerfile: services/collab/Dockerfile
+    
+    container_name: synctext-collab
+
+    #restart: unless-stopped (stub server for the moment, we don't want to restart it automatically)
+    
+    ports:
+      - "1234:1234"
+    
+    depends_on: # wait until migrations have been applied before starting
+      migrate:
+        condition: service_completed_successfully
+
+    networks:
+      - frontend
+      - backend
 
 secrets:
   server_certificate:

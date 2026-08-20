@@ -3,7 +3,8 @@
   "private": true,
   "workspaces": [
     "synctext",
-    "packages/db"
+    "packages/db",
+    "services/collab"
   ],
   "allowScripts": {
     "@prisma/engines@7.9.1": true,
