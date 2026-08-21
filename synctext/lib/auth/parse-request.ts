@@ -31,7 +31,7 @@ export async function parseRequest<T>(
   }
 
   // JSON parsing
-  let body: unknown;
+  let body: Record<string, unknown>;
   try {
     body = await request.json();
   } catch {
@@ -41,7 +41,7 @@ export async function parseRequest<T>(
   }
 
   // Schema validation (merge extra query params with body)
-  const parsed = schema.safeParse({ body, extra });
+  const parsed = schema.safeParse({ ...body, ...extra });
   if (!parsed.success) {
     return {
       error: Response.json(
