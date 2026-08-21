@@ -1,8 +1,7 @@
-//import { DocumentSummary } from "@/lib/documents/documents";
+import type { DocumentSummary } from "@/lib/documents/documents";
 
-
-export async function createDocument() {
-  const response = await fetch("/api/documents", {
+export async function createDocument(): Promise<DocumentSummary> {
+  const response = await fetch("/api/documentsE", {
     method: "POST",
   });
 
@@ -13,10 +12,9 @@ export async function createDocument() {
   return response.json();
 }
 
-//modify return value to contain items from my type?
-export async function listDocuments() {
+export async function listDocuments(): Promise<DocumentSummary[]> {
   const response = await fetch("/api/documents", {
-    method: "GET",
+    cache: "no-store",
   });
 
   if (!response.ok) {
@@ -26,8 +24,10 @@ export async function listDocuments() {
   return response.json();
 }
 
-export async function getDocument(id: string) {
-  const response = await fetch(`api/documents/${id}`);
+export async function getDocument(id: string): Promise<DocumentSummary> {
+  const response = await fetch(`/api/documents/${encodeURIComponent(id)}`, {
+    cache: "no-store",
+  });
   if (!response.ok) {
     throw new Error("Failed to fetch document");
   }
@@ -35,4 +35,31 @@ export async function getDocument(id: string) {
   return response.json();
 }
 
-// TODO: Add list, get, rename, delete, and access-checking actions.
+export async function renameDocument(
+  id: string,
+  title: string,
+): Promise<DocumentSummary> {
+  const response = await fetch(`/api/documents/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ title }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to rename document");
+  }
+
+  return response.json();
+}
+
+export async function deleteDocument(id: string): Promise<void> {
+  const response = await fetch(`/api/documents/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to delete document");
+  }
+}
