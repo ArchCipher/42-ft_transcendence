@@ -1,6 +1,8 @@
+//import { DocumentSummary } from "@/lib/documents/documents";
+
 
 export async function createDocument() {
-  const response = await fetch("/api/newdoc", {
+  const response = await fetch("/api/documents", {
     method: "POST",
   });
 
@@ -13,12 +15,21 @@ export async function createDocument() {
 
 //modify return value to contain items from my type?
 export async function listDocuments() {
-  const response = await fetch("/api/listdoc", {
+  const response = await fetch("/api/documents", {
     method: "GET",
   });
 
   if (!response.ok) {
     throw new Error("Failed to list documents");
+  }
+
+  return response.json();
+}
+
+export async function getDocument(id: string) {
+  const response = await fetch(`api/documents/${id}`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch document");
   }
 
   return response.json();
