@@ -11,5 +11,17 @@ export async function createDocument() {
   return response.json();
 }
 
+//modify return value to contain items from my type?
+export async function listDocuments() {
+  const response = await fetch("/api/listdoc", {
+    method: "GET",
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to list documents");
+  }
+
+  return response.json();
+}
 
 // TODO: Add list, get, rename, delete, and access-checking actions.
