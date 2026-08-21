@@ -10,7 +10,7 @@ References:
 */
 
 import { z } from "zod";
-import { isPasswordStrong } from "./passwordStrength";
+import { isPasswordStrong } from "./password-strength";
 
 // ---- email --------------------------------------------------------------
 // Syntactic validation only

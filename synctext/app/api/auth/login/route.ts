@@ -1,4 +1,4 @@
-import { loginSchema, validationError } from "@/lib/auth/validation";
+import { loginSchema } from "@/lib/auth/validation";
 import {
   clientIp,
   ipLimiter,
@@ -15,44 +15,34 @@ import {
 } from "@/lib/auth/session";
 import { prisma as db } from "@synctext/db";
 import { hashForLog } from "@/lib/auth/verification";
+import { parseRequest } from "@/lib/auth/parse-request";
 
-// Login Handler: validation -> rate limit -> auth -> session
-//
-// Anti-enumeration (OWASP Auth Cheat Sheet + Copenhagen error handling):
-// the schema does NOT distinguish "unknown email" from "wrong password".
-// The route MUST also take the same code path for both cases (verify a dummy
-// hash when the user doesn't exist) to avoid a timing oracle.
+/*
+Login Handler: validation -> rate limit -> auth -> session
+
+	Anti-enumeration (OWASP Auth Cheat Sheet + Copenhagen error handling):
+	the schema does NOT distinguish "unknown email" from "wrong password".
+	The route MUST also take the same code path for both cases (verify a dummy
+	hash when the user doesn't exist) to avoid a timing oracle.
+
+API Response contracts: POST /api/auth/login
+
+	Request:  { email, password }
+	Response:
+		200 → { ok: true }
+		400 → { error, fields: { email?, password? } }
+		401 → { error: "Invalid email or password" }
+		403 → { error: "Verify your email" }
+		415 → { error: "Content-Type must be application/json" }
+		429 → { error: "Too many attempts" }
+		500 → { error } (unhandled server error)
+*/
 
 export async function POST(request: Request) {
-  // Early input validation
-  if (
-    !(
-      request.headers.get("content-type")?.split(";")[0].trim() ===
-      "application/json"
-    )
-  ) {
-    return Response.json(
-      { error: "Content-Type must be application/json" },
-      { status: 415 },
-    );
-  }
+  const result = await parseRequest(request, loginSchema);
+  if (result.error) return result.error;
 
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return Response.json({ error: "Invalid JSON body" }, { status: 400 });
-  }
-
-  const parsed = loginSchema.safeParse(body);
-  if (!parsed.success) {
-    return Response.json(
-      { error: "Validation failed", fields: validationError(parsed.error) },
-      { status: 400 },
-    );
-  }
-
-  const input = parsed.data; // email already lowercase -> lookup matches
+  const input = result.data;
 
   const ip = clientIp(request);
 
