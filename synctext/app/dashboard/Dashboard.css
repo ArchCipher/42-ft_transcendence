@@ -127,6 +127,13 @@
   border-radius: 10px;
 }
 
+.FilterBox select:focus,
+.OrderBox select:focus,
+.GroupFilter select:focus {
+  outline: none;
+  box-shadow: none;
+}
+
 .SearchBox input {
   padding: 10px 16px;
   background-color: var(--panel-bg);
@@ -144,8 +151,8 @@
   padding: 24px;
 
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  justify-content: space-evenly;
+  grid-template-columns: repeat(auto-fit, 140px);
+  justify-content: start;
   row-gap: 32px;
   align-content: start;
 }
@@ -287,26 +294,6 @@
   height: 45px;
   background: transparent;
   border: none;
-}
-
-.DocIcon {
-  position: absolute;
-  top: 141px;
-  left: 80px;
-  width: 75px;
-  height: 65px;
-  object-fit: contain;
-  pointer-events: none;
-}
-
-.GroupIcon {
-  position: absolute;
-  top: 249px;
-  left: 90px;
-  width: 55px;
-  height: 65px;
-  object-fit: contain;
-  pointer-events: none;
 }
 
 /*  ---------- DELETE ------------- */

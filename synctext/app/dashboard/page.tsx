@@ -8,12 +8,16 @@ import Image from "next/image";
 export default function MainPage() {
 
   const [search, setSearch] = useState("");
+  const [order, setOrder] = useState("creation"); // to order by creation, name, modification
 
   return (
     <div className="MainPage">
       <Header />
-      <ControlBar search={search} setSearch={setSearch} />
-      <Dashboard search={search} />
+      <ControlBar
+        search={search} setSearch={setSearch}
+        order={order} setOrder={setOrder}
+      />
+      <Dashboard search={search} order={order} />
     </div>
   );
 }
@@ -81,15 +85,18 @@ function GroupFilter() {
   );
 }
 
-function OrderBox() {
+function OrderBox({ orderBy, setOrderBy }) {
   return (
     <div className="OrderBox">
       <span>Ordered by</span>
 
-      <select>
-        <option>Creation date</option>
-        <option>Modification date</option>
-        <option>Name</option>
+      <select
+        value={orderBy}
+        onChange={(e) => setOrderBy(e.target.value)}
+      >
+        <option value="creation">Creation date</option>
+        <option value="modification">Modification date</option>
+        <option value="name">Name</option>
       </select>
     </div>
   );
@@ -113,11 +120,18 @@ function SearchBox({ search, setSearch }: SearchBoxProps) {
   );
 }
 
-function ControlBar({ search, setSearch }: SearchBoxProps) {
+type ControlBarProps = {
+  search: string;
+  setSearch: (value: string) => void;
+  order: string;
+  setOrder: (value: string) => void;
+};
+
+function ControlBar({ search, setSearch, order, setOrder }: ControlBarProps) {
   return (
     <div className="ControlBar">
       <FilterBox />
-      <OrderBox />
+      <OrderBox orderBy={order} setOrderBy={setOrder} />
       <GroupFilter />
       <SearchBox search={search} setSearch={setSearch} />
     </div>
@@ -129,9 +143,10 @@ function ControlBar({ search, setSearch }: SearchBoxProps) {
 
 type DashboardProps = {
   search: string;
+  order: string;
 };
 
-function Dashboard({ search }: DashboardProps) {
+function Dashboard({ search, order }: DashboardProps) {
   
   const [documents, setDocuments] = useState([]);
 
@@ -184,13 +199,17 @@ function Dashboard({ search }: DashboardProps) {
 
   return (
     <>
-      <main className="Dashboard">
+      <main className="Dashboard">             
 
         <AddDoc onAdd={() => setIsCreating(true)} />
 
         {documents.filter((doc) =>
             doc.title.toLowerCase().includes(search.toLowerCase()))
-          .sort((a, b) => b.createdAt - a.createdAt)
+          .sort((a, b) => {
+          if (order == "name")
+            return a.title.localeCompare(b.title);
+          return b.createdAt - a.createdAt;
+          })
           .map((doc) => (
             <DocumentCard
               key={doc.id}
@@ -206,18 +225,6 @@ function Dashboard({ search }: DashboardProps) {
       {isCreating && (
         <div className="CreateDocOverlay">
           <div className="CreateDoc">
-            <img
-              src="/assets/doc-icon.png"
-              alt="Document icon"
-              className="DocIcon"
-            />
-
-            <img
-              src="/assets/group-icon.png"
-              alt="Group icon"
-              className="GroupIcon"
-            />
-
             <button
               className="CloseCreateDoc"
               onClick={() => {
@@ -288,27 +295,17 @@ type AddDocProps = {
 
 function AddDoc({ onAdd }: AddDocProps) {
   return (
-    <button className="AddDoc" onClick={onAdd}>
+    <button type="button" className="AddDoc" onClick={onAdd}>
       +
     </button>
   );
 }
 
-<<<<<<< HEAD
-
-type DocumentCardProps = {
-  title: string;
-  onDelete: () => void;
-};
-
-function DocumentCard({ title, onDelete }: DocumentCardProps) {
-=======
 function DocumentCard({ id, title, onDelete, onRename }) {
 
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(title);
 
->>>>>>> 6bd52ea (rename done, delete window done, details)
   return (
     <div className="DocumentCard">
       <button className="DeleteDoc" onClick={onDelete}>×</button>
