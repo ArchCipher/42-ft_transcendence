@@ -88,3 +88,36 @@
   flex-direction: column;
   gap: 14px;
 }
+
+.LoginBox button {
+  align-self: center;
+  padding: 10px 32px;
+  border: none;
+  border-radius: 6px;
+  background-color: var(--panel-border);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.LoginLinks {
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  gap: 6px;
+}
+
+.LoginLinks a {
+  color: var(--accent);
+  text-align: center;
+}
+
+.LoginLinks a:hover {
+  text-decoration: underline;
+}
+
+.error {
+  margin: 0;
+  color: #ff6b6b;
+  font-size: 12px;
+}
