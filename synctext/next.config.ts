@@ -13,7 +13,8 @@ Directives explained:
   style-src 'self' 'unsafe-inline'  Tiptap/Tailwind inline styles
   img-src 'self' data:        images from our server or inline base64 (pasted images in editor)
   font-src 'self' data:       fonts if we self-host them
-  connect-src 'self' ws://... Hocuspocus WebSocket (set real wss://... URL in prod)
+  connect-src 'self'          covers the Hocuspocus WebSocket too: nginx proxies
+                               it at /collab on the same origin as the page
   frame-ancestors 'self'      block framing/clickjacking
   base-uri 'self'             stop attackers rewriting <base> to load scripts from their domain
 */
@@ -27,7 +28,7 @@ const securityHeaders = [
           "style-src 'self' 'unsafe-inline'",
           "img-src 'self' data:",
           "font-src 'self' data:",
-          "connect-src 'self' ws://localhost:1234", // TODO: add hocuspocus server URL
+          "connect-src 'self'",
           "object-src 'none'",
           "form-action 'self'",
           "frame-ancestors 'self'",
