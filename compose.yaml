@@ -6,6 +6,8 @@ services:
       context: .
       dockerfile: synctext/Dockerfile
 
+    image: web:synctext1.0
+
     container_name: synctext-web
 
     restart: unless-stopped
@@ -41,6 +43,8 @@ services:
     build:
       context: .
       dockerfile: packages/db/Dockerfile
+
+    image: migrate:synctext1.0
 
     container_name: synctext-migrate
 
@@ -86,6 +90,8 @@ services:
       context: ./services/nginx
       dockerfile: Dockerfile
 
+    image: nginx:synctext1.0
+
     container_name: synctext-nginx
 
     restart: unless-stopped
@@ -109,6 +115,29 @@ services:
 
     networks:
       - frontend
+      - backend
+
+  mailpit: # email testing tool with API
+    image: axllent/mailpit:synctext1.0
+
+    container_name: mailpit
+
+    restart: unless-stopped
+
+    ports:
+      - "127.0.0.1:8025:8025"
+
+    volumes:
+        - mailpit_data:/data
+
+    environment:
+        MP_MAX_MESSAGES: 500
+        MP_DATABASE: /data/mailpit.db
+        MP_SMTP_AUTH_ACCEPT_ANY: 1
+        MP_SMTP_AUTH_ALLOW_INSECURE: 1
+
+    networks:
+      - backend
 
   collab: # hocuspocus collaboration server for yjs real-time collab
     build:
@@ -138,6 +167,7 @@ secrets:
 
 volumes:
   db_data:
+  mailpit_data:
 
 networks:
   frontend:

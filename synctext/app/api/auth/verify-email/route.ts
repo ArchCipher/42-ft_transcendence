@@ -44,6 +44,5 @@ export async function GET(request: Request) {
     }), // update token
   ]);
 
-  // TODO: redirect to /login?verified=1 once UI exists
   return Response.json({ ok: true }, { status: 200 });
 }

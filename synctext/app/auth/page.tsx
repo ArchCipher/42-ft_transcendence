@@ -2,13 +2,13 @@ import "./Login.css";
 import Image from "next/image";
 import LoginForm from "./login-form";
 
-export default function Home() {
-  return <MainPage />;
+export default function Login() {
+  return <LoginPage />;
 }
 
-function MainPage() {
+function LoginPage() {
   return (
-    <div className="MainPage">
+    <div className="LoginPage">
       <Header />
 
       <LoginForm />
