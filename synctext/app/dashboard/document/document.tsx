@@ -1,7 +1,7 @@
 import type { DocumentSummary } from "@/lib/documents/documents";
 
 export async function createDocument(): Promise<DocumentSummary> {
-  const response = await fetch("/api/documentsE", {
+  const response = await fetch("/api/documents", {
     method: "POST",
   });
 
