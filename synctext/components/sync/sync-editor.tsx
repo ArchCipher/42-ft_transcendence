@@ -13,6 +13,7 @@ import CollaborationCaret from "@tiptap/extension-collaboration-caret"
 
 import {
   SimpleEditorView,
+  simpleEditorConfig,
   baseTiptapExtensions,
 } from "@/components/tiptap-templates/simple/simple-editor-view"
 import { SyncHeader } from "@/components/sync/sync-header"
@@ -40,16 +41,7 @@ function SyncEditorSession() {
   const localUser = getLocalUser()
 
   const editor = useEditor({
-    immediatelyRender: false,
-    editorProps: {
-      attributes: {
-        autocomplete: "off",
-        autocorrect: "off",
-        autocapitalize: "off",
-        "aria-label": "Main content area, start typing to enter text.",
-        class: "simple-editor",
-      },
-    },
+    ...simpleEditorConfig,
     // Same rich-text feature set as simple-editor.tsx (baseTiptapExtensions,
     // undoRedo off since Collaboration manages history itself through Yjs),
     // plus Collaboration/CollaborationCaret bound to the Hocuspocus provider

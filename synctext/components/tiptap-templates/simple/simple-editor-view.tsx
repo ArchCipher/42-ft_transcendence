@@ -81,6 +81,26 @@ const SEARCH_AND_REPLACE_SCROLL_OPTIONS: ScrollIntoViewOptions = {
   block: "center",
 }
 
+// useEditor() config required for SimpleEditorView to render correctly:
+// immediatelyRender:false defers creating the editor until after mount, so
+// this component (via useCursorVisibility) is written to tolerate `editor`
+// being null on the first render — passing an editor built without this
+// flag risks a hydration mismatch on the editor content itself. editorProps
+// sets accessibility/native-behavior attributes and the "simple-editor"
+// class that simple-editor.scss (imported above) targets.
+export const simpleEditorConfig = {
+  immediatelyRender: false,
+  editorProps: {
+    attributes: {
+      autocomplete: "off",
+      autocorrect: "off",
+      autocapitalize: "off",
+      "aria-label": "Main content area, start typing to enter text.",
+      class: "simple-editor",
+    },
+  },
+} as const
+
 // The extensions backing this file's toolbar buttons (ImageUploadButton
 // needs ImageUploadNode, HeadingDropdownMenu needs StarterKit's heading
 // support, etc.) — kept in the same file as those buttons since the two
