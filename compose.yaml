@@ -6,8 +6,6 @@ services:
       context: .
       dockerfile: synctext/Dockerfile
 
-    image: web:synctext1.0
-
     container_name: synctext-web
 
     restart: unless-stopped
@@ -43,8 +41,6 @@ services:
     build:
       context: .
       dockerfile: packages/db/Dockerfile
-
-    image: migrate:synctext1.0
 
     container_name: synctext-migrate
 
@@ -90,8 +86,6 @@ services:
       context: ./services/nginx
       dockerfile: Dockerfile
 
-    image: nginx:synctext1.0
-
     container_name: synctext-nginx
 
     restart: unless-stopped
@@ -118,7 +112,7 @@ services:
       - backend
 
   mailpit: # email testing tool with API
-    image: axllent/mailpit:synctext1.0
+    image: axllent/mailpit
 
     container_name: mailpit
 

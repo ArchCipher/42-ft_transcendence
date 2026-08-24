@@ -23,7 +23,7 @@ export function verificationExpiresAt(): Date {
 }
 
 export function verificationUrl(token: string) {
-  const url = process.env.APP_URL ?? "https://localhost";
+  const url = process.env.APP_URL ?? "https://localhost:8443";
   return `${url}/verify-email?token=${encodeURIComponent(token)}`;
 }
 

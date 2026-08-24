@@ -1,7 +1,10 @@
-export default function Home() {
+import ForgotPasswordForm from "./forgot-password-form";
+
+export default function ForgotPassword() {
   return (
     <div>
-        <h1>FORGOT PASSWORD - GET EMAIL HERE</h1>
+      <h1>FORGOT PASSWORD</h1>
+      <ForgotPasswordForm />
     </div>
   );
 }

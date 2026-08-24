@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { authPost, FALLBACK } from "./api";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -16,43 +17,31 @@ export default function LoginForm() {
   const [loading, setLoading] = useState(false);
 
   // calls /api/auth/login and either sets error or calls /dashboard
-  async function handleLogin(email: string, password: string) {
+  async function handleLogin() {
     setError("");
     setFieldErrors({});
     setLoading(true);
 
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+      const { ok, fields, error } = await authPost("/api/auth/login", {
+        email,
+        password,
       });
 
-      const data = await res.json();
-      const fields = data.fields;
-
-      if (!res.ok || fields) {
+      if (!ok) {
         if (fields)
           setFieldErrors({
             email: fields.email?.[0],
             password: fields.password?.[0],
           });
-		else if (res.status === 401) {
-          setError("Invalid email or password");
-        } else if (res.status === 403) {
-          setError("Please verify your email");
-        } else if (res.status === 429) {
-          setError("Too many attempts. Try again later");
-        } else {
-          setError("Something went wrong. Please try again");
-        }
+        else setError(error ?? FALLBACK);
         return;
       }
 
       // Success - redirect to dashboard
       router.push("/dashboard");
     } catch {
-      setError("Something went wrong. Please try again");
+      setError(FALLBACK);
     } finally {
       setLoading(false);
     }
@@ -63,7 +52,7 @@ export default function LoginForm() {
       className="LoginBox"
       onSubmit={async (e) => {
         e.preventDefault(); // don't relaoad the page
-        await handleLogin(email, password); // handle it with JS
+        await handleLogin(); // handle it with JS
       }}
     >
       {/*<h2>Access the Guide</h2>*/}
