@@ -62,7 +62,7 @@ export default function RegisterForm() {
     <form
       className="RegisterBox"
       onSubmit={async (e) => {
-        e.preventDefault(); // don't relaoad the page
+        e.preventDefault(); // don't reload the page
         await handleRegister(); // handle it with JS
       }}
     >

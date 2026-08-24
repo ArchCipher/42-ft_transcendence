@@ -44,8 +44,8 @@ export default function VerifyEmailForm({ token }: { token: string }) {
   return (
     <main>
       {status === "verifying" && <p>Confirming your email...</p>}
-      {status === "success" && <p>Your email has been verified.</p>}
-      {status === "error" && <p className="error">{error}</p>}
+      {status === "success" && <p role="status">Your email has been verified.</p>}
+      {status === "error" && <p className="FormError" role="alert">{error}</p>}
     </main>
   );
 }

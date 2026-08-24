@@ -51,7 +51,7 @@ export default function LoginForm() {
     <form
       className="LoginBox"
       onSubmit={async (e) => {
-        e.preventDefault(); // don't relaoad the page
+        e.preventDefault(); // don't reload the page
         await handleLogin(); // handle it with JS
       }}
     >

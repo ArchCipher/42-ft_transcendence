@@ -22,7 +22,6 @@ export function passwordResetExpiresAt(): Date {
   return new Date(Date.now() + PASSWORD_RESET_TTL_SECONDS * 1000); // in ms
 }
 
-// TODO: switch to a UI page (/password-reset?token=...) once it exists
 export function passwordResetUrl(token: string) {
   const url = process.env.APP_URL ?? "https://localhost:8443";
   return `${url}/password-reset?token=${encodeURIComponent(token)}`;

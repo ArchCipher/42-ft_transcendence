@@ -4,9 +4,10 @@ import LoginForm from "./login-form";
 
 // NOTICES displayed in navtab
 const NOTICES: Record<string, string> = {
-  pending: "Verification email sent. Check your inbox..",
-  "reset-sent": "Password reset email sent. Check your inbox...",
-  "reset-done": "Password reset successful! Log in below...",
+  "pending": "Verification email sent. Check your inbox.",
+  "reset-sent": "Password reset email sent. Check your inbox.",
+  "reset-done": "Password reset successful!",
+  "logged-out": "You have been logged out.",
 };
 
 export default async function Login({

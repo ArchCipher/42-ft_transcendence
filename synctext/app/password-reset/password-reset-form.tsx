@@ -61,7 +61,7 @@ export default function PasswordResetForm({ token }: { token: string }) {
     <form
       className="ForgotPasswordBox"
       onSubmit={async (e) => {
-        e.preventDefault(); // don't relaoad the page
+        e.preventDefault(); // don't reload the page
         await handlePasswordReset(); // handle it with JS
       }}
     >
@@ -87,7 +87,7 @@ export default function PasswordResetForm({ token }: { token: string }) {
       <input
         id="confirm-password"
         type="password"
-        placeholder="Retype Password"
+        placeholder="Confirm Password"
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
         required

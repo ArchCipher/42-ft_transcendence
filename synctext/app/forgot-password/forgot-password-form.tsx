@@ -48,7 +48,7 @@ export default function ForgotPasswordForm() {
     <form
       className="ForgotPasswordBox"
       onSubmit={async (e) => {
-        e.preventDefault(); // don't relaoad the page
+        e.preventDefault(); // don't reload the page
         await handleForgotPassword(); // handle it with JS
       }}
     >

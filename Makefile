@@ -43,7 +43,6 @@ setup_cert:
 
 up:
 	$(COMPOSE) up --build -d
-	docker container prune -f
 	docker image prune -f
 
 # stop containers
@@ -84,7 +83,6 @@ clean: down
 # stop containers and remove project volumes
 fclean:
 	$(COMPOSE) down -v --remove-orphans
-	docker container prune -f
 	docker image prune -f
 
 # rebuild the project from a clean state

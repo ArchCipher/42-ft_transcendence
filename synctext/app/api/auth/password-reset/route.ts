@@ -13,7 +13,7 @@ import { isPasswordStrong } from "@/lib/auth/password-strength";
 import { parseRequest } from "@/lib/auth/parse-request";
 
 /*
-API Response contracts: POST /api/auth/reset-password
+API Response contracts: POST /api/auth/password-reset
 
 	Request:  { password }
 	Response:
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
   if (!isPasswordStrong(input.password, [user.username, user.email]).ok)
     return Response.json({ error: "Password too weak" }, { status: 400 });
 
-  // revoke reset-password token
+  // revoke password-reset token
   const claim = await db.passwordResetToken.updateMany({
     where: { id: record.id, usedAt: null },
     data: { usedAt: new Date() },
@@ -81,6 +81,5 @@ export async function POST(request: Request) {
   await ipLimiter.clear(ipKey(ip));
   await accountLimiter.clear(accountKey(user.email));
 
-  // TODO: redirect to /login?reset-password=1 once UI exists
   return Response.json({ ok: true }, { status: 200 });
 }

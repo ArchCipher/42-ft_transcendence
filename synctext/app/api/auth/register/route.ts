@@ -100,7 +100,8 @@ export async function POST(request: Request) {
   // TODO: create script to remove abandoned signup pile up every 24h
   // delete verifiedAt === null + no oauth
 
-  await registerLimiter.recordFailure(ipKey(ip)); // register account creation
+  // count successful account creation
+  await registerLimiter.recordFailure(ipKey(ip));
 
   return Response.json({ ok: true }, { status: 201 });
 }

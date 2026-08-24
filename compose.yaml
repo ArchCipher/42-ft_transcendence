@@ -122,13 +122,13 @@ services:
       - "127.0.0.1:8025:8025"
 
     volumes:
-        - mailpit_data:/data
+      - mailpit_data:/data
 
     environment:
-        MP_MAX_MESSAGES: 500
-        MP_DATABASE: /data/mailpit.db
-        MP_SMTP_AUTH_ACCEPT_ANY: 1
-        MP_SMTP_AUTH_ALLOW_INSECURE: 1
+      MP_MAX_MESSAGES: 500
+      MP_DATABASE: /data/mailpit.db
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
 
     networks:
       - backend
