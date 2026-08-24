@@ -1,11 +1,16 @@
 "use client"
 
+import { useState } from "react"
 import {
   useHocuspocusAwareness,
   useHocuspocusConnectionStatus,
+  useHocuspocusProvider,
 } from "@hocuspocus/provider-react"
 
 import { Badge } from "@/components/tiptap-ui-primitive/badge"
+import { Button } from "@/components/tiptap-ui-primitive/button"
+import { Input } from "@/components/tiptap-ui-primitive/input"
+import { saveSnapshot } from "@/lib/sync/sync-snapshot"
 
 const STATUS_VARIANT = {
   connected: "green",
@@ -34,8 +39,17 @@ function collaboratorColor(entry: Record<string, unknown>): string | undefined {
 }
 
 export function SyncHeader() {
+  const provider = useHocuspocusProvider()
   const status = useHocuspocusConnectionStatus()
   const users = useHocuspocusAwareness()
+  const [snapshotTitle, setSnapshotTitle] = useState("")
+
+  const handleSaveSnapshot = () => {
+    const title = snapshotTitle.trim()
+    if (!title) return
+    saveSnapshot(provider, title)
+    setSnapshotTitle("")
+  }
 
   return (
     <header
@@ -76,6 +90,24 @@ export function SyncHeader() {
           )
         })}
       </div>
+
+      <form
+        onSubmit={(event) => {
+          event.preventDefault()
+          handleSaveSnapshot()
+        }}
+        style={{ display: "flex", gap: "0.5rem", marginLeft: "auto" }}
+      >
+        <Input
+          value={snapshotTitle}
+          onChange={(event) => setSnapshotTitle(event.target.value)}
+          placeholder="Snapshot title"
+          aria-label="Snapshot title"
+        />
+        <Button type="submit" disabled={!snapshotTitle.trim()}>
+          Save snapshot
+        </Button>
+      </form>
     </header>
   )
 }
