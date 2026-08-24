@@ -24,11 +24,6 @@ export function passwordResetExpiresAt(): Date {
 
 // TODO: switch to a UI page (/password-reset?token=...) once it exists
 export function passwordResetUrl(token: string) {
-  const url = process.env.APP_URL ?? "http://localhost:3000";
-  return `${url}/app/auth/password-reset?token=${encodeURIComponent(token)}`;
-}
-
-// Hash PII for logs
-export function hashForLog(value: string): string {
-  return createHash("sha256").update(value).digest("hex").slice(0, 16);
+  const url = process.env.APP_URL ?? "https://localhost:8443";
+  return `${url}/password-reset?token=${encodeURIComponent(token)}`;
 }

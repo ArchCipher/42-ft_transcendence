@@ -26,8 +26,3 @@ export function verificationUrl(token: string) {
   const url = process.env.APP_URL ?? "https://localhost:8443";
   return `${url}/verify-email?token=${encodeURIComponent(token)}`;
 }
-
-// Hash PII for logs
-export function hashForLog(value: string): string {
-  return createHash("sha256").update(value).digest("hex").slice(0, 16);
-}

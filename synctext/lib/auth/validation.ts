@@ -108,12 +108,12 @@ export const forgotPasswordSchema = z
   .strict();
 
 /*
-resetPasswordSchema doesn't pass username along with password to check passwords
+passwordResetSchema doesn't pass username along with password to check passwords
 derived from user's own data.
 Reset route should run `isPasswordStrong(data.password, [email,username,]);`
 with the full context from the token's user record.
 */
-export const resetPasswordSchema = z
+export const passwordResetSchema = z
   .object({
     token: z.string().min(16).max(256), // server-issued, opaque
     password: passwordSchema.superRefine((value, ctx) => {
@@ -145,7 +145,7 @@ export const verifyEmailSchema = z
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
-export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+export type PasswordResetInput = z.infer<typeof passwordResetSchema>;
 export type VerifyEmailInput = z.infer<typeof verifyEmailSchema>;
 
 // Stable JSON shape for the client: { error: "Validation failed", ... } per field.

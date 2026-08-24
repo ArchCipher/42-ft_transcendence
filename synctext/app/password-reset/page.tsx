@@ -1,6 +1,6 @@
 import PasswordResetForm from "./password-reset-form";
 
-export default async function PasswordReset({
+export default async function ResetPassword({
   searchParams,
 }: {
   searchParams: Promise<{ token?: string }>;

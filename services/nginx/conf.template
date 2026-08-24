@@ -52,11 +52,3 @@ server {
     }
 
 }
-
-server {
-	listen 8025;
-
-	location / {
-		proxy_pass http://mailpit:8025/;
-	}
-}
