@@ -62,8 +62,68 @@ import { ThemeToggle } from "@/components/tiptap-templates/simple/theme-toggle"
 // --- Styles ---
 import "@/components/tiptap-templates/simple/simple-editor.scss"
 
+// --- Tiptap Core Extensions (back the toolbar buttons above) ---
+import { StarterKit } from "@tiptap/starter-kit"
+import { Image } from "@tiptap/extension-image"
+import { TaskItem, TaskList } from "@tiptap/extension-list"
+import { TextAlign } from "@tiptap/extension-text-align"
+import { Typography } from "@tiptap/extension-typography"
+import { Highlight } from "@tiptap/extension-highlight"
+import { Subscript } from "@tiptap/extension-subscript"
+import { Superscript } from "@tiptap/extension-superscript"
+import { FindAndReplace } from "@tiptap/extension-find-and-replace"
+import { Selection } from "@tiptap/extensions"
+import { ImageUploadNode } from "@/components/tiptap-node/image-upload-node/image-upload-node-extension"
+import { HorizontalRule } from "@/components/tiptap-node/horizontal-rule-node/horizontal-rule-node-extension"
+import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils"
+
 const SEARCH_AND_REPLACE_SCROLL_OPTIONS: ScrollIntoViewOptions = {
   block: "center",
+}
+
+// The extensions backing this file's toolbar buttons (ImageUploadButton
+// needs ImageUploadNode, HeadingDropdownMenu needs StarterKit's heading
+// support, etc.) — kept in the same file as those buttons since the two
+// must always change together. undoRedo defaults to on (StarterKit's own
+// default); a collaborative editor passes { undoRedo: false } since Yjs's
+// Collaboration extension manages history itself. Collaboration-aware
+// extensions (Collaboration, CollaborationCaret) are NOT included here —
+// they belong with the rest of the collaboration wiring in
+// components/sync/, not in this vendored-template directory.
+export function baseTiptapExtensions({
+  undoRedo,
+}: { undoRedo?: false } = {}) {
+  return [
+    StarterKit.configure({
+      horizontalRule: false,
+      undoRedo,
+      link: {
+        openOnClick: false,
+        enableClickSelection: true,
+      },
+    }),
+    HorizontalRule,
+    TextAlign.configure({ types: ["heading", "paragraph"] }),
+    TaskList,
+    TaskItem.configure({ nested: true }),
+    Highlight.configure({ multicolor: true }),
+    Image,
+    Typography,
+    Superscript,
+    Subscript,
+    Selection,
+    FindAndReplace.configure({
+      searchDebounceMs: 500,
+      injectCSS: false,
+    }),
+    ImageUploadNode.configure({
+      accept: "image/*",
+      maxSize: MAX_FILE_SIZE,
+      limit: 3,
+      upload: handleImageUpload,
+      onError: (error) => console.error("Upload failed:", error),
+    }),
+  ]
 }
 
 const MainToolbarContent = ({
