@@ -1,10 +1,6 @@
 "use client"
 
-import {
-  useHocuspocusAwareness,
-  useHocuspocusConnectionStatus,
-  useHocuspocusProvider,
-} from "@hocuspocus/provider-react"
+import { useHocuspocusProvider } from "@hocuspocus/provider-react"
 import { useEditor } from "@tiptap/react"
 
 import Collaboration from "@tiptap/extension-collaboration"
@@ -14,12 +10,11 @@ import {
   SimpleEditorView,
   baseTiptapExtensions,
 } from "@/components/tiptap-templates/simple/simple-editor-view"
+import { SyncHeader } from "@/components/sync/sync-header"
 import { getLocalUser } from "@/lib/sync/sync-user"
 
 export function SyncEditorSession() {
   const provider = useHocuspocusProvider()
-  const status = useHocuspocusConnectionStatus()
-  const users = useHocuspocusAwareness()
   // Its own statement (not inlined into useEditor's arguments below) so
   // that swapping this for a real useLocalUser() hook later, once auth is
   // wired up, is a one-word change rather than a restructure.
@@ -49,10 +44,7 @@ export function SyncEditorSession() {
 
   return (
     <>
-      <header>
-        <span>Status: {status}</span>
-        <span>{users.length} online</span>
-      </header>
+      <SyncHeader />
       <SimpleEditorView editor={editor} />
     </>
   )
