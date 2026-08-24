@@ -66,50 +66,75 @@ export default function RegisterForm() {
         await handleRegister(); // handle it with JS
       }}
     >
+      <label htmlFor="email">Email</label>
       <input
-        name="email"
+        id="email"
         type="email"
         placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
+        aria-invalid={!!fieldErrors?.email}
+        aria-describedby={fieldErrors?.email ? "email-error" : undefined}
         autoComplete="email"
       />
-      {fieldErrors.email && <p className="error">{fieldErrors.email}</p>}
+      {fieldErrors?.email && (
+        <p id="email-error" className="FieldError">
+          {fieldErrors.email}
+        </p>
+      )}
 
+      <label htmlFor="username">Username</label>
       <input
-        name="username"
-        type="username"
+        id="username"
         placeholder="Username"
         value={username}
         onChange={(e) => setUsername(e.target.value)}
         required
+        aria-invalid={!!fieldErrors?.username}
+        aria-describedby={fieldErrors?.username ? "username-error" : undefined}
         autoComplete="username"
       />
-      {fieldErrors.username && <p className="error">{fieldErrors.username}</p>}
+      {fieldErrors?.username && (
+        <p id="username-error" className="FieldError">
+          {fieldErrors.username}
+        </p>
+      )}
 
+      <label htmlFor="password">Password</label>
       <input
-        name="password"
+        id="password"
         type="password"
         placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
+        aria-invalid={!!fieldErrors?.password}
+        aria-describedby={fieldErrors?.password ? "password-error" : undefined}
         autoComplete="new-password"
       />
-      {fieldErrors.password && <p className="error">{fieldErrors.password}</p>}
+      {fieldErrors?.password && (
+        <p id="password-error" className="FieldError">
+          {fieldErrors.password}
+        </p>
+      )}
 
+      <label htmlFor="confirm-password">Confirm password</label>
       <input
-        name="confirm-password"
+        id="confirm-password"
         type="password"
-        placeholder="Retype Password"
+        placeholder="Confirm Password"
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
         required
         autoComplete="new-password"
       />
 
-      {error && <p className="error">{error}</p>}
+      {error && (
+        <p className="FormError" role="alert">
+          {error}
+        </p>
+      )}
 
       <button type="submit" disabled={loading}>
         {loading ? "Registering..." : "Register"}

@@ -57,29 +57,47 @@ export default function LoginForm() {
     >
       {/*<h2>Access the Guide</h2>*/}
 
+      <label htmlFor="email">Email</label>
       <input
-        name="email"
+        id="email"
         type="email"
         placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
+        aria-invalid={!!fieldErrors?.email}
+        aria-describedby={fieldErrors?.email ? "email-error" : undefined}
         autoComplete="email"
       />
-      {fieldErrors.email && <p className="error">{fieldErrors.email}</p>}
+      {fieldErrors?.email && (
+        <p id="email-error" className="FieldError">
+          {fieldErrors.email}
+        </p>
+      )}
 
+      <label htmlFor="password">Password</label>
       <input
-        name="password"
+        id="password"
         type="password"
         placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
+        aria-invalid={!!fieldErrors?.password}
+        aria-describedby={fieldErrors?.password ? "password-error" : undefined}
         autoComplete="current-password"
       />
-      {fieldErrors.password && <p className="error">{fieldErrors.password}</p>}
+      {fieldErrors?.password && (
+        <p id="password-error" className="FieldError">
+          {fieldErrors.password}
+        </p>
+      )}
 
-      {error && <p className="error">{error}</p>}
+      {error && (
+        <p className="FormError" role="alert">
+          {error}
+        </p>
+      )}
 
       <button type="submit" disabled={loading}>
         {loading ? "Accessing..." : "Access the Guide"}

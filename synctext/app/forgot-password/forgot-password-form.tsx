@@ -52,18 +52,29 @@ export default function ForgotPasswordForm() {
         await handleForgotPassword(); // handle it with JS
       }}
     >
+      <label htmlFor="email">Email</label>
       <input
-        name="email"
+        id="email"
         type="email"
         placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
+        aria-invalid={!!fieldErrors?.email}
+        aria-describedby={fieldErrors?.email ? "email-error" : undefined}
         autoComplete="email"
       />
-      {fieldErrors.email && <p className="error">{fieldErrors.email}</p>}
+      {fieldErrors?.email && (
+        <p id="email-error" className="FieldError">
+          {fieldErrors.email}
+        </p>
+      )}
 
-      {error && <p className="error">{error}</p>}
+      {error && (
+        <p className="FormError" role="alert">
+          {error}
+        </p>
+      )}
 
       <button type="submit" disabled={loading}>
         {loading ? "Sending..." : "Send password reset email"}

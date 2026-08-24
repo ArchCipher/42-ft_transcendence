@@ -65,19 +65,27 @@ export default function PasswordResetForm({ token }: { token: string }) {
         await handlePasswordReset(); // handle it with JS
       }}
     >
+      <label htmlFor="password">Password</label>
       <input
-        name="password"
+        id="password"
         type="password"
         placeholder="New Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
+        aria-invalid={!!fieldErrors?.password}
+        aria-describedby={fieldErrors?.password ? "password-error" : undefined}
         autoComplete="new-password"
       />
-      {fieldErrors.password && <p className="error">{fieldErrors.password}</p>}
+      {fieldErrors?.password && (
+        <p id="password-error" className="FieldError">
+          {fieldErrors.password}
+        </p>
+      )}
 
+      <label htmlFor="confirm-password">Confirm password</label>
       <input
-        name="confirm-password"
+        id="confirm-password"
         type="password"
         placeholder="Retype Password"
         value={confirmPassword}
@@ -86,7 +94,11 @@ export default function PasswordResetForm({ token }: { token: string }) {
         autoComplete="new-password"
       />
 
-      {error && <p className="error">{error}</p>}
+      {error && (
+        <p className="FormError" role="alert">
+          {error}
+        </p>
+      )}
 
       <button type="submit" disabled={loading || !token}>
         {loading ? "Resetting..." : "Reset password"}
