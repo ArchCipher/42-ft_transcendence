@@ -12,7 +12,7 @@ export function generateVerificationToken(): string {
   return randomBytes(32).toString("base64url"); // 43 chars
 }
 
-// Hashed token for DB storage, so DB leak would verify an email
+// Hashed token for DB storage, so DB leak wouldn't verify an email
 export function hashVerificationToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
 }

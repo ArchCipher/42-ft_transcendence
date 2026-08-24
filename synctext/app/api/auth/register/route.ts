@@ -1,81 +1,94 @@
-import { registerSchema, validationError } from "@/lib/auth/validation";
-import { clientIp, ipLimiter, accountLimiter, ipKey, accountKey } from "@/lib/auth/rate-limit";
+import { registerSchema } from "@/lib/auth/validation";
+import {
+  clientIp,
+  ipLimiter,
+  accountLimiter,
+  ipKey,
+  accountKey,
+} from "@/lib/auth/rate-limit";
 import { hashPassword } from "@/lib/auth/password";
 import { prisma as db, Prisma } from "@synctext/db";
-import { generateVerificationToken, hashVerificationToken, verificationExpiresAt } from "@/lib/auth/verification";
+import {
+  generateVerificationToken,
+  hashVerificationToken,
+  verificationExpiresAt,
+} from "@/lib/auth/verification";
 import { sendVerificationEmail } from "@/lib/auth/email";
+import { parseRequest } from "@/lib/auth/parse-request";
 
-// Register Handler: validation -> rate limit -> create user -> verification email
-// No session issued here - user authenticates AFTER verifying email ownership
+/*
+Register Handler: validation -> rate limit -> create user -> verification email
+	No session issued here - user authenticates AFTER verifying email ownership
+
+API Response contracts: POST /api/auth/register
+
+	Request:  { email, username, password }
+	Response:
+		201 → { ok: true }
+		400 → { error, fields: { email?, username?, password? } }
+		409 → { error: "Email or username already exists" }
+		415 → { error: "Content-Type must be application/json" }
+		429 → { error: "Too many attempts" }
+		500 → { error } (unhandled server error)
+*/
 
 export async function POST(request: Request) {
-  // Early input validation
-  if (!(request.headers.get("content-type")?.split(";")[0].trim() === "application/json")) {
-    return Response.json(
-      { error: "Content-Type must be application/json" },
-      { status: 415 },
-    );
-  }
+  const result = await parseRequest(request, registerSchema);
+  if (result.error) return result.error;
 
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return Response.json({ error: "Invalid JSON body" }, { status: 400 });
-  }
-
-  const parsed = registerSchema.safeParse(body);
-  if (!parsed.success) {
-    // Syntactic + semantic (zxcvbn) failure - 400 with per-field messages.
-    return Response.json(
-      { error: "Validation failed", fields: validationError(parsed.error) },
-      { status: 400 },
-    );
-  }
-
-  const input = parsed.data; // already trimmed/lowercased by the schema
+  const input = result.data;
 
   const ip = clientIp(request);
 
   // rate limit by IP
-  if (await ipLimiter.blockedRemaining(ipKey(ip)) > 0)
+  if ((await ipLimiter.blockedRemaining(ipKey(ip))) > 0)
     return Response.json({ error: "Too many attempts" }, { status: 429 });
 
   // rate limit by account
-  if (await accountLimiter.blockedRemaining(accountKey(input.email)) > 0)
+  if ((await accountLimiter.blockedRemaining(accountKey(input.email))) > 0)
     return Response.json({ error: "Too many attempts" }, { status: 429 });
 
-  // create user, hash password and store in DB
-  // check email/username uniqueness
-  let user: Awaited<ReturnType<typeof db.user.create>>;
+  /*
+  Hash password (to store in DB), create user and email verification token.
+
+  Email verification: one-time opaque token (OWASP: >= 32 chars, secure RNG,
+  single use, time limited). Store only hash, raw token is sent to email.
+  */
   const passwordHash = await hashPassword(input.password);
+  const token = generateVerificationToken();
   try {
-    user = await db.user.create({
-      data: { email: input.email, username: input.username, passwordHash },
+    await db.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: { email: input.email, username: input.username, passwordHash },
+      });
+      await tx.emailVerificationToken.create({
+        data: {
+          userId: user.id,
+          tokenHash: hashVerificationToken(token),
+          expiresAt: verificationExpiresAt(),
+        },
+      });
     });
   } catch (error) {
     await ipLimiter.recordFailure(ipKey(ip));
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002")
-      return Response.json({ error: "Email or username already exists" }, { status: 409 });
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    )
+      return Response.json(
+        { error: "Email or username already exists" },
+        { status: 409 },
+      );
     throw error;
   }
 
-  // email verification: one-time opaque token (OWASP: >= 32 chars, secure RNG,
-  // single use, time limited). Store only hash, raw token is sent to email.
-  const token = generateVerificationToken();
-  await db.emailVerificationToken.create({
-    data: {
-      userId: user.id,
-      tokenHash: hashVerificationToken(token),
-      expiresAt: verificationExpiresAt(),
-    },
-  });
   try {
     await sendVerificationEmail(input.email, token);
   } catch (error) {
     console.error("[email] verification send fail error:", error);
   }
 
+  // TODO: resend email endpoint for email send failure
   // TODO: create script to remove abandoned signup pile up every 24h
   // delete verifiedAt === null + no oauth
 

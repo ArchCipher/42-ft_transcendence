@@ -38,6 +38,7 @@ model User {
   // Relations
   sessions                Session[]                 @relation("UserSession")
   emailVerificationTokens EmailVerificationToken[]  @relation("UserEmailVerification")
+  passwordResetTokens     PasswordResetToken[]      @relation("UserPasswordReset")
   ownedDocuments          Document[]                @relation("DocumentOwner")
   collabDocuments         DocumentShare[]           @relation("Collaborator")
 }
@@ -79,6 +80,8 @@ model Session {
   ip         String?   // RGPD: Inform the user about storing this data
   userAgent  String?   // RGPD: Inform the user about storing this data
   createdAt  DateTime @default(now())
+
+  @@index([userId])
 }
 
 model EmailVerificationToken {
@@ -89,4 +92,18 @@ model EmailVerificationToken {
   expiresAt   DateTime
   usedAt      DateTime?
   createdAt   DateTime @default(now())
+
+  @@index([userId])
+}
+
+model PasswordResetToken {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation("UserPasswordReset", fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash   String   @unique
+  expiresAt   DateTime
+  usedAt      DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
 }
