@@ -1,5 +1,5 @@
-import { App } from "@/components/tiptap-templates/simple/simple-sync-editor"
+import { SyncEditorPage } from "@/components/sync/sync-editor"
 
 export default function Page() {
-  return <App />
+  return <SyncEditorPage />
 }
