@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 type ButtonLinkProps = {
   children: React.ReactNode;
@@ -10,7 +12,7 @@ type ButtonLinkProps = {
 
 export function ButtonLink({ children, href, variant = "primary", withArrow = false }: ButtonLinkProps) {
   return (
-    <Link className={`inline-flex min-h-11 items-center justify-center gap-3 border px-5 py-3 font-mono text-xs font-medium tracking-tight no-underline outline-none transition-colors focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#050505] [&_svg]:size-4 ${variant === "outline" ? "border-white/15 text-[#f4f2ee] hover:border-white/45 hover:bg-white/5" : "border-transparent bg-[#f4f2ee] text-[#090909] hover:bg-white"}`} href={href}>
+    <Link className={cn(buttonVariants({ variant: variant === "outline" ? "outline" : "default", size: "lg" }), "min-h-11 rounded-none px-5 font-mono text-xs tracking-tight focus-visible:ring-white/50", variant === "outline" ? "border-white/15 bg-transparent text-[#f4f2ee] hover:border-white/45 hover:bg-white/5 hover:text-[#f4f2ee]" : "bg-[#f4f2ee] text-[#090909] hover:bg-white")} href={href}>
       {children}
       {withArrow ? <ArrowUpRight aria-hidden="true" data-icon="inline-end" /> : null}
     </Link>
