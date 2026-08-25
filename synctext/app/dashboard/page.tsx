@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import './Dashboard.css';
 import Image from "next/image";
+import { Dialog } from "@base-ui/react/dialog";
 
 export default function MainPage() {
 
@@ -222,45 +223,54 @@ function Dashboard({ search, order }: DashboardProps) {
 
       </main>
 
-      {isCreating && (
-        <div className="CreateDocOverlay">
-          <div className="CreateDoc">
-            <button
-              className="CloseCreateDoc"
-              onClick={() => {
-                setIsCreating(false);
-                setNewTitle("");
-              }}
+      <Dialog.Root
+        open={isCreating}
+        onOpenChange={setIsCreating}
+      >
+        <Dialog.Portal>
+          <Dialog.Backdrop className="CreateDocOverlay" />
+
+          <Dialog.Popup className="CreateDoc">
+            <Dialog.Title>Create document</Dialog.Title>
+
+            <div className="PanelLights" aria-hidden="true">
+              <span className="Led LedRed"></span>
+              <span className="Led LedYellow"></span>
+              <span className="Led LedGreen"></span>
+            </div>  
+
+            <input
+              id="document-title"
+              className="CreateDocTitle"
+              type="text"
+              placeholder="Title"
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") {createDocument();}}}
             />
+
+            {/*<label htmlFor="document-group">Group</label>*/}
+
+            <div className="CreateDocGroup">
+              <label htmlFor="document-group">Group:</label>
+
+              <select id="document-group" defaultValue="none">
+                <option value="none">None</option>
+                <option value="wu-tang clan">Wu-Tang</option>
+                <option value="transcendence">Transcendence</option>
+              </select>
+            </div>
 
             <button
               className="CreateDocButton"
               onClick={createDocument}
-            />
+            >
+              Add to the Guide
+            </button>
+          </Dialog.Popup>
+        </Dialog.Portal>
+      </Dialog.Root>
 
-            <input
-              className="CreateDocTitle"
-              type="text"
-              placeholder="Document title"
-              value={newTitle}
-              autoFocus
-              onChange={(e) => setNewTitle(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  createDocument();
-                }
-              }}
-            />
-
-            <select className="CreateDocGroup">
-              <option value="">None</option>
-              <option value="wu-tang clan">Wu-Tang</option>
-              <option value="transcendence">Transcendence</option>
-            </select>
-
-          </div>
-        </div>
-      )}
       {documentToDelete !== null && (
         <div className="DeleteDocOverlay">
           <div className="DeleteDocPopup">

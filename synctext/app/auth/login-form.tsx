@@ -66,7 +66,7 @@ export default function LoginForm() {
         await handleLogin(email, password); // handle it with JS
       }}
     >
-      <h2>Access the Guide</h2>
+      {/*<h2>Access the Guide</h2>*/}
 
       <input
         name="email"
