@@ -1,0 +1,67 @@
+// see : https://tiptap.dev/docs/hocuspocus/provider/react
+"use client"
+
+import {
+  HocuspocusProviderWebsocketComponent,
+  HocuspocusRoom,
+  useHocuspocusProvider,
+} from "@hocuspocus/provider-react"
+import { useEditor } from "@tiptap/react"
+
+import Collaboration from "@tiptap/extension-collaboration"
+import CollaborationCaret from "@tiptap/extension-collaboration-caret"
+
+import {
+  SimpleEditorView,
+  simpleEditorConfig,
+  baseTiptapExtensions,
+} from "@/components/tiptap-templates/simple/simple-editor-view"
+import { SyncHeader } from "@/components/sync/sync-header"
+import { getLocalUser } from "@/lib/sync/sync-user"
+
+// nginx proxies /collab to Hocuspocus on the same host.
+// Keep this same-origin so it works behind the app's CSP and TLS setup.
+function getCollabUrl() {
+  const protocol = window.location.protocol === "https:" ? "wss" : "ws"
+  return `${protocol}://${window.location.host}/collab`
+}
+
+// Rendered as a child of HocuspocusRoom (below), since useHocuspocusProvider()
+// can only be called by a descendant of that component, not by the
+// component that renders it — SyncEditorPage can't build the editor itself.
+function SyncEditorSession() {
+  const provider = useHocuspocusProvider()
+  // Keep user identity separate from the editor configuration so it can later
+  // come from authentication instead of the local mock.
+  const localUser = getLocalUser()
+
+  const editor = useEditor({
+    ...simpleEditorConfig,
+    // Same rich-text feature set as simple-editor.tsx (baseTiptapExtensions,
+    // undoRedo off since Collaboration manages history itself through Yjs),
+    // plus Collaboration/CollaborationCaret bound to the Hocuspocus provider
+    // instead of a static content document.
+    extensions: [
+      ...baseTiptapExtensions({ undoRedo: false }),
+      Collaboration.configure({ document: provider.document }),
+      CollaborationCaret.configure({ provider, user: localUser }),
+    ],
+  })
+
+  return (
+    <>
+      <SyncHeader />
+      <SimpleEditorView editor={editor} />
+    </>
+  )
+}
+
+export function SyncEditorPage() {
+  return (
+    <HocuspocusProviderWebsocketComponent url={getCollabUrl()}>
+      <HocuspocusRoom name="example-document">
+        <SyncEditorSession />
+      </HocuspocusRoom>
+    </HocuspocusProviderWebsocketComponent>
+  )
+}
