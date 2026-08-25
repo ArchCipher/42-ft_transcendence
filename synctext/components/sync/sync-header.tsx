@@ -10,7 +10,7 @@ import {
 import { Badge } from "@/components/tiptap-ui-primitive/badge"
 import { Button } from "@/components/tiptap-ui-primitive/button"
 import { Input } from "@/components/tiptap-ui-primitive/input"
-import { saveSnapshot } from "@/lib/sync/sync-snapshot"
+import { requestSnapshot } from "@/lib/sync/sync-snapshot"
 
 const STATUS_VARIANT = {
   connected: "green",
@@ -44,10 +44,10 @@ export function SyncHeader() {
   const users = useHocuspocusAwareness()
   const [snapshotTitle, setSnapshotTitle] = useState("")
 
-  const handleSaveSnapshot = () => {
+  const handleRequestSnapshot = () => {
     const title = snapshotTitle.trim()
     if (!title) return
-    saveSnapshot(provider, title)
+    requestSnapshot(provider, title)
     setSnapshotTitle("")
   }
 
@@ -94,7 +94,7 @@ export function SyncHeader() {
       <form
         onSubmit={(event) => {
           event.preventDefault()
-          handleSaveSnapshot()
+          handleRequestSnapshot()
         }}
         style={{ display: "flex", gap: "0.5rem", marginLeft: "auto" }}
       >
