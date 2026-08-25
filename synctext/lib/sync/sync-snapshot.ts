@@ -8,10 +8,7 @@ type SnapshotMessage = {
 
 // TODO : implement on the server side - just an empty request ws message yet 
 // (no onStateless handler configured in services/collab)
-export function requestSnapshot(
-  provider: HocuspocusProvider,
-  title: string
-): void {
+export function requestSnapshot(provider: HocuspocusProvider, title: string): void {
   const message: SnapshotMessage = {
     type: "snapshot",
     title,

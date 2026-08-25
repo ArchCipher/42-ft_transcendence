@@ -6,6 +6,7 @@ import {
   useHocuspocusConnectionStatus,
   useHocuspocusProvider,
 } from "@hocuspocus/provider-react"
+import type { CollabUser } from "@hocuspocus/provider-react"
 
 import { Badge } from "@/components/tiptap-ui-primitive/badge"
 import { Button } from "@/components/tiptap-ui-primitive/button"
@@ -20,22 +21,18 @@ const STATUS_VARIANT = {
 
 // CollaborationCaret stores identity as a nested "user" field on the
 // awareness state (awareness.setLocalStateField("user", {name, color})),
-// so a raw awareness entry looks like { clientId, user: { name, color } } —
-// not { clientId, name, color } flat.
-function collaboratorUser(entry: Record<string, unknown>): Record<string, unknown> | null {
-  return typeof entry.user === "object" && entry.user !== null
-    ? (entry.user as Record<string, unknown>)
-    : null
-}
-
-function collaboratorName(entry: Record<string, unknown>): string {
-  const name = collaboratorUser(entry)?.name
-  return typeof name === "string" && name.length > 0 ? name : "?"
-}
-
-function collaboratorColor(entry: Record<string, unknown>): string | undefined {
-  const color = collaboratorUser(entry)?.color
-  return typeof color === "string" ? color : undefined
+// so a raw entry looks like { clientId, user: { name, color } } — CollabUser
+// only types the outer shape; the nested "user" content is app-defined, so
+// it still needs narrowing here.
+function collaboratorIdentity({ user }: CollabUser): { name: string; color: string } {
+  const { name, color } = (user && typeof user === "object" ? user : {}) as Record<
+    string,
+    unknown
+  >
+  return {
+    name: typeof name === "string" && name ? name : "?",
+    color: typeof color === "string" ? color : "#94a3b8",
+  }
 }
 
 export function SyncHeader() {
@@ -67,7 +64,7 @@ export function SyncHeader() {
         style={{ display: "flex", gap: "0.25rem" }}
       >
         {users.map((user) => {
-          const name = collaboratorName(user)
+          const { name, color } = collaboratorIdentity(user)
           return (
             <span
               key={user.clientId}
@@ -79,7 +76,7 @@ export function SyncHeader() {
                 width: "1.5rem",
                 height: "1.5rem",
                 borderRadius: "9999px",
-                backgroundColor: collaboratorColor(user) ?? "#94a3b8",
+                backgroundColor: color,
                 color: "#fff",
                 fontSize: "0.75rem",
                 fontWeight: 600,
