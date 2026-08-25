@@ -19,12 +19,8 @@ import {
 import { SyncHeader } from "@/components/sync/sync-header"
 import { getLocalUser } from "@/lib/sync/sync-user"
 
-// nginx proxies /collab to the hocuspocus server on the same origin as the
-// page, so this must stay same-host (see connect-src 'self' in next.config.ts)
-// rather than pointing at the "collab" docker service name or a fixed port.
-// Safe to call directly (no window-availability guard needed): this
-// component is only ever mounted client-side, via next/dynamic's
-// { ssr: false } in app/sync/page.tsx.
+// nginx proxies /collab to Hocuspocus on the same host.
+// Keep this same-origin so it works behind the app's CSP and TLS setup.
 function getCollabUrl() {
   const protocol = window.location.protocol === "https:" ? "wss" : "ws"
   return `${protocol}://${window.location.host}/collab`
@@ -35,9 +31,8 @@ function getCollabUrl() {
 // component that renders it — SyncEditorPage can't build the editor itself.
 function SyncEditorSession() {
   const provider = useHocuspocusProvider()
-  // Its own statement (not inlined into useEditor's arguments below) so
-  // that swapping this for a real useLocalUser() hook later, once auth is
-  // wired up, is a one-word change rather than a restructure.
+  // Keep user identity separate from the editor configuration so it can later
+  // come from authentication instead of the local mock.
   const localUser = getLocalUser()
 
   const editor = useEditor({
