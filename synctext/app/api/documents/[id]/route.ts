@@ -3,9 +3,11 @@ import {
   getSessionToken,
   validateSession,
 } from "@/lib/auth/session";
-import type {
-  DocumentAccess,
-  DocumentSummary,
+import {
+  documentEditWhere,
+  documentReadWhere,
+  type DocumentAccess,
+  type DocumentSummary,
 } from "@/lib/documents/documents";
 import { NextResponse } from "next/server";
 
@@ -73,17 +75,7 @@ export async function GET(
 
   const { id } = await params;
   const document = await db.document.findFirst({
-    where: {
-      id,
-      OR: [
-        { ownerId: session.user.id },
-        {
-          collab: {
-            some: { userId: session.user.id },
-          },
-        },
-      ],
-    },
+    where: { id, ...documentReadWhere(session.user.id) },
     select: summarySelect(session.user.id),
   });
 
@@ -143,20 +135,7 @@ export async function PATCH(
 
   const { id } = await params;
   const result = await db.document.updateMany({
-    where: {
-      id,
-      OR: [
-        { ownerId: session.user.id },
-        {
-          collab: {
-            some: {
-              userId: session.user.id,
-              docRole: "EDITOR",
-            },
-          },
-        },
-      ],
-    },
+    where: { id, ...documentEditWhere(session.user.id) },
     data: { title },
   });
 
