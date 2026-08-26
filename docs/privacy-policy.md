@@ -43,7 +43,7 @@ We **do not** sell, rent, or trade your personal data. We **do not** run third-p
 
 - **Session cookie** (essential): `HttpOnly`, `SameSite=Strict`, `Secure` in production. Stores an opaque token (only its hash is stored server-side) to keep you signed in. Expires after 7 days of inactivity.
 - **Email verification / password-reset tokens** are not cookies: they are single-use, time-limited tokens sent inside the link of a transactional email.
-- No other cookies are set. Because the only cookie is strictly necessary, no consent banner is required; this notice serves as our cookie disclosure.
+- No other cookies are set. Because the only cookie is strictly necessary, no consent banner is required. This notice serves as our cookie disclosure.
 
 ## 5. Sharing of data
 
@@ -53,7 +53,7 @@ We share data only with the processors required to run the service, and only as 
 |---|---|---|
 | Self-hosted infrastructure (our own machines, run via Docker Compose) | Application + database hosting | All account/content data, transient rate-limit IPs/accounts (in-memory, lost on restart) |
 | PostgreSQL database | Data storage | Account, doc, comment, org, friend data |
-| Envello | Transactional email delivery (EU-hosted) | Email address, reset/verification tokens |
+| Mailpit | Transactional email delivery | Email address, reset/verification tokens |
 | Google / GitHub / 42 | OAuth sign-in | Whatever their OAuth consent screen grants us |
 
 We never sell your data. We may disclose data where required by law, or to enforce our Terms of Service.
@@ -75,10 +75,10 @@ All data is stored on infrastructure we operate ourselves (machines we control),
 
 We apply security best practices from OWASP and The Copenhagen Book:
 
-- Passwords hashed with **Argon2id**; we never store or transmit plaintext passwords.
-- Session tokens are 256-bit random values; only a **SHA-256 hash** is stored in our database, so a database leak cannot be used to impersonate you.
+- Passwords hashed with **Argon2id**. We never store or transmit plaintext passwords.
+- Session tokens are 256-bit random values. Only a **SHA-256 hash** is stored in our database, so a database leak cannot be used to impersonate you.
 - All traffic is served over **HTTPS/TLS 1.2+**.
-- Rate limiting and login lockout to resist brute force; CSRF protections on state-changing requests.
+- Rate limiting and login lockout to resist brute force. CSRF protections on state-changing requests.
 - Secrets (OAuth keys, DB credentials) are held in environment variables and never committed to source control. **[Planned]** — secrets will move to **HashiCorp Vault** and the application will be fronted by a **WAF (ModSecurity, OWASP CRS)** in a later hardening phase.
 
 No system is 100% secure, but we take reasonable measures to protect your information.
@@ -87,18 +87,18 @@ No system is 100% secure, but we take reasonable measures to protect your inform
 
 Depending on where you live (in particular if you are in the EU/EEA under GDPR), you have the right to:
 
-- **Access** a copy of your personal data;
-- **Rectify** inaccurate data;
-- **Erasure** ("right to be forgotten") — delete your account and data;
-- **Restrict or object** to processing;
-- **Data portability** — receive your data in a machine-readable format;
+- **Access** a copy of your personal data.
+- **Rectify** inaccurate data.
+- **Erasure** ("right to be forgotten") — delete your account and data.
+- **Restrict or object** to processing.
+- **Data portability** — receive your data in a machine-readable format.
 - **Withdraw consent** where consent is the legal basis.
 
 To exercise any of these, contact **[TODO: privacy contact email]** or delete your account from the app. We respond within 30 days. You also have the right to lodge a complaint with your local data protection authority (in Germany: Berliner Beauftragte für Datenschutz und Informationsfreiheit — www.datenschutz-berlin.de).
 
 ## 10. Children
 
-The service is not directed at children. You must be at least **16 years old** to use synctext. We do not knowingly collect data from children under this age; if you believe a child has provided us data, contact us and we will delete it.
+The service is not directed at children. You must be at least **16 years old** to use synctext. We do not knowingly collect data from children under this age. If you believe a child has provided us data, contact us and we will delete it.
 
 ## 11. Data minimisation
 
