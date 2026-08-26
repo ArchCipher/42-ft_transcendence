@@ -23,7 +23,7 @@ export function Navbar() {
   return (
     <header className="absolute top-0 z-10 w-full border-b border-white/15">
       <nav aria-label="Main navigation" className="flex min-h-16 items-center justify-between px-5 sm:min-h-18 sm:px-[clamp(1.25rem,5vw,5rem)]">
-        <Link aria-label="SyncText home" className="inline-flex items-start gap-1.5 font-mono text-base tracking-[-0.04em] text-[#f4f2ee] no-underline outline-none focus-visible:ring-2 focus-visible:ring-white" href="/main-page">
+        <Link aria-label="SyncText home" className="inline-flex items-start gap-1.5 font-mono text-base tracking-[-0.04em] text-[#f4f2ee] no-underline outline-none focus-visible:ring-2 focus-visible:ring-white" href="/">
           SyncText<span aria-hidden="true" className="text-[0.65em] text-[#8984b5]">↗</span>
         </Link>
         <div className="flex items-center gap-1.5">

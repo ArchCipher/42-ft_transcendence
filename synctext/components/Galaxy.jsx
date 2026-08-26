@@ -259,9 +259,11 @@ export default function Galaxy({
 
     const mesh = new Mesh(gl, { geometry, program });
     let animateId;
+    let isInViewport = false;
+    let isPageVisible = document.visibilityState === 'visible';
 
     function update(t) {
-      animateId = requestAnimationFrame(update);
+      animateId = undefined;
       if (!disableAnimation) {
         program.uniforms.uTime.value = t * 0.001;
         program.uniforms.uStarSpeed.value = (t * 0.001 * starSpeed) / 10.0;
@@ -278,8 +280,31 @@ export default function Galaxy({
       program.uniforms.uMouseActiveFactor.value = smoothMouseActive.current;
 
       renderer.render({ scene: mesh });
+      if (isInViewport && isPageVisible) {
+        animateId = requestAnimationFrame(update);
+      }
     }
-    animateId = requestAnimationFrame(update);
+
+    function syncAnimation() {
+      if (isInViewport && isPageVisible && animateId === undefined) {
+        animateId = requestAnimationFrame(update);
+      } else if ((!isInViewport || !isPageVisible) && animateId !== undefined) {
+        cancelAnimationFrame(animateId);
+        animateId = undefined;
+      }
+    }
+
+    const visibilityObserver = new IntersectionObserver(([entry]) => {
+      isInViewport = entry.isIntersecting;
+      syncAnimation();
+    });
+    visibilityObserver.observe(ctn);
+
+    function handleVisibilityChange() {
+      isPageVisible = document.visibilityState === 'visible';
+      syncAnimation();
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     ctn.appendChild(gl.canvas);
 
     function handleMouseMove(e) {
@@ -300,7 +325,9 @@ export default function Galaxy({
     }
 
     return () => {
-      cancelAnimationFrame(animateId);
+      if (animateId !== undefined) cancelAnimationFrame(animateId);
+      visibilityObserver.disconnect();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('resize', resize);
       if (mouseInteraction) {
         ctn.removeEventListener('mousemove', handleMouseMove);

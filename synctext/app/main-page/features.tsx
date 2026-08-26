@@ -48,7 +48,7 @@ function FeaturePreview({ index }: { index: number }) {
 
 export function Features() {
   return (
-    <section aria-labelledby="features-title" className="relative py-[clamp(6rem,11vw,10rem)] before:absolute before:top-0 before:left-[clamp(1.25rem,5vw,5rem)] before:h-px before:w-16 before:bg-[oklch(0.68_0.1_290)]">
+    <section aria-labelledby="features-title" className="relative py-[clamp(6rem,11vw,10rem)]">
       <div className="mb-[clamp(3.5rem,7vw,6rem)] grid grid-cols-[minmax(0,1.4fr)_minmax(17rem,.6fr)] items-end gap-16 px-[clamp(1.25rem,5vw,5rem)] max-md:grid-cols-1 max-md:gap-7">
         <h2 className="max-w-[11ch] font-serif text-[clamp(3rem,6vw,6.5rem)] leading-[.9] font-normal tracking-[-0.065em] text-[oklch(0.94_0.012_285)] max-md:text-[clamp(3rem,14vw,5rem)]" id="features-title">Made for the way ideas actually happen.</h2>
         <p className="max-w-sm font-mono text-[clamp(.78rem,1vw,.9rem)] leading-[1.75] text-[oklch(0.68_0.018_285)]">Thoughtful tools that disappear into the background, so your team can stay with the words.</p>
