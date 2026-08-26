@@ -20,21 +20,21 @@ You must be at least **16 years old** to use the Service. By using the Service y
 
 - You must provide accurate information (a valid email and username) and keep your credentials secure. You are responsible for everything done with your account.
 - You may not create multiple accounts to circumvent restrictions, impersonate others, or register on behalf of someone else without authorization.
-- You can delete your account at any time; upon deletion your data is removed as described in our Privacy Policy. Accounts that are inactive for 12 months may be deleted after a prior warning email (see our Privacy Policy).
+- You can delete your account at any time. Upon deletion your data is removed as described in our Privacy Policy. Accounts that are inactive for 12 months may be deleted after a prior warning email (see our Privacy Policy).
 - We may suspend or terminate accounts that violate these Terms.
 
 ## 5. Acceptable use
 
 You agree **not** to use the Service to:
 
-- Violate any law or regulation;
-- Infringe the intellectual property or other rights of others (do not paste copyrighted text you do not have the right to use);
-- Distribute malware, spam, or phishing content;
-- Harass, abuse, defame, or threaten other users, or post content inciting hatred or violence;
-- Attempt to gain unauthorized access to the Service, other accounts, or our infrastructure (e.g. scanning, probing, credential stuffing);
-- Disrupt or overload the Service, or interfere with other users' use of it;
-- Scrape, sell, or resell data from the Service;
-- Embed or execute code in documents or comments. The Service stores **text only** and renders it as text; it must never be used to deliver or run executable code.
+- Violate any law or regulation.
+- Infringe the intellectual property or other rights of others (do not paste copyrighted text you do not have the right to use).
+- Distribute malware, spam, or phishing content.
+- Harass, abuse, defame, or threaten other users, or post content inciting hatred or violence.
+- Attempt to gain unauthorized access to the Service, other accounts, or our infrastructure (e.g. scanning, probing, credential stuffing).
+- Disrupt or overload the Service, or interfere with other users' use of it.
+- Scrape, sell, or resell data from the Service.
+- Embed or execute code in documents or comments. The Service stores **text only** and renders it as text. It must never be used to deliver or run executable code.
 
 We may remove content that violates these rules and, for repeated or serious violations, suspend or terminate accounts. Suspensions are generally preceded by a warning, except for serious violations (e.g. illegal content, attacks on the infrastructure).
 
@@ -42,7 +42,7 @@ We may remove content that violates these rules and, for repeated or serious vio
 
 - **You retain ownership** of the content you create (your documents and comments).
 - You grant us a limited, non-exclusive, worldwide license to store, process, and transmit your content solely to operate and improve the Service (e.g. syncing edits, hosting, backups).
-- **Shared content is licensed to your collaborators.** When you contribute to a shared document, or to a document belonging to an organization you are a member of, the other users and organizations you share with may continue to use that content as part of the document — including after you stop sharing it or leave the organization. You keep ownership; you do not lose the right to use your own content.
+- **Shared content is licensed to your collaborators.** When you contribute to a shared document, or to a document belonging to an organization you are a member of, the other users and organizations you share with may continue to use that content as part of the document — including after you stop sharing it or leave the organization. You keep ownership. You do not lose the right to use your own content.
 - **Sharing is limited to authenticated users.** You can share a document with specific users or with an organization you belong to. There is no public "anyone with a link" access: documents are visible only to their owner and the users/organization members they are shared with.
 - We claim no ownership of your content and do not use it for any purpose other than providing the Service.
 
