@@ -142,6 +142,13 @@ function ControlBar({ search, setSearch, order, setOrder }: ControlBarProps) {
 
 // docs
 
+type Document = {
+  id: number;
+  title: string;
+  createdAt: number;
+  group: string;
+};
+
 type DashboardProps = {
   search: string;
   order: string;
@@ -149,17 +156,25 @@ type DashboardProps = {
 
 function Dashboard({ search, order }: DashboardProps) {
   
-  const [documents, setDocuments] = useState([]);
+ const [documents, setDocuments] = useState<Document[]>([]);
 
   const [isCreating, setIsCreating] = useState(false); 
   const [newTitle, setNewTitle] = useState("");  // const for naming docs
-  const [documentToDelete, setDocumentToDelete] = useState(null); // for deleting docs
+  const [documentToDelete, setDocumentToDelete] = useState<number | null>(null);// for deleting docs
+  const [createError, setCreateError] = useState("");
 
-  function addDocument(title) {
+  const [documentToEdit, setDocumentToEdit] = useState<number | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editError, setEditError] = useState("");
+  const [newGroup, setNewGroup] = useState("none");
+  const [editGroup, setEditGroup] = useState("none");
+
+  function addDocument(title: string, group: string) {
     const newDocument = {
       id: Date.now(),
       title: title,
       createdAt: Date.now(),
+      group,
     };
 
     setDocuments([...documents, newDocument]);
@@ -173,29 +188,46 @@ function Dashboard({ search, order }: DashboardProps) {
     const titleExists = documents.some(                                  // .some
       (doc) => doc.title.toLowerCase() === newTitle.trim().toLowerCase());
 
-    if (titleExists)
+    if (!newTitle.trim()) {
+      setCreateError("Please enter a document title");
       return;
+    }
 
-    if (!newTitle.trim())
+    if (titleExists) {
+      setCreateError("A document with this title already exists");
       return;
-    addDocument(newTitle);
+    }
+
+    setCreateError("");
+    addDocument(newTitle, newGroup);
     setIsCreating(false); // reset pop-up window
     setNewTitle("");
   }
 
-  function renameDocument(id, newTitle) {      // rename doc
+  function saveRename() {
     const titleExists = documents.some(
-      (doc) => doc.id !== id &&
-        doc.title.toLowerCase() === newTitle.trim().toLowerCase());
+      (doc) =>
+        doc.id !== documentToEdit &&
+        doc.title.toLowerCase() === editTitle.trim().toLowerCase()
+    );
 
-    if (titleExists)
+    if (!editTitle.trim()) {
+      setEditError("Please enter a document title");
       return;
-    
-    if (!newTitle.trim())
+    }
+
+    if (titleExists) {
+      setEditError("A document with this title already exists");
       return;
+    }
 
     setDocuments(documents.map((doc) =>
-        doc.id === id ? { ...doc, title: newTitle } : doc));
+      doc.id === documentToEdit
+        ? { ...doc, title: editTitle, group: editGroup } : doc
+    ));
+
+    setDocumentToEdit(null);
+    setEditError("");
   }
 
   return (
@@ -214,10 +246,14 @@ function Dashboard({ search, order }: DashboardProps) {
           .map((doc) => (
             <DocumentCard
               key={doc.id}
-              id={doc.id}
               title={doc.title}
               onDelete={() => setDocumentToDelete(doc.id)}
-              onRename={renameDocument}
+              onEdit={() => {
+                setDocumentToEdit(doc.id);
+                setEditTitle(doc.title);
+                setEditGroup(doc.group);
+                setEditError("");
+              }}
             />
           ))}
 
@@ -233,28 +269,36 @@ function Dashboard({ search, order }: DashboardProps) {
           <Dialog.Popup className="CreateDoc">
             <Dialog.Title>Create document</Dialog.Title>
 
-            <div className="PanelLights" aria-hidden="true">
-              <span className="Led LedRed"></span>
-              <span className="Led LedYellow"></span>
-              <span className="Led LedGreen"></span>
-            </div>  
-
             <input
               id="document-title"
               className="CreateDocTitle"
               type="text"
               placeholder="Title"
+              autoComplete="off"
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") {createDocument();}}}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  createDocument();
+                }
+              }}
+              aria-describedby={createError ? "create-doc-error" : undefined}
             />
 
-            {/*<label htmlFor="document-group">Group</label>*/}
+            {createError && (
+              <p className="CreateDocError" id="create-doc-error">
+                {createError}
+              </p>
+            )}
 
             <div className="CreateDocGroup">
               <label htmlFor="document-group">Group:</label>
 
-              <select id="document-group" defaultValue="none">
+              <select
+                id="document-group"
+                value={newGroup}
+                onChange={(e) => setNewGroup(e.target.value)}
+              >
                 <option value="none">None</option>
                 <option value="wu-tang clan">Wu-Tang</option>
                 <option value="transcendence">Transcendence</option>
@@ -267,33 +311,126 @@ function Dashboard({ search, order }: DashboardProps) {
             >
               Add to the Guide
             </button>
+
+            <div className="LedStrip" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+              <span />
+              <span />
+              <span />
+              <span />
+            </div>
+
           </Dialog.Popup>
         </Dialog.Portal>
       </Dialog.Root>
 
-      {documentToDelete !== null && (
-        <div className="DeleteDocOverlay">
-          <div className="DeleteDocPopup">
+      <Dialog.Root
+        open={documentToEdit !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDocumentToEdit(null);
+            setEditError("");
+          }
+        }}
+      >
+        <Dialog.Portal>
+          <Dialog.Backdrop className="CreateDocOverlay" />
 
-            <button
-              className="CloseDeleteDoc"
-              onClick={() => setDocumentToDelete(null)}
+          <Dialog.Popup className="CreateDoc">
+            <Dialog.Title>Edit document</Dialog.Title>
+
+            <input
+              id="edit-document-title"
+              className="CreateDocTitle"
+              type="text"
+              value={editTitle}
+              autoComplete="off"
+              autoFocus
+              onFocus={(e) => e.target.select()}
+              onChange={(e) => setEditTitle(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  saveRename();
+                }
+              }}
+              aria-describedby={editError ? "edit-doc-error" : undefined}
             />
 
+            {editError && (
+              <p className="CreateDocError" id="edit-doc-error">
+                {editError}
+              </p>
+            )}
+
+            <div className="CreateDocGroup">
+              <label htmlFor="edit-document-group">Group:</label>
+
+              <select
+                id="edit-document-group"
+                value={editGroup}
+                onChange={(e) => setEditGroup(e.target.value)}
+              >
+                <option value="none">None</option>
+                <option value="wu-tang clan">Wu-Tang</option>
+                <option value="transcendence">Transcendence</option>
+              </select>
+            </div>
+
             <button
-              className="ConfirmDeleteDoc"
-              autoFocus
-              onClick={() => {
-                deleteDocument(documentToDelete);
-                setDocumentToDelete(null);
-              }}
+              className="CreateDocButton"
+              onClick={saveRename}
             >
-              DELETE
+              Save changes
             </button>
 
-          </div>
-        </div>
-      )}
+            <div className="LedStrip" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+              <span />
+              <span />
+              <span />
+              <span />
+            </div>
+          </Dialog.Popup>
+        </Dialog.Portal>
+      </Dialog.Root>
+
+      <Dialog.Root
+        open={documentToDelete !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDocumentToDelete(null);
+          }
+        }}
+      >
+        <Dialog.Portal>
+          <Dialog.Backdrop className="DeleteDocOverlay" />
+
+          <Dialog.Popup className="DeleteDocPopup">
+          <Dialog.Title>Are you sure?</Dialog.Title>
+
+          <Dialog.Description className="DeleteDocMessage">
+            Think deep!
+          </Dialog.Description>
+
+          <button
+            className="ConfirmDeleteDoc"
+            autoFocus
+            onClick={() => {
+              if (documentToDelete !== null) {
+                deleteDocument(documentToDelete);
+                setDocumentToDelete(null);
+              }
+            }}
+          >
+            DELETE
+          </button>
+          </Dialog.Popup>
+        </Dialog.Portal>
+      </Dialog.Root>
     </>
   );
 }
@@ -311,11 +448,7 @@ function AddDoc({ onAdd }: AddDocProps) {
   );
 }
 
-function DocumentCard({ id, title, onDelete, onRename }) {
-
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedTitle, setEditedTitle] = useState(title);
-
+function DocumentCard({ title, onDelete, onEdit }) {
   return (
     <div className="DocumentCard">
       <button className="DeleteDoc" onClick={onDelete}>×</button>
@@ -326,35 +459,16 @@ function DocumentCard({ id, title, onDelete, onRename }) {
           alt="Document icon"
           width={90}
           height={90}
-          className="DocumentIcon" />
+          className="DocumentIcon"
+        />
       </div>
 
-      {isEditing ? (
-      <input
-        className="DocumentTitle"
-        value={editedTitle}
-        onChange={(e) => setEditedTitle(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            if (!editedTitle.trim()) {
-              setEditedTitle(title);
-              setIsEditing(false);
-              return;
-            }
-
-            onRename(id, editedTitle);
-            setIsEditing(false);
-          }
-        }}
-      />
-    ) : (
       <span
         className="DocumentTitle"
-        onDoubleClick={() => setIsEditing(true)}
+        onDoubleClick={onEdit}
       >
         {title}
       </span>
-    )}
     </div>
   );
 }
