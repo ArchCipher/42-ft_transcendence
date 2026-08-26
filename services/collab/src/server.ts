@@ -32,15 +32,15 @@ const server = new Server({
           throw new Error(`Failed to load document: ${response.status}`)
         }
 
-        const data = (await response.json()) as { state: string | null }
-
-        if (!data.state) {
+        if (response.status === 204) { // 204 means doc exists but no persisted Yjs state yet
           return null
         }
-        // the API transports binary Yjs state as base64 JSON
-        // hocuspocus needs the original binary state back
-        return new Uint8Array(Buffer.from(data.state, 'base64'))
+
+        const state = await response.arrayBuffer()
+
+        return new Uint8Array(state)
       },
+
       // called when hocuspocus wants to persist the latest Yjs document state
       store: async ({ documentName, state }) => {
         const response = await fetch(
@@ -48,13 +48,10 @@ const server = new Server({
           {
             method: 'PUT',
             headers: {
-              'content-type': 'application/json',
+              'content-type': 'application/octet-stream',
               'x-internal-service-token': internalToken,
             },
-            body: JSON.stringify({
-              // convert binary Yjs state to base64 so it can travel inside JSON
-              state: Buffer.from(state).toString('base64'),
-            }),
+            body: new Uint8Array(state),
           },
         )
 

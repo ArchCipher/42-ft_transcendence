@@ -10,26 +10,6 @@ function isAuthorized(request: Request) {
   );
 }
 
-// validate the Base64 string before converting it back into binary Yjs state
-function decodeBase64(value: string) {
-  if (
-    value.length === 0 ||
-    value.length % 4 !== 0 ||
-    !/^[A-Za-z0-9+/]*={0,2}$/.test(value)
-  ) {
-    return null;
-  }
-
-  const decoded = Buffer.from(value, "base64");
-
-  // re-encoding catches malformed Base64 that Buffer.from may accept silently
-  if (decoded.toString("base64") !== value) {
-    return null;
-  }
-
-  return decoded;
-}
-
 // load the persisted Yjs state for the document requested by hocuspocus
 export async function GET(
   request: Request,
@@ -51,11 +31,16 @@ export async function GET(
     return Response.json({ error: "Document not found" }, { status: 404 });
   }
 
-  // send Yjs state as Base64 because JSON cannot carry raw binary bytes directly
-  return Response.json({
-    state: document.ystate
-      ? Buffer.from(document.ystate).toString("base64")
-      : null,
+  // the document exists but has no persisted Yjs state yet
+  if (!document.ystate) {
+    return new Response(null, { status: 204 });
+  }
+
+  // send the binary Yjs state directly in the HTTP response body
+  return new Response(Buffer.from(document.ystate), {
+    headers: {
+      "content-type": "application/octet-stream",
+    },
   });
 }
 
@@ -68,39 +53,20 @@ export async function PUT(
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // this endpoint expects the Yjs state inside a JSON request body
+  // this endpoint expects raw binary Yjs state
   if (
     request.headers.get("content-type")?.split(";")[0].trim() !==
-    "application/json"
+    "application/octet-stream"
   ) {
     return Response.json(
-      { error: "Content-Type must be application/json" },
+      { error: "Content-Type must be application/octet-stream" },
       { status: 415 },
     );
   }
 
-  let body: unknown;
+  const state = Buffer.from(await request.arrayBuffer());
 
-  try {
-    body = await request.json();
-  } catch {
-    return Response.json({ error: "Invalid JSON body" }, { status: 400 });
-  }
-
-  // make sure the request contains a string field called state
-  if (
-    typeof body !== "object" ||
-    body === null ||
-    !("state" in body) ||
-    typeof body.state !== "string"
-  ) {
-    return Response.json({ error: "Invalid state" }, { status: 400 });
-  }
-
-  // convert the Base64 transport format back into binary Yjs state
-  const state = decodeBase64(body.state);
-
-  if (!state) {
+  if (state.length === 0) {
     return Response.json({ error: "Invalid state" }, { status: 400 });
   }
 
