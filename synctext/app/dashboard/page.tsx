@@ -4,16 +4,21 @@ import { useState } from "react";
 
 import './Dashboard.css';
 import Image from "next/image";
+import { Dialog } from "@base-ui/react/dialog";
 
 export default function MainPage() {
 
   const [search, setSearch] = useState("");
+  const [order, setOrder] = useState("creation"); // to order by creation, name, modification
 
   return (
     <div className="MainPage">
       <Header />
-      <ControlBar search={search} setSearch={setSearch} />
-      <Dashboard search={search} />
+      <ControlBar
+        search={search} setSearch={setSearch}
+        order={order} setOrder={setOrder}
+      />
+      <Dashboard search={search} order={order} />
     </div>
   );
 }
@@ -75,21 +80,29 @@ function GroupFilter() {
       <select>
         <option>All groups</option>
         <option>Transcendence</option>
-        <option>Audio Team</option>
+        <option>Wu tang Clan</option>
       </select>
     </div>
   );
 }
 
-function OrderBox() {
+type OrderBoxProps = {
+  orderBy: string;
+  setOrderBy: (value: string) => void;
+};
+
+function OrderBox({ orderBy, setOrderBy }: OrderBoxProps) {
   return (
     <div className="OrderBox">
       <span>Ordered by</span>
 
-      <select>
-        <option>Name</option>
-        <option>Modification date</option>
-        <option>Creation date</option>
+      <select
+        value={orderBy}
+        onChange={(e) => setOrderBy(e.target.value)}
+      >
+        <option value="creation">Creation date</option>
+        <option value="modification">Modification date</option>
+        <option value="name">Name</option>
       </select>
     </div>
   );
@@ -113,11 +126,18 @@ function SearchBox({ search, setSearch }: SearchBoxProps) {
   );
 }
 
-function ControlBar({ search, setSearch }: SearchBoxProps) {
+type ControlBarProps = {
+  search: string;
+  setSearch: (value: string) => void;
+  order: string;
+  setOrder: (value: string) => void;
+};
+
+function ControlBar({ search, setSearch, order, setOrder }: ControlBarProps) {
   return (
     <div className="ControlBar">
       <FilterBox />
-      <OrderBox />
+      <OrderBox orderBy={order} setOrderBy={setOrder} />
       <GroupFilter />
       <SearchBox search={search} setSearch={setSearch} />
     </div>
@@ -127,21 +147,39 @@ function ControlBar({ search, setSearch }: SearchBoxProps) {
 
 // docs
 
-type DashboardProps = {
-  search: string;
+type Document = {
+  id: number;
+  title: string;
+  createdAt: number;
+  group: string;
 };
 
-function Dashboard({ search }: DashboardProps) {
-  
-  const [documents, setDocuments] = useState([
-    { id: 1, title: "Document 1" },
-    { id: 2, title: "Document 2" },
-  ]);
+type DashboardProps = {
+  search: string;
+  order: string;
+};
 
-  function addDocument() {
+function Dashboard({ search, order }: DashboardProps) {
+  
+ const [documents, setDocuments] = useState<Document[]>([]);
+
+  const [isCreating, setIsCreating] = useState(false); 
+  const [newTitle, setNewTitle] = useState("");  // const for naming docs
+  const [documentToDelete, setDocumentToDelete] = useState<number | null>(null);// for deleting docs
+  const [createError, setCreateError] = useState("");
+
+  const [documentToEdit, setDocumentToEdit] = useState<number | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editError, setEditError] = useState("");
+  const [newGroup, setNewGroup] = useState("none");
+  const [editGroup, setEditGroup] = useState("none");
+
+  function addDocument(title: string, group: string) {
     const newDocument = {
       id: Date.now(),
-      title: "Untitled document",
+      title: title,
+      createdAt: Date.now(),
+      group,
     };
 
     setDocuments([...documents, newDocument]);
@@ -151,20 +189,254 @@ function Dashboard({ search }: DashboardProps) {
     setDocuments(documents.filter((doc) => doc.id !== id));
   }
 
+  function createDocument() {
+    const titleExists = documents.some(                                  // .some
+      (doc) => doc.title.toLowerCase() === newTitle.trim().toLowerCase());
+
+    if (!newTitle.trim()) {
+      setCreateError("Please enter a document title");
+      return;
+    }
+
+    if (titleExists) {
+      setCreateError("A document with this title already exists");
+      return;
+    }
+
+    setCreateError("");
+    addDocument(newTitle, newGroup);
+    setIsCreating(false); // reset pop-up window
+    setNewTitle("");
+  }
+
+  function saveRename() {
+    const titleExists = documents.some(
+      (doc) =>
+        doc.id !== documentToEdit &&
+        doc.title.toLowerCase() === editTitle.trim().toLowerCase()
+    );
+
+    if (!editTitle.trim()) {
+      setEditError("Please enter a document title");
+      return;
+    }
+
+    if (titleExists) {
+      setEditError("A document with this title already exists");
+      return;
+    }
+
+    setDocuments(documents.map((doc) =>
+      doc.id === documentToEdit
+        ? { ...doc, title: editTitle, group: editGroup } : doc
+    ));
+
+    setDocumentToEdit(null);
+    setEditError("");
+  }
+
   return (
-    <main className="Dashboard">
-      {documents.filter((doc) =>
-          doc.title.toLowerCase().includes(search.toLowerCase()))
-        .map((doc) => (
-          <DocumentCard
-            key={doc.id}
-            title={doc.title}
-            onDelete={() => deleteDocument(doc.id)}
-          />)
-          )
-      }
-      <AddDoc onAdd={addDocument} />
-    </main>
+    <>
+      <main className="Dashboard">             
+
+        <AddDoc onAdd={() => setIsCreating(true)} />
+
+        {documents.filter((doc) =>
+            doc.title.toLowerCase().includes(search.toLowerCase()))
+          .sort((a, b) => {
+          if (order == "name")
+            return a.title.localeCompare(b.title);
+          return b.createdAt - a.createdAt;
+          })
+          .map((doc) => (
+            <DocumentCard
+              key={doc.id}
+              title={doc.title}
+              onDelete={() => setDocumentToDelete(doc.id)}
+              onEdit={() => {
+                setDocumentToEdit(doc.id);
+                setEditTitle(doc.title);
+                setEditGroup(doc.group);
+                setEditError("");
+              }}
+            />
+          ))}
+
+      </main>
+
+      <Dialog.Root
+        open={isCreating}
+        onOpenChange={setIsCreating}
+      >
+        <Dialog.Portal>
+          <Dialog.Backdrop className="CreateDocOverlay" />
+
+          <Dialog.Popup className="CreateDoc">
+            <Dialog.Title>Create document</Dialog.Title>
+
+            <input
+              id="document-title"
+              className="CreateDocTitle"
+              type="text"
+              placeholder="Title"
+              autoComplete="off"
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  createDocument();
+                }
+              }}
+              aria-describedby={createError ? "create-doc-error" : undefined}
+            />
+
+            {createError && (
+              <p className="CreateDocError" id="create-doc-error">
+                {createError}
+              </p>
+            )}
+
+            <div className="CreateDocGroup">
+              <label htmlFor="document-group">Group:</label>
+
+              <select
+                id="document-group"
+                value={newGroup}
+                onChange={(e) => setNewGroup(e.target.value)}
+              >
+                <option value="none">None</option>
+                <option value="wu-tang clan">Wu-Tang</option>
+                <option value="transcendence">Transcendence</option>
+              </select>
+            </div>
+
+            <button
+              className="CreateDocButton"
+              onClick={createDocument}
+            >
+              Add to the Guide
+            </button>
+
+            <div className="LedStrip" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+              <span />
+              <span />
+              <span />
+              <span />
+            </div>
+
+          </Dialog.Popup>
+        </Dialog.Portal>
+      </Dialog.Root>
+
+      <Dialog.Root
+        open={documentToEdit !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDocumentToEdit(null);
+            setEditError("");
+          }
+        }}
+      >
+        <Dialog.Portal>
+          <Dialog.Backdrop className="CreateDocOverlay" />
+
+          <Dialog.Popup className="CreateDoc">
+            <Dialog.Title>Edit document</Dialog.Title>
+
+            <input
+              id="edit-document-title"
+              className="CreateDocTitle"
+              type="text"
+              value={editTitle}
+              autoComplete="off"
+              autoFocus
+              onFocus={(e) => e.target.select()}
+              onChange={(e) => setEditTitle(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  saveRename();
+                }
+              }}
+              aria-describedby={editError ? "edit-doc-error" : undefined}
+            />
+
+            {editError && (
+              <p className="CreateDocError" id="edit-doc-error">
+                {editError}
+              </p>
+            )}
+
+            <div className="CreateDocGroup">
+              <label htmlFor="edit-document-group">Group:</label>
+
+              <select
+                id="edit-document-group"
+                value={editGroup}
+                onChange={(e) => setEditGroup(e.target.value)}
+              >
+                <option value="none">None</option>
+                <option value="wu-tang clan">Wu-Tang</option>
+                <option value="transcendence">Transcendence</option>
+              </select>
+            </div>
+
+            <button
+              className="CreateDocButton"
+              onClick={saveRename}
+            >
+              Save changes
+            </button>
+
+            <div className="LedStrip" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+              <span />
+              <span />
+              <span />
+              <span />
+            </div>
+          </Dialog.Popup>
+        </Dialog.Portal>
+      </Dialog.Root>
+
+      <Dialog.Root
+        open={documentToDelete !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDocumentToDelete(null);
+          }
+        }}
+      >
+        <Dialog.Portal>
+          <Dialog.Backdrop className="DeleteDocOverlay" />
+
+          <Dialog.Popup className="DeleteDocPopup">
+          <Dialog.Title>Are you sure?</Dialog.Title>
+
+          <Dialog.Description className="DeleteDocMessage">
+            Think deep!
+          </Dialog.Description>
+
+          <button
+            className="ConfirmDeleteDoc"
+            autoFocus
+            onClick={() => {
+              if (documentToDelete !== null) {
+                deleteDocument(documentToDelete);
+                setDocumentToDelete(null);
+              }
+            }}
+          >
+            DELETE
+          </button>
+          </Dialog.Popup>
+        </Dialog.Portal>
+      </Dialog.Root>
+    </>
   );
 }
 
@@ -175,7 +447,7 @@ type AddDocProps = {
 
 function AddDoc({ onAdd }: AddDocProps) {
   return (
-    <button className="AddDoc" onClick={onAdd}>
+    <button type="button" className="AddDoc" onClick={onAdd}>
       +
     </button>
   );
@@ -185,9 +457,10 @@ function AddDoc({ onAdd }: AddDocProps) {
 type DocumentCardProps = {
   title: string;
   onDelete: () => void;
+  onEdit: () => void;
 };
 
-function DocumentCard({ title, onDelete }: DocumentCardProps) {
+function DocumentCard({ title, onDelete, onEdit }: DocumentCardProps) {
   return (
     <div className="DocumentCard">
       <button className="DeleteDoc" onClick={onDelete}>×</button>
@@ -198,11 +471,15 @@ function DocumentCard({ title, onDelete }: DocumentCardProps) {
           alt="Document icon"
           width={90}
           height={90}
-          className="DocumentIcon" />
+          className="DocumentIcon"
+        />
       </div>
 
-      <span className="DocumentTitle">
-        { title }
+      <span
+        className="DocumentTitle"
+        onDoubleClick={onEdit}
+      >
+        {title}
       </span>
     </div>
   );
