@@ -1,5 +1,6 @@
 :root {
   --panel-bg: rgba(8, 25, 55, 0.5);
+   --panel-bg2: rgba(8, 25, 55, 0.6);
   --panel-border: rgba(100, 190, 255, 0.1);
   --text-main: #ffffff;
   --accent: #6fd3ff;
@@ -13,6 +14,9 @@
   background-position: center;
   background-attachment: fixed;
 }
+
+/*  ---------------------------- */
+
 
 .Header {
   display: flex;
@@ -59,6 +63,9 @@
   font-size: 17px;
 }
 
+/*  ---------------------------- */
+
+
 .UserMenu {
   background-color: var(--panel-bg);
   border: 1px solid var(--panel-border);
@@ -84,7 +91,7 @@
   object-fit: cover;
 }
 
-
+/*  ---------------------------- */
 
 .ControlBar {
   display: flex;
@@ -121,6 +128,21 @@
   border-radius: 10px;
 }
 
+.FilterBox select:focus,
+.OrderBox select:focus,
+.GroupFilter select:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.SearchBox input {
+  padding: 10px 16px;
+  background-color: var(--panel-bg);
+  color: var(--text-main);
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+}
+
 .Dashboard {
   min-height: 100vh;
   background-color: var(--panel-bg);
@@ -130,11 +152,14 @@
   padding: 24px;
 
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  justify-content: space-evenly;
+  grid-template-columns: repeat(auto-fit, 140px);
+  justify-content: start;
   row-gap: 32px;
   align-content: start;
 }
+
+/*  ---------------------------- */
+
 
 .AddDoc {
   width: 140px;
@@ -163,7 +188,7 @@
 }
 
 .AddDoc:hover {
-  background-color: #f3f4f6;
+  background-color: rgba(50, 91, 94, 0.2);
   border-color: var(--accent);
 }
 
@@ -177,9 +202,432 @@
   width: 140px;
   text-align: center;
 
+  padding: 8px 0;
+  cursor: text;
+
   color: white;
   font-size: 14px;
 
   white-space: normal;
   overflow-wrap: break-word;
+}
+
+/*  ------------   pop-up for naming docs ------------------- */
+
+.CreateDocOverlay {
+  position: fixed;
+  inset: 0;                /* top 0, bottom 0 etc....center of the screan, cover all the screen */
+  background: rgba(0, 0, 0, 0.6);
+}
+
+
+/* ------------- WINDOW -------------------------------------------*/
+
+
+.CreateDoc {
+  --dialog-width: 500px;
+  --corner-size: 18px;
+  --border-color: var(--accent);
+  --glow-strength: 12px;
+
+  width: min(90vw, var(--dialog-width));
+  padding: 20px 20px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  outline: 1px solid rgba(111, 211, 255, 0.25);
+  outline-offset: -6px;
+
+  background: linear-gradient(
+    135deg,
+    rgba(5, 20, 45, 0.96),
+    rgba(15, 35, 70, 0.92)
+  );
+
+  border: 1px solid var(--accent);
+  border-radius: 18px;
+
+  box-shadow:
+    0 0 14px rgba(111, 211, 255, 0.25),
+    inset 0 0 0 5px rgba(111, 211, 255, 0.05),
+    inset 0 0 25px rgba(111, 211, 255, 0.08);
+
+  background: linear-gradient(
+    135deg,
+    rgba(5, 20, 45, 0.96),
+    rgba(15, 35, 70, 0.92)
+  );
+}
+
+.CreateDoc::before {
+  content: "42 // DOCUMENT TERMINAL";
+
+  position: absolute;
+  top: 10px;
+  left: 24px;
+
+  color: var(--accent);
+  font-size: 10px;
+  letter-spacing: 3px;
+
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.CreateDoc::after {
+  content: "";
+
+  position: absolute;
+  top: 0;
+  right: 60px;
+
+  width: 120px;
+  height: 3px;
+
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent);
+
+  pointer-events: none;
+}
+
+/* ------------- Design -------------------------------------------*/
+
+.LedStrip {
+  width: 60%;
+  height: 5px;
+
+  display: flex;
+  gap: 5px;
+
+  margin-top: 8px;
+  margin-bottom: 10px;
+}
+
+.LedStrip span {
+  flex: 1;
+  height: 100%;
+
+  background: #ff4057;
+  box-shadow: 0 0 10px rgba(255, 64, 87, 0.8);
+}
+
+.LedStrip span:nth-child(5),
+.LedStrip span:nth-child(6),
+.LedStrip span:nth-child(7) {
+  opacity: 0.18;
+  box-shadow: none;
+}
+
+/* --------------------------------------------------------------*/
+
+
+.CreateDocButton {
+  width: 30%;
+  padding: 10px 10px;
+  font-size: 15px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  letter-spacing: 1px;
+}
+
+.CreateDoc h2 {
+  margin: 15px 0 0;
+
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 21px;
+  font-weight: 500;
+
+  letter-spacing: 4px;
+  text-transform: uppercase;
+
+  color: var(--accent);
+
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  letter-spacing: 4px;
+
+  text-shadow:
+    0 0 6px rgba(111, 211, 255, 0.6),
+    0 0 14px rgba(111, 211, 255, 0.25);
+}
+
+.CreateDocTitle {
+  width: 80%;
+  padding: 6px 16px;
+
+  color: white;
+  background: transparent;
+
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+
+  font-size: 18px;
+}
+
+.CreateDocError {
+  width: 80%;
+  margin: -8px 0 0;
+
+  color: #ff5367;
+  font-size: 12px;
+  text-align: left;
+}
+
+/*  ---------- GROUP ------------- */
+
+
+.CreateDocGroup {
+  width: 80%;
+  padding: 6px 16px;
+
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+}
+
+.CreateDocGroup label {
+  color: #888;
+  font-size: 18px;
+}
+
+.CreateDocGroup select {
+  flex: 1;
+
+  color: white;
+  background: transparent;
+  border: none;
+  outline: none;
+
+  font-size: 18px;
+}
+
+
+/*  ---------- Buttons ------------- */
+
+.CreateDocButton {
+  width: 40%;
+  padding: 14px 24px;
+
+  color: #081937;
+  background: linear-gradient(
+    180deg,
+    #8fe3ff,
+    #55bfe8
+  );
+
+  border: 1px solid #b8eeff;
+  border-radius: 6px;
+
+  font-weight: 700;
+
+  box-shadow:
+    0 0 14px rgba(111, 211, 255, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 4px 0 #276b88;
+
+  cursor: pointer;
+}
+
+.CreateDocButton:hover {
+  background: linear-gradient(
+    180deg,
+    #b5edff,
+    #6fd3ff
+  );
+
+  box-shadow:
+    0 0 20px rgba(111, 211, 255, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 4px 0 #276b88;
+}
+
+.CreateDocButton:active {
+  transform: translateY(3px);
+  box-shadow:
+    0 0 10px rgba(111, 211, 255, 0.4),
+    0 1px 0 #276b88;
+}
+
+/* ---------- DELETE ---------- */
+
+.DeleteDocOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.DeleteDocPopup {
+  width: min(85vw, 340px);
+  padding: 24px 22px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  background: linear-gradient(
+    135deg,
+    rgba(5, 20, 45, 0.96),
+    rgba(15, 35, 70, 0.92)
+  );
+
+  border: 1px solid var(--accent);
+  border-radius: 16px;
+
+  outline: 1px solid rgba(111, 211, 255, 0.25);
+  outline-offset: -6px;
+
+  box-shadow:
+    0 0 14px rgba(111, 211, 255, 0.25),
+    inset 0 0 0 5px rgba(111, 211, 255, 0.05),
+    inset 0 0 20px rgba(111, 211, 255, 0.08);
+}
+
+/* blue edge light, bottom-left */
+.DeleteDocPopup::before {
+  content: "";
+
+  position: absolute;
+  bottom: 0;
+  left: 35px;
+
+  width: 90px;
+  height: 3px;
+
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent);
+
+  pointer-events: none;
+}
+
+.DeleteDocPopup h2 {
+  margin: 6px 0 0;
+
+  color: var(--accent);
+
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  font-size: 21px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+
+  text-shadow:
+    0 0 6px rgba(111, 211, 255, 0.6),
+    0 0 14px rgba(111, 211, 255, 0.25);
+}
+
+.DeleteDocMessage {
+  margin: 0;
+
+  color: var(--accent);
+  opacity: 0.7;
+
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+.ConfirmDeleteDoc {
+  width: 60%;
+  padding: 12px 20px;
+
+  color: white;
+  background: linear-gradient(
+    180deg,
+    #ff5367,
+    #c51f38
+  );
+
+  border: 1px solid #ff8391;
+  border-radius: 6px;
+
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 3px;
+
+  box-shadow:
+    0 0 14px rgba(255, 64, 87, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 4px 0 #781426;
+
+  cursor: pointer;
+}
+
+.ConfirmDeleteDoc:hover {
+  background: linear-gradient(
+    180deg,
+    #ff7080,
+    #e22b46
+  );
+
+  box-shadow:
+    0 0 20px rgba(255, 64, 87, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 4px 0 #781426;
+}
+
+.ConfirmDeleteDoc:active {
+  transform: translateY(3px);
+
+  box-shadow:
+    0 0 10px rgba(255, 64, 87, 0.5),
+    0 1px 0 #781426;
+}
+
+/* -----------------    Cellphone      -------------------*/
+
+
+@media (max-width: 900px) {
+  .ControlBar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 16px 12px;
+    gap: 14px;
+    margin-top: 40px;
+  }
+
+  .FilterBox,
+  .OrderBox,
+  .GroupFilter,
+  .SearchBox {
+    width: 100%;
+    padding: 0;
+
+    display: grid;
+    grid-template-columns: 120px minmax(0, 1fr);
+    align-items: center;
+    gap: 10px;
+  }
+
+  .FilterBox select,
+  .OrderBox select,
+  .GroupFilter select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .SearchBox input {
+    grid-column: 2;
+    width: 100%;
+    box-sizing: border-box;
+  }
 }
