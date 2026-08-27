@@ -86,7 +86,12 @@ function GroupFilter() {
   );
 }
 
-function OrderBox({ orderBy, setOrderBy }) {
+type OrderBoxProps = {
+  orderBy: string;
+  setOrderBy: (value: string) => void;
+};
+
+function OrderBox({ orderBy, setOrderBy }: OrderBoxProps) {
   return (
     <div className="OrderBox">
       <span>Ordered by</span>
@@ -448,7 +453,14 @@ function AddDoc({ onAdd }: AddDocProps) {
   );
 }
 
-function DocumentCard({ title, onDelete, onEdit }) {
+
+type DocumentCardProps = {
+  title: string;
+  onDelete: () => void;
+  onEdit: () => void;
+};
+
+function DocumentCard({ title, onDelete, onEdit }: DocumentCardProps) {
   return (
     <div className="DocumentCard">
       <button className="DeleteDoc" onClick={onDelete}>×</button>
