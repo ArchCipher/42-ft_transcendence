@@ -76,6 +76,7 @@ async function main() {
 
   const document = await prisma.document.create({
     data: {
+      id: "test-document",
       title: "Test Document",
       ystate: testDocumentYState("This is a test document"),
       ownerId: alice.id,
@@ -87,10 +88,6 @@ async function main() {
       },
     },
   });
-
-  console.log("Users:", [zaphod, alice, bob, tim].map((u) => u.username).join(", "));
-  console.log("Password for all users: password123");
-  console.log("Test document id (NOTE THAT DOWN if needed):", document.id);
 }
 
 main()

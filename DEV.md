@@ -17,6 +17,11 @@ If you want to change the schema:
 
 To populate your local db with a few test users and one test document:
 
+=> Rebuild the migrate image to be sure (new dev dependencies)
+   ```
+   docker compose build migrate
+   ```
+
 => Run (this starts `db` automatically, applies pending migrations, then seeds):
    ```
    docker compose run --rm \
@@ -25,7 +30,7 @@ To populate your local db with a few test users and one test document:
      sh -c "npx prisma migrate deploy && npx tsx prisma/seed.ts"
    ```
 
-=> The seed prints the created document's id — note it if you need it (e.g. `GET /api/documents/<id>` or `/doc/[id]`).
+=> The seed creates a document in db with id = "test-document" (e.g. `GET /api/documents/test-document` or `/doc/test-document`).
 
 Created users :
 
