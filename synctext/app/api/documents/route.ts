@@ -3,9 +3,10 @@ import {
   getSessionToken,
   validateSession,
 } from "@/lib/auth/session";
-import type {
-  DocumentAccess,
-  DocumentSummary,
+import {
+  documentReadWhere,
+  type DocumentAccess,
+  type DocumentSummary,
 } from "@/lib/documents/documents";
 import { NextResponse } from "next/server";
 
@@ -22,16 +23,7 @@ export async function GET() {
   }
 
   const documents = await db.document.findMany({
-    where: {
-      OR: [
-        { ownerId: session.user.id },
-        {
-          collab: {
-            some: { userId: session.user.id },
-          },
-        },
-      ],
-    },
+    where: documentReadWhere(session.user.id),
     select: {
       id: true,
       title: true,

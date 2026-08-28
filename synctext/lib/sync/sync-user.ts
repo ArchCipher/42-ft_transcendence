@@ -1,6 +1,6 @@
 const NAMES = ["Bob", "Alice", "Tom", "Jean", "Tim"]
 
-const COLORS = [
+export const COLORS = [
   "#ef4444",
   "#f59e0b",
   "#22c55e",
@@ -37,4 +37,10 @@ export function getLocalUser(): { name: string; color: string } {
   }
 
   return cachedUser
+}
+
+// Deterministic color from a stable user id, so the same person keeps the same color across sessions.
+export function identityFromUser(user: { id: string; username: string }): { name: string; color: string } {
+  const hash = [...user.id].reduce((acc, ch) => acc + ch.charCodeAt(0), 0)
+  return { name: user.username, color: COLORS[hash % COLORS.length] }
 }
