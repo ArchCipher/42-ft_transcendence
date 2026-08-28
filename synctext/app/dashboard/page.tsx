@@ -5,6 +5,7 @@ import { useState } from "react";
 import './Dashboard.css';
 import Image from "next/image";
 import { Dialog } from "@base-ui/react/dialog";
+import { User } from "lucide-react";
 
 export default function MainPage() {
 
@@ -36,22 +37,36 @@ function Header() {
           <p>All the documents in the universe</p>
         </div>
       </div>
-      <UserName />
+      <UserName username="Username" />
     </header>
   );
 }
 
-function UserName () {
+type UserNameProps = {
+  username: string;
+};
+
+function UserName ( { username }: UserNameProps) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   return (
-    <button className="UserMenu">
-    <Image
-      src="/assets/Gianpic.jpg"
-      alt="Gianluca"
-      width={48}
-      height={48}
-    />
-    <span>Gianluca</span>
-  </button>
+    <div className="UserMenuContainer">
+      <button
+        className="UserMenu"
+        onClick={() => setIsMenuOpen((open) => !open)}
+      >
+        <User size={32} />
+        <span>{username}</span>
+      </button>
+
+      {isMenuOpen && (
+        <div className="UserDropdown">
+          <button>Profile</button>
+          <button>Groups</button>
+          <button>Logout</button>
+        </div>
+      )}
+    </div>
   );
 }
 
