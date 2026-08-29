@@ -14,7 +14,7 @@
   --accent: #6fd3ff;
 }
 
-.MainPage {
+.LoginPage {
   min-height: 100vh;
   padding: 10px 20px;
   background-image: url('/assets/space-background.png');
@@ -72,6 +72,13 @@
   display: block;
   width: 380px;
   margin: 25px auto 0;
+}
+
+.NoticeBar {
+  width: 100%;
+  background: var(--accent);
+  color: #000;
+  padding: 0 16px;
 }
 
 .LoginBox {

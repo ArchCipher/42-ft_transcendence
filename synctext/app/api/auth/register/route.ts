@@ -5,6 +5,7 @@ import {
   accountLimiter,
   ipKey,
   accountKey,
+  registerLimiter,
 } from "@/lib/auth/rate-limit";
 import { hashPassword } from "@/lib/auth/password";
 import { prisma as db, Prisma } from "@synctext/db";
@@ -29,6 +30,7 @@ API Response contracts: POST /api/auth/register
 		409 → { error: "Email or username already exists" }
 		415 → { error: "Content-Type must be application/json" }
 		429 → { error: "Too many attempts" }
+		   or { error: "Too many accounts from this network" }
 		500 → { error } (unhandled server error)
 */
 
@@ -39,6 +41,13 @@ export async function POST(request: Request) {
   const input = result.data;
 
   const ip = clientIp(request);
+
+  // sign-up quota
+  if ((await registerLimiter.blockedRemaining(ipKey(ip))) > 0)
+    return Response.json(
+      { error: "Too many accounts from this network" },
+      { status: 429 },
+    );
 
   // rate limit by IP
   if ((await ipLimiter.blockedRemaining(ipKey(ip))) > 0)
@@ -70,7 +79,6 @@ export async function POST(request: Request) {
       });
     });
   } catch (error) {
-    await ipLimiter.recordFailure(ipKey(ip));
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === "P2002"
@@ -91,6 +99,9 @@ export async function POST(request: Request) {
   // TODO: resend email endpoint for email send failure
   // TODO: create script to remove abandoned signup pile up every 24h
   // delete verifiedAt === null + no oauth
+
+  // count successful account creation
+  await registerLimiter.recordFailure(ipKey(ip));
 
   return Response.json({ ok: true }, { status: 201 });
 }

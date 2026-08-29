@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { authPost, FALLBACK } from "./api";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -16,43 +17,31 @@ export default function LoginForm() {
   const [loading, setLoading] = useState(false);
 
   // calls /api/auth/login and either sets error or calls /dashboard
-  async function handleLogin(email: string, password: string) {
+  async function handleLogin() {
     setError("");
     setFieldErrors({});
     setLoading(true);
 
     try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+      const { ok, fields, error } = await authPost("/api/auth/login", {
+        email,
+        password,
       });
 
-      const data = await res.json();
-      const fields = data.fields;
-
-      if (!res.ok || fields) {
+      if (!ok) {
         if (fields)
           setFieldErrors({
             email: fields.email?.[0],
             password: fields.password?.[0],
           });
-		else if (res.status === 401) {
-          setError("Invalid email or password");
-        } else if (res.status === 403) {
-          setError("Please verify your email");
-        } else if (res.status === 429) {
-          setError("Too many attempts. Try again later");
-        } else {
-          setError("Something went wrong. Please try again");
-        }
+        else setError(error ?? FALLBACK);
         return;
       }
 
       // Success - redirect to dashboard
       router.push("/dashboard");
     } catch {
-      setError("Something went wrong. Please try again");
+      setError(FALLBACK);
     } finally {
       setLoading(false);
     }
@@ -62,35 +51,53 @@ export default function LoginForm() {
     <form
       className="LoginBox"
       onSubmit={async (e) => {
-        e.preventDefault(); // don't relaoad the page
-        await handleLogin(email, password); // handle it with JS
+        e.preventDefault(); // don't reload the page
+        await handleLogin(); // handle it with JS
       }}
     >
       {/*<h2>Access the Guide</h2>*/}
 
+      <label htmlFor="email">Email</label>
       <input
-        name="email"
+        id="email"
         type="email"
         placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
+        aria-invalid={!!fieldErrors?.email}
+        aria-describedby={fieldErrors?.email ? "email-error" : undefined}
         autoComplete="email"
       />
-      {fieldErrors.email && <p className="error">{fieldErrors.email}</p>}
+      {fieldErrors?.email && (
+        <p id="email-error" className="FieldError">
+          {fieldErrors.email}
+        </p>
+      )}
 
+      <label htmlFor="password">Password</label>
       <input
-        name="password"
+        id="password"
         type="password"
         placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
+        aria-invalid={!!fieldErrors?.password}
+        aria-describedby={fieldErrors?.password ? "password-error" : undefined}
         autoComplete="current-password"
       />
-      {fieldErrors.password && <p className="error">{fieldErrors.password}</p>}
+      {fieldErrors?.password && (
+        <p id="password-error" className="FieldError">
+          {fieldErrors.password}
+        </p>
+      )}
 
-      {error && <p className="error">{error}</p>}
+      {error && (
+        <p className="FormError" role="alert">
+          {error}
+        </p>
+      )}
 
       <button type="submit" disabled={loading}>
         {loading ? "Accessing..." : "Access the Guide"}

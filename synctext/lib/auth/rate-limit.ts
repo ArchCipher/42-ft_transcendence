@@ -5,8 +5,6 @@ NOTE: in-memory state is per-process and lost on restart. If persistence
 is required, we should consider Redis to store in-memory cache state.
 */
 
-import { hashForLog } from "./verification";
-
 export interface RateLimitConfig {
   // observation window: failures older than this are forgotten (ms)
   windowMs: number;
@@ -17,6 +15,7 @@ export interface RateLimitConfig {
 }
 
 const FIFTEEN_MINUTES = 15 * 60 * 1000;
+const ONE_HOUR = 60 * 60 * 1000;
 
 /*
 Per-IP: modest budget. A single IP hammering the login endpoint hits this
@@ -39,6 +38,16 @@ export const ACCOUNT_LIMIT: RateLimitConfig = {
   lockoutMs: FIFTEEN_MINUTES,
 };
 
+/*
+Sign-up quota: how many accounts can be created in one hour
+NOTE: successes counted, not failures like lockouts above
+*/
+export const REGISTER_LIMIT: RateLimitConfig = {
+  windowMs: ONE_HOUR,
+  maxFailures: 5,
+  lockoutMs: ONE_HOUR,
+};
+
 interface Bucket {
   failures: number[]; // timestamps of failed attempts in current window
   lockedUntil: number; // ms the key is blocked (0 = allowed)
@@ -50,13 +59,15 @@ export class MemoryRateLimiter {
   constructor(private readonly config: RateLimitConfig) {}
 
   // ms the key is still blocked (0 = allowed)
-  async blockedRemaining(key: string, now: number = Date.now()): Promise<number> {
+  async blockedRemaining(
+    key: string,
+    now: number = Date.now(),
+  ): Promise<number> {
     const bucket = this.buckets.get(key);
     if (!bucket) return 0;
     if (bucket.lockedUntil <= now) {
       // only drop state if actually locked
-      if (bucket.lockedUntil > 0)
-          this.buckets.delete(key); // lockout expired
+      if (bucket.lockedUntil > 0) this.buckets.delete(key); // lockout expired
       return 0;
     }
     return bucket.lockedUntil - now;
@@ -68,6 +79,8 @@ export class MemoryRateLimiter {
   so the route can log it. No-op while already locked.
   */
   async recordFailure(key: string, now: number = Date.now()): Promise<boolean> {
+    this.sweep(now);
+
     const bucket = this.buckets.get(key) ?? { failures: [], lockedUntil: 0 };
 
     if (bucket.lockedUntil > now) return false; // already locked: fixed duration
@@ -85,10 +98,6 @@ export class MemoryRateLimiter {
     }
     bucket.lockedUntil = now + this.config.lockoutMs;
     bucket.failures = []; // window reset once locked
-    console.warn(`[rate-limit] lockout triggered for ${hashForLog(key)}`, {
-      windowMs: this.config.windowMs,
-      lockoutMs: this.config.lockoutMs,
-    }) // LOG failures and lockouts
     this.buckets.set(key, bucket);
     return true;
   }
@@ -101,6 +110,18 @@ export class MemoryRateLimiter {
     this.buckets.delete(key);
   }
 
+  // memory rate-limit
+  private sweep(now: number) {
+    if (this.buckets.size < 10000) return;
+    for (const [k, v] of this.buckets)
+      if (
+        v.lockedUntil <= now &&
+        (v.failures.length === 0 ||
+          now - v.failures[v.failures.length - 1]! >= this.config.windowMs)
+      )
+        this.buckets.delete(k);
+  }
+
   // For tests: number of keys currently tracked.
   size(): number {
     return this.buckets.size;
@@ -110,6 +131,7 @@ export class MemoryRateLimiter {
 // Singleton instances shared by all auth routes (same process -> shared state)
 export const ipLimiter = new MemoryRateLimiter(IP_LIMIT);
 export const accountLimiter = new MemoryRateLimiter(ACCOUNT_LIMIT);
+export const registerLimiter = new MemoryRateLimiter(REGISTER_LIMIT);
 
 /*
 Keys must be namespaced: IPs and accounts share the limiter instance space
