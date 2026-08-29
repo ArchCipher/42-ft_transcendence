@@ -4,6 +4,7 @@
   "workspaces": [
     "synctext",
     "packages/db",
+    "packages/shared",
     "services/collab"
   ],
   "allowScripts": {
