@@ -43,7 +43,6 @@ setup_cert:
 
 up:
 	$(COMPOSE) up --build -d
-	docker image prune -f
 
 # stop containers
 down:
@@ -61,6 +60,10 @@ ps:
 test: ps
 	$(COMPOSE) images
 	$(COMPOSE) ls
+
+# prune images GLOBALLY (removes dangling images GLOBALLY)
+iprune:
+	docker image prune -f
 
 # this small target is used to run database migrations in development when you want to change the schema.
 # see the DEV.md for more information
@@ -88,4 +91,4 @@ fclean:
 # rebuild the project from a clean state
 re: fclean all
 
-.PHONY: all setup setup_env setup_cert up down logs ps test migrate-dev clean fclean re
+.PHONY: all setup setup_env setup_cert up down logs ps test iprune migrate-dev clean fclean re
