@@ -99,6 +99,7 @@ export async function POST(request: Request) {
         tokenHash,
         userId: user.id,
         expiresAt: sessionExpiresAt(),
+		lastUsedAt: new Date(),
         ip,
         userAgent: request.headers.get("user-agent") ?? null,
       },

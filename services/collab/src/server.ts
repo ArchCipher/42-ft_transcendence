@@ -1,9 +1,11 @@
 import { Server } from "@hocuspocus/server";
 import { Database } from "@hocuspocus/extension-database";
+import { CloseEvent } from "@hocuspocus/common";
 import { hashSessionToken, SESSION_COOKIE_NAME } from "@synctext/shared";
 import type {
   onAuthenticatePayload,
   beforeHandleMessagePayload,
+  onAwarenessUpdatePayload,
 } from "@hocuspocus/server";
 
 // collab doesn't access postgres directly, it persists Yjs state through this internal Next.js API
@@ -16,6 +18,19 @@ function requireEnv(key: string): string {
   if (val == null) throw new Error(`Missing environment variable: ${key}`);
   return val;
 }
+
+// close codes: 4xxx is app-reserved (loose convention mirroring HTTP status codes)
+const UNAUTHENTICATED: CloseEvent = {
+  code: 4400,
+  reason: "Unauthenticated connection",
+};
+const SESSION_REVOKED: CloseEvent = { code: 4401, reason: "Session revoked" };
+const WRITE_REVOKED: CloseEvent = {
+  code: 4403,
+  reason: "Write access revoked",
+};
+
+type RecheckResult = "ok" | "session-revoked" | "write-revoked";
 
 // context attached to every connection once authenticated
 type AuthContext = {
@@ -43,6 +58,25 @@ async function verifySession(data: {
   return body as { userId: string; readOnly: boolean };
 }
 
+/*
+Revalidate session against DB and enforce sync downgrade/upgrade
+*/
+async function recheckAccess(
+  ctx: AuthContext,
+  documentName: string,
+): Promise<RecheckResult> {
+  const verified = await verifySession({
+    tokenHash: ctx.tokenHash,
+    documentName,
+  });
+  if (!verified) return "session-revoked";
+
+  const wasWritable = !ctx.connectionReadOnly;
+  ctx.connectionReadOnly = verified.readOnly;
+  ctx.lastSessionCheck = Date.now();
+  return wasWritable && verified.readOnly ? "write-revoked" : "ok";
+}
+
 const server = new Server({
   name: "hocuspocus-synctext",
   port: 1234,
@@ -60,11 +94,11 @@ authenticate via the session cookie.
     // parse session cookie from upgrade request headers
     const cookieHeader = requestHeaders.get("cookie"); // "session=abc123"
     const token = parseSessionCookie(cookieHeader);
-    if (!token) throw new Error("No session token");
+	if (!token) throw UNAUTHENTICATED;
 
     const tokenHash = hashSessionToken(token);
     const verified = await verifySession({ tokenHash, documentName });
-    if (!verified) throw new Error("Invalid or expired session token");
+	if (!verified) throw UNAUTHENTICATED;
 
     // enforce readOnly at connection level
     connectionConfig.readOnly = verified.readOnly;
@@ -81,32 +115,40 @@ authenticate via the session cookie.
   // Runs before every inbound message on (each keystroke / update)
   async beforeHandleMessage(data: beforeHandleMessagePayload) {
     const ctx = data.context as AuthContext | undefined;
-    if (!ctx) throw new Error("Unauthenticated connection");
+    if (!ctx) throw UNAUTHENTICATED;
 
     // skip the 30s cache window
     if (Date.now() - ctx.lastSessionCheck < SESSION_RECHECK_MS) return;
 
     // revalidate session against the DB (revocation / expiry)
-    const verified = await verifySession({
-      tokenHash: ctx.tokenHash,
-      documentName: data.documentName,
-    });
-    if (!verified) throw new Error("Session revoked");
+    const result = await recheckAccess(ctx, data.documentName);
+    if (result === "session-revoked") throw SESSION_REVOKED;
+    if (result === "write-revoked") throw WRITE_REVOKED;
+  },
 
-    /*
-    Kill the connection if connection was writable at connect, but is now
-	read-only.
-	beforeHandleMessage only fires for document update messages. Awareness
-	(cursor movement) routes via a separate hook.
-	When EDITOR is demoted to VIEWER, this does NOT disconnect on thier next
-	cursor movement. It only enforces a real downgrade on the next edit attempt.
+  /*
+    Kill the connection if
+	1. connection was writable at connect, but is now read-only.
+	2. session revoked
+	
 	A reconnect then re-opens them read-only via OnAuthenticate.
-	*/
-    if (verified.readOnly && !ctx.connectionReadOnly)
-      throw new Error("Write access revoked");
+  */
+  async onAwarenessUpdate(data: onAwarenessUpdatePayload) {
+    const ctx = data.connection?.context as AuthContext | undefined;
+    if (!ctx) return; // connection triggered on non-connection source
+    if (Date.now() - ctx.lastSessionCheck < SESSION_RECHECK_MS) return;
 
-    // update context.lastSessionCheck
-    ctx.lastSessionCheck = Date.now();
+    const result = await recheckAccess(ctx, data.documentName);
+    if (result === "session-revoked")
+      data.connection?.webSocket.close(
+        SESSION_REVOKED.code,
+        SESSION_REVOKED.reason,
+      );
+    if (result === "write-revoked")
+      data.connection?.webSocket.close(
+        WRITE_REVOKED.code,
+        WRITE_REVOKED.reason,
+      );
   },
 
   // db extension connects hocuspocus's in memory Yjs docs to our persistent Document.ystate storage
