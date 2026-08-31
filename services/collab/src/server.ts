@@ -7,9 +7,15 @@ import type {
 } from "@hocuspocus/server";
 
 // collab doesn't access postgres directly, it persists Yjs state through this internal Next.js API
-const webUrl = process.env.WEB_INTERNAL_URL;
-const internalToken = process.env.INTERNAL_SERVICE_TOKEN;
+const webUrl = requireEnv("WEB_INTERNAL_URL");
+const internalToken = requireEnv("INTERNAL_SERVICE_TOKEN");
 const SESSION_RECHECK_MS = 30000; // check session every 30s
+
+function requireEnv(key: string): string {
+  const val = process.env[key];
+  if (val == null) throw new Error(`Missing environment variable: ${key}`);
+  return val;
+}
 
 // context attached to every connection once authenticated
 type AuthContext = {
@@ -18,10 +24,6 @@ type AuthContext = {
   connectionReadOnly: boolean;
   lastSessionCheck: number; // ms timestamp
 };
-
-if (!webUrl || !internalToken) {
-  throw new Error("Missing internal service configuration");
-}
 
 async function verifySession(data: {
   tokenHash: string;
