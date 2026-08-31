@@ -34,7 +34,7 @@ export default function PasswordResetForm({ token }: { token: string }) {
     setLoading(true);
 
     try {
-      const { ok, fields, error } = await authPost("/api/auth/password-reset", {
+      const { ok, fields, error } = await authPost("/api/auth/reset-password", {
         token,
         password,
       });
@@ -59,7 +59,7 @@ export default function PasswordResetForm({ token }: { token: string }) {
 
   return (
     <form
-      className="ForgotPasswordBox"
+      className="PasswordResetBox"
       onSubmit={async (e) => {
         e.preventDefault(); // don't reload the page
         await handlePasswordReset(); // handle it with JS
