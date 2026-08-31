@@ -10,11 +10,12 @@ import { getDummyHash, verifyPassword } from "@/lib/auth/password";
 import {
   generateSessionToken,
   hashSessionToken,
+  MAX_SESSIONS,
   sessionExpiresAt,
   setSessionCookie,
 } from "@/lib/auth/session";
 import { prisma as db } from "@synctext/db";
-import { hashForLog } from "@/lib/auth/verification";
+import { hashForLog } from "@/lib/auth/log";
 import { parseRequest } from "@/lib/auth/parse-request";
 
 /*
@@ -88,15 +89,11 @@ export async function POST(request: Request) {
   await ipLimiter.clear(ipKey(ip));
   await accountLimiter.clear(accountKey(input.email));
 
-  // create session
+  // create session, revoke previous sessions (keep MAX_SESSIONS)
   const token = generateSessionToken();
   const tokenHash = hashSessionToken(token);
-  await db.$transaction([
-    db.session.updateMany({
-      where: { userId: user.id, revokedAt: null },
-      data: { revokedAt: new Date() },
-    }), // revoke previous sessions
-    db.session.create({
+  await db.$transaction(async (tx) => {
+    await tx.session.create({
       data: {
         tokenHash,
         userId: user.id,
@@ -104,8 +101,18 @@ export async function POST(request: Request) {
         ip,
         userAgent: request.headers.get("user-agent") ?? null,
       },
-    }), // create session: store hash, not the raw token
-  ]);
+    }); // create session: store hash, not the raw token
+    const stale = await tx.session.findMany({
+      where: { userId: user.id, revokedAt: null },
+      orderBy: { createdAt: "desc" },
+      skip: MAX_SESSIONS,
+    }); // get previous sessions, skip MAX_SESSIONS
+    if (stale.length)
+      await tx.session.updateMany({
+        where: { id: { in: stale.map((s) => s.id) } },
+        data: { revokedAt: new Date() },
+      }); // keep MAX_SESSIONS and revoke other old sessions
+  });
   await setSessionCookie(token);
 
   return Response.json({ ok: true }, { status: 200 });

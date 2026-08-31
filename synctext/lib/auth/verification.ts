@@ -22,13 +22,7 @@ export function verificationExpiresAt(): Date {
   return new Date(Date.now() + VERIFICATION_TTL_SECONDS * 1000); // in ms
 }
 
-// TODO: switch to a UI page (/verify-email?token=...) once it exists
 export function verificationUrl(token: string) {
-  const url = process.env.APP_URL ?? "http://localhost:3000";
-  return `${url}/app/auth/verify-email?token=${encodeURIComponent(token)}`;
-}
-
-// Hash PII for logs
-export function hashForLog(value: string): string {
-  return createHash("sha256").update(value).digest("hex").slice(0, 16);
+  const url = process.env.APP_URL ?? "https://localhost:8443";
+  return `${url}/verify-email?token=${encodeURIComponent(token)}`;
 }

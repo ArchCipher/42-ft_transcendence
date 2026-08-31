@@ -12,6 +12,9 @@ export const SESSION_COOKIE_NAME = "session";
 // cookie `maxAge` and DB `expiresAt` both should use this
 export const SESSION_TTL_SECONDS = 7 * 24 * 60 * 60; // 7 days
 
+// Max sessions per user
+export const MAX_SESSIONS = 5;
+
 /*
 Token generation
 

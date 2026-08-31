@@ -6,6 +6,7 @@ import './Dashboard.css';
 import Image from "next/image";
 import { Dialog } from "@base-ui/react/dialog";
 import { User } from "lucide-react";
+import { Menu } from "@base-ui/react/menu";
 
 export default function MainPage() {
 
@@ -46,26 +47,33 @@ type UserNameProps = {
   username: string;
 };
 
-function UserName ( { username }: UserNameProps) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
+function UserName({ username }: UserNameProps) {
   return (
     <div className="UserMenuContainer">
-      <button
-        className="UserMenu"
-        onClick={() => setIsMenuOpen((open) => !open)}
-      >
-        <User size={32} />
-        <span>{username}</span>
-      </button>
+      <Menu.Root modal={false}>
+        <Menu.Trigger className="UserMenu">
+          <User size={25} />
+          <span>{username}</span>
+        </Menu.Trigger>
 
-      {isMenuOpen && (
-        <div className="UserDropdown">
-          <button>Profile</button>
-          <button>Groups</button>
-          <button>Logout</button>
-        </div>
-      )}
+        <Menu.Portal>
+          <Menu.Positioner sideOffset={8} align="center">
+            <Menu.Popup className="UserDropdown">
+              <Menu.Item className="UserDropdownItem">
+                Profile
+              </Menu.Item>
+
+              <Menu.Item className="UserDropdownItem">
+                Groups
+              </Menu.Item>
+
+              <Menu.Item className="UserDropdownItem">
+                Logout
+              </Menu.Item>
+            </Menu.Popup>
+          </Menu.Positioner>
+        </Menu.Portal>
+      </Menu.Root>
     </div>
   );
 }

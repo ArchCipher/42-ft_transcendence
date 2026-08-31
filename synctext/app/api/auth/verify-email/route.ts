@@ -32,18 +32,22 @@ export async function GET(request: Request) {
       { status: 400 },
     );
 
-  // record email verification, revoke verification token
-  await db.$transaction([
-    db.user.update({
-      where: { id: record.userId },
-      data: { emailVerifiedAt: new Date() },
-    }), // update user row
-    db.emailVerificationToken.update({
-      where: { id: record.id, usedAt: null },
-      data: { usedAt: new Date() },
-    }), // update token
-  ]);
+  // revoke verification token
+  const claim = await db.emailVerificationToken.updateMany({
+    where: { id: record.id, usedAt: null },
+    data: { usedAt: new Date() },
+  }); // update token
+  if (claim.count === 0)
+    return Response.json(
+      { error: "Invalid or expired verification link" },
+      { status: 400 },
+    );
 
-  // TODO: redirect to /login?verified=1 once UI exists
+  // record email verification
+  await db.user.update({
+    where: { id: record.userId },
+    data: { emailVerifiedAt: new Date() },
+  }); // update user row
+
   return Response.json({ ok: true }, { status: 200 });
 }

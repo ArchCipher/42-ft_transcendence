@@ -1,4 +1,4 @@
-import { resetPasswordSchema } from "@/lib/auth/validation";
+import { passwordResetSchema } from "@/lib/auth/validation";
 import {
   clientIp,
   ipLimiter,
@@ -13,9 +13,9 @@ import { isPasswordStrong } from "@/lib/auth/password-strength";
 import { parseRequest } from "@/lib/auth/parse-request";
 
 /*
-API Response contracts: POST /api/auth/reset-password?token=xxx
+API Response contracts: POST /api/auth/password-reset
 
-	Request:  { password } , token in query string (?token=xxx)
+	Request:  { password }
 	Response:
 		200 → { ok: true }
 		400 → { error, fields: { token?, password? } }
@@ -27,8 +27,7 @@ API Response contracts: POST /api/auth/reset-password?token=xxx
 */
 
 export async function POST(request: Request) {
-  const token = new URL(request.url).searchParams.get("token") ?? "";
-  const result = await parseRequest(request, resetPasswordSchema, { token });
+  const result = await parseRequest(request, passwordResetSchema);
   if (result.error) return result.error;
 
   const input = result.data;
@@ -57,23 +56,30 @@ export async function POST(request: Request) {
   if (!isPasswordStrong(input.password, [user.username, user.email]).ok)
     return Response.json({ error: "Password too weak" }, { status: 400 });
 
-  // record new password, revoke reset-password token, revoke all sessions
+  // revoke password-reset token
+  const claim = await db.passwordResetToken.updateMany({
+    where: { id: record.id, usedAt: null },
+    data: { usedAt: new Date() },
+  }); // update token
+  if (claim.count === 0)
+    return Response.json({ error: "Invalid or expired link" }, { status: 400 });
+
+  // record new password, revoke all sessions
   const passwordHash = await hashPassword(input.password);
   await db.$transaction([
     db.user.update({
       where: { id: record.userId },
       data: { passwordHash },
     }), // update user row
-    db.passwordResetToken.update({
-      where: { id: record.id, usedAt: null },
-      data: { usedAt: new Date() },
-    }), // update token
     db.session.updateMany({
       where: { userId: record.userId, revokedAt: null },
       data: { revokedAt: new Date() },
     }), // revoke all sessions
   ]);
 
-  // TODO: redirect to /login?reset-password=1 once UI exists
+  // success: reset any accumulated failures for ip/account
+  await ipLimiter.clear(ipKey(ip));
+  await accountLimiter.clear(accountKey(user.email));
+
   return Response.json({ ok: true }, { status: 200 });
 }

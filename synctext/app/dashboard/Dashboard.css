@@ -1,7 +1,7 @@
 :root {
-  --panel-bg: rgba(8, 25, 55, 0.5);
-   --panel-bg2: rgba(8, 25, 55, 0.6);
-  --panel-border: rgba(100, 190, 255, 0.1);
+  --panel-bg: rgba(13, 40, 87, 0.5);
+  --panel-bg2: rgba(8, 25, 55, 0.6);
+  --panel-border: rgba(100, 190, 255, 0.2);
   --text-main: #ffffff;
   --accent: #6fd3ff;
 }
@@ -614,6 +614,9 @@
   border: 1px solid var(--panel-border);
   border-radius: 10px;
 
+  min-width: 100px;
+  align-items: center;
+
   text-align: center;
   padding: 10px 16px;
 
@@ -626,19 +629,15 @@
   gap: 6px;
 }
 
-.UserMenu {
-  min-width: 100px;
-  align-items: center;
-}
-
 .UserMenu svg {
   width: 25px;
   height: 25px;
 }
 
 .UserMenuContainer {
+  margin-right: 40px;
   position: relative;
-  transform: translate(-40px, 5px);
+  top: 5px;
 }
 
 .UserDropdown {
@@ -662,19 +661,19 @@
   z-index: 10;
 }
 
-.UserDropdown button {
+.UserDropdownItem {
   padding: 8px 12px;
 
   color: var(--text-main);
   background: transparent;
-  border: none;
   border-radius: 6px;
 
   text-align: center;
   cursor: pointer;
 }
 
-.UserDropdown button:hover {
+.UserDropdownItem:hover,
+.UserDropdownItem[data-highlighted] {
   background: rgba(111, 211, 255, 0.12);
 }
 

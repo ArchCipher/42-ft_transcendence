@@ -2,24 +2,42 @@ import "./Login.css";
 import Image from "next/image";
 import LoginForm from "./login-form";
 
-export default function Home() {
-  return <MainPage />;
+// NOTICES displayed in navtab
+const NOTICES: Record<string, string> = {
+  "pending": "Verification email sent. Check your inbox.",
+  "reset-sent": "Password reset email sent. Check your inbox.",
+  "reset-done": "Password reset successful!",
+  "logged-out": "You have been logged out.",
+};
+
+export default async function Login({
+  searchParams,
+}: {
+  searchParams: Promise<{ verify?: string }>;
+}) {
+  const { verify } = await searchParams;
+  return <LoginPage verify={verify} />;
 }
 
-function MainPage() {
+function LoginPage({ verify }: { verify?: string }) {
   return (
-    <div className="MainPage">
-      <Header />
+    <div>
+      {verify && NOTICES[verify] && (
+        <nav className="NoticeBar">{NOTICES[verify]}</nav>
+      )}
+      <div className="LoginPage">
+        <Header />
 
-      <LoginForm />
+        <LoginForm />
 
-      <Image
-        src="/assets/humma-kavula.png"
-        alt="Humma Kavula"
-        width={220}
-        height={220}
-        className="HummaBanner"
-      />  
+        <Image
+          src="/assets/humma-kavula.png"
+          alt="Humma Kavula"
+          width={220}
+          height={220}
+          className="HummaBanner"
+        />
+      </div>
     </div>
   );
 }
