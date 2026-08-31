@@ -94,11 +94,11 @@ authenticate via the session cookie.
     // parse session cookie from upgrade request headers
     const cookieHeader = requestHeaders.get("cookie"); // "session=abc123"
     const token = parseSessionCookie(cookieHeader);
-	if (!token) throw UNAUTHENTICATED;
+    if (!token) throw UNAUTHENTICATED;
 
     const tokenHash = hashSessionToken(token);
     const verified = await verifySession({ tokenHash, documentName });
-	if (!verified) throw UNAUTHENTICATED;
+    if (!verified) throw UNAUTHENTICATED;
 
     // enforce readOnly at connection level
     connectionConfig.readOnly = verified.readOnly;
@@ -130,7 +130,7 @@ authenticate via the session cookie.
     Kill the connection if
 	1. connection was writable at connect, but is now read-only.
 	2. session revoked
-	
+
 	A reconnect then re-opens them read-only via OnAuthenticate.
   */
   async onAwarenessUpdate(data: onAwarenessUpdatePayload) {
