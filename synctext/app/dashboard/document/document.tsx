@@ -1,6 +1,6 @@
 import type { DocumentSummary } from "@/lib/documents/documents";
 
-export async function createDocument(): Promise<DocumentSummary> {
+export async function createDocument_api(): Promise<DocumentSummary> {
   const response = await fetch("/api/documents", {
     method: "POST",
   });
@@ -12,9 +12,12 @@ export async function createDocument(): Promise<DocumentSummary> {
   return response.json();
 }
 
-export async function listDocuments(): Promise<DocumentSummary[]> {
+export async function listDocuments_api(
+  signal?: AbortSignal,
+): Promise<DocumentSummary[]> {
   const response = await fetch("/api/documents", {
     cache: "no-store",
+    signal,
   });
 
   if (!response.ok) {
@@ -24,7 +27,7 @@ export async function listDocuments(): Promise<DocumentSummary[]> {
   return response.json();
 }
 
-export async function getDocument(id: string): Promise<DocumentSummary> {
+export async function getDocument_api(id: string): Promise<DocumentSummary> {
   const response = await fetch(`/api/documents/${encodeURIComponent(id)}`, {
     cache: "no-store",
   });
@@ -35,7 +38,7 @@ export async function getDocument(id: string): Promise<DocumentSummary> {
   return response.json();
 }
 
-export async function renameDocument(
+export async function renameDocument_api(
   id: string,
   title: string,
 ): Promise<DocumentSummary> {
@@ -54,7 +57,7 @@ export async function renameDocument(
   return response.json();
 }
 
-export async function deleteDocument(id: string): Promise<void> {
+export async function deleteDocument_api(id: string): Promise<void> {
   const response = await fetch(`/api/documents/${encodeURIComponent(id)}`, {
     method: "DELETE",
   });

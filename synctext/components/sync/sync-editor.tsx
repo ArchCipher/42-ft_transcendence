@@ -16,7 +16,7 @@ import {
   simpleEditorConfig,
   baseTiptapExtensions,
 } from "@/components/tiptap-templates/simple/simple-editor-view"
-import { SyncHeader } from "@/components/sync/sync-header"
+import { DocumentNavbar } from "@/app/doc/[id]/navbar"
 import { getLocalUser } from "@/lib/sync/sync-user"
 
 type SyncUser = { name: string; color: string }
@@ -33,7 +33,14 @@ function getCollabUrl() {
 // Rendered as a child of HocuspocusRoom (below), since useHocuspocusProvider()
 // can only be called by a descendant of that component, not by the
 // component that renders it — SyncEditorPage can't build the editor itself.
-function SyncEditorSession({ user }: { user: SyncUser }) {
+type SyncEditorSessionProps = {
+  docId: string
+  title: string
+  user: SyncUser
+  canRename: boolean
+}
+
+function SyncEditorSession({ docId, title, user, canRename }: SyncEditorSessionProps) {
   const provider = useHocuspocusProvider()
 
   const editor = useEditor({
@@ -51,7 +58,11 @@ function SyncEditorSession({ user }: { user: SyncUser }) {
 
   return (
     <>
-      <SyncHeader />
+      <DocumentNavbar
+        docId={docId}
+        initialTitle={title}
+        canRename={canRename}
+      />
       <SimpleEditorView editor={editor} />
     </>
   )
@@ -59,16 +70,28 @@ function SyncEditorSession({ user }: { user: SyncUser }) {
 
 type SyncEditorPageProps = {
   docId?: string
+  title?: string
   user?: SyncUser
+  canRename?: boolean
 }
 
-export function SyncEditorPage({ docId = "example-document", user }: SyncEditorPageProps) {
+export function SyncEditorPage({
+  docId = "example-document",
+  title = "Untitled Document",
+  user,
+  canRename = true,
+}: SyncEditorPageProps) {
   const localUser = user ?? getLocalUser()
 
   return (
     <HocuspocusProviderWebsocketComponent url={getCollabUrl()}>
       <HocuspocusRoom name={docId}>
-        <SyncEditorSession user={localUser} />
+        <SyncEditorSession
+          docId={docId}
+          title={title}
+          user={localUser}
+          canRename={canRename}
+        />
       </HocuspocusRoom>
     </HocuspocusProviderWebsocketComponent>
   )
