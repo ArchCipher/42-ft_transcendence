@@ -1,5 +1,5 @@
 // authenticate internal service requests using the shared service token
-export async function isAuthorized(request: Request) {
+export function isAuthorized(request: Request) {
   const token = request.headers.get("x-internal-service-token");
 
   return (
