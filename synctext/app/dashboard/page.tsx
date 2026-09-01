@@ -13,6 +13,8 @@ import {
   renameDocument_api,
 } from "./document/document";
 import { useRouter } from "next/navigation";
+import { User } from "lucide-react";
+import { Menu } from "@base-ui/react/menu";
 
 export default function MainPage() {
 
@@ -44,22 +46,43 @@ function Header() {
           <p>All the documents in the universe</p>
         </div>
       </div>
-      <UserName />
+      <UserName username="Username" />
     </header>
   );
 }
 
-function UserName () {
+type UserNameProps = {
+  username: string;
+};
+
+function UserName({ username }: UserNameProps) {
   return (
-    <button className="UserMenu">
-    <Image
-      src="/assets/Gianpic.jpg"
-      alt="Gianluca"
-      width={48}
-      height={48}
-    />
-    <span>Gianluca</span>
-  </button>
+    <div className="UserMenuContainer">
+      <Menu.Root modal={false}>
+        <Menu.Trigger className="UserMenu">
+          <User size={25} />
+          <span>{username}</span>
+        </Menu.Trigger>
+
+        <Menu.Portal>
+          <Menu.Positioner sideOffset={8} align="center">
+            <Menu.Popup className="UserDropdown">
+              <Menu.Item className="UserDropdownItem">
+                Profile
+              </Menu.Item>
+
+              <Menu.Item className="UserDropdownItem">
+                Groups
+              </Menu.Item>
+
+              <Menu.Item className="UserDropdownItem">
+                Logout
+              </Menu.Item>
+            </Menu.Popup>
+          </Menu.Positioner>
+        </Menu.Portal>
+      </Menu.Root>
+    </div>
   );
 }
 
