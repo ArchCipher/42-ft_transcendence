@@ -1,18 +1,9 @@
+import { isAuthorized } from "@/lib/auth/internal";
 import { prisma as db } from "@synctext/db";
 import {
   IDLE_TIMEOUT_MS,
   SESSION_LAST_USED_UPDATE_THRESHOLD,
 } from "@synctext/shared";
-
-// authenticate internal service requests using the shared service token
-function isAuthorized(request: Request) {
-  const token = request.headers.get("x-internal-service-token");
-
-  return (
-    !!process.env.INTERNAL_SERVICE_TOKEN &&
-    token === process.env.INTERNAL_SERVICE_TOKEN
-  );
-}
 
 // verify a connection/session and return the user's access for a document
 export async function POST(request: Request) {
@@ -20,14 +11,19 @@ export async function POST(request: Request) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { tokenHash, documentName } = await request.json().catch(() => null);
+  const body = (await request.json().catch(() => null)) as {
+    tokenHash?: unknown;
+    documentName?: unknown;
+  } | null;
   if (
-    !tokenHash ||
-    typeof tokenHash !== "string" ||
-    typeof documentName !== "string"
+    !body ||
+    typeof body.tokenHash !== "string" ||
+    typeof body.documentName !== "string"
   ) {
     return Response.json({ error: "Bad request" }, { status: 400 });
   }
+
+  const { tokenHash, documentName } = body;
 
   const session = await db.session.findUnique({
     where: { tokenHash },

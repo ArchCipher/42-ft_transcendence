@@ -139,16 +139,13 @@ authenticate via the session cookie.
     if (Date.now() - ctx.lastSessionCheck < SESSION_RECHECK_MS) return;
 
     const result = await recheckAccess(ctx, data.documentName);
-    if (result === "session-revoked")
-      data.connection?.webSocket.close(
-        SESSION_REVOKED.code,
-        SESSION_REVOKED.reason,
-      );
-    if (result === "write-revoked")
-      data.connection?.webSocket.close(
-        WRITE_REVOKED.code,
-        WRITE_REVOKED.reason,
-      );
+    const closeEvent =
+      result === "session-revoked"
+        ? SESSION_REVOKED
+        : result === "write-revoked"
+          ? WRITE_REVOKED
+          : null;
+    if (closeEvent) data.connection?.close(closeEvent);
   },
 
   // db extension connects hocuspocus's in memory Yjs docs to our persistent Document.ystate storage

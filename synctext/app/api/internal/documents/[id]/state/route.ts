@@ -1,14 +1,5 @@
+import { isAuthorized } from "@/lib/auth/internal";
 import { prisma as db } from "@synctext/db";
-
-// authenticate internal service requests using the shared service token
-function isAuthorized(request: Request) {
-  const token = request.headers.get("x-internal-service-token");
-
-  return (
-    process.env.INTERNAL_SERVICE_TOKEN &&
-    token === process.env.INTERNAL_SERVICE_TOKEN
-  );
-}
 
 // load the persisted Yjs state for the document requested by hocuspocus
 export async function GET(
