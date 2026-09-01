@@ -9,5 +9,5 @@ import { SyncEditorPage } from "@/components/sync/sync-editor"
 // id. The client recovers which document to open from the browser's own
 // URL — see sync-editor.tsx.
 export default function DocEditPage() {
-  return <SyncEditorPage />
+  return <SyncEditorPage mode="edit" />
 }

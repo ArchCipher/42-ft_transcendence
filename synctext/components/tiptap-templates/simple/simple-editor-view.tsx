@@ -270,7 +270,18 @@ const MobileToolbarContent = ({
 // as a prop instead of building its own — so it can be reused for an editor
 // with different extensions (e.g. the collaborative one in components/sync/)
 // without duplicating this file's ~200 lines a second time.
-export function SimpleEditorView({ editor }: { editor: Editor | null }) {
+//
+// `editor.editable` alone only blocks typing — it doesn't hide these
+// formatting buttons, so a read-only visitor would otherwise still see a
+// full toolbar for actions that do nothing. showToolbar controls that
+// separately; defaults to true to match the previous, always-editable usage.
+export function SimpleEditorView({
+  editor,
+  showToolbar = true,
+}: {
+  editor: Editor | null
+  showToolbar?: boolean
+}) {
   const isMobile = useIsBreakpoint()
   const { height } = useWindowSize()
   const [mobileView, setMobileView] = useState<"main" | "highlighter" | "link">(
@@ -323,20 +334,31 @@ export function SimpleEditorView({ editor }: { editor: Editor | null }) {
               : {}),
           }}
         >
-          {mobileView === "main" ? (
-            <MainToolbarContent
-              onHighlighterClick={() => setMobileView("highlighter")}
-              onLinkClick={() => setMobileView("link")}
-              onSearchAndReplaceClick={toggleSearchAndReplace}
-              isSearchAndReplaceOpen={isSearchAndReplaceOpen}
-              searchAndReplaceButtonRef={searchAndReplaceButtonRef}
-              isMobile={isMobile}
-            />
+          {showToolbar ? (
+            mobileView === "main" ? (
+              <MainToolbarContent
+                onHighlighterClick={() => setMobileView("highlighter")}
+                onLinkClick={() => setMobileView("link")}
+                onSearchAndReplaceClick={toggleSearchAndReplace}
+                isSearchAndReplaceOpen={isSearchAndReplaceOpen}
+                searchAndReplaceButtonRef={searchAndReplaceButtonRef}
+                isMobile={isMobile}
+              />
+            ) : (
+              <MobileToolbarContent
+                type={mobileView === "highlighter" ? "highlighter" : "link"}
+                onBack={() => setMobileView("main")}
+              />
+            )
           ) : (
-            <MobileToolbarContent
-              type={mobileView === "highlighter" ? "highlighter" : "link"}
-              onBack={() => setMobileView("main")}
-            />
+            // Read-only: no formatting actions, but the theme toggle isn't
+            // an editing action — keep it available regardless of mode.
+            <>
+              <Spacer />
+              <ToolbarGroup>
+                <ThemeToggle />
+              </ToolbarGroup>
+            </>
           )}
         </Toolbar>
 

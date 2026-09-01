@@ -23,6 +23,7 @@ import { getDocument_api } from "@/app/dashboard/document/document"
 import { fetchSessionUser, getLocalUser } from "@/lib/sync/sync-user"
 
 type SyncUser = { name: string; color: string }
+type SyncMode = "view" | "edit"
 
 // nginx proxies /collab to Hocuspocus on the same host, kept same-origin so it
 // works behind the app's CSP and TLS setup. Guarded for SSR: real value only
@@ -41,13 +42,18 @@ type SyncEditorSessionProps = {
   title: string
   user: SyncUser
   canRename: boolean
+  mode: SyncMode
 }
 
-function SyncEditorSession({ docId, title, user, canRename }: SyncEditorSessionProps) {
+function SyncEditorSession({ docId, title, user, canRename, mode }: SyncEditorSessionProps) {
   const provider = useHocuspocusProvider()
 
   const editor = useEditor({
     ...simpleEditorConfig,
+    // `mode` only controls what's rendered here; it is never the security
+    // boundary. The collab server is the one that must reject writes from a
+    // viewer — this flag alone would not stop a raw websocket client.
+    editable: mode === "edit",
     // Same rich-text feature set as simple-editor.tsx (baseTiptapExtensions,
     // undoRedo off since Collaboration manages history itself through Yjs),
     // plus Collaboration/CollaborationCaret bound to the Hocuspocus provider
@@ -66,7 +72,7 @@ function SyncEditorSession({ docId, title, user, canRename }: SyncEditorSessionP
         initialTitle={title}
         canRename={canRename}
       />
-      <SimpleEditorView editor={editor} />
+      <SimpleEditorView editor={editor} showToolbar={mode === "edit"} />
     </>
   )
 }
@@ -85,7 +91,7 @@ function docIdFromPathname(pathname: string): string | null {
 
 type SessionData = { user: SyncUser; title: string; canRename: boolean }
 
-export function SyncEditorPage() {
+export function SyncEditorPage({ mode = "edit" }: { mode?: SyncMode }) {
   const pathname = usePathname()
   const docId = docIdFromPathname(pathname) ?? "example-document"
   const [session, setSession] = useState<SessionData | null>(null)
@@ -119,6 +125,7 @@ export function SyncEditorPage() {
           title={session.title}
           user={session.user}
           canRename={session.canRename}
+          mode={mode}
         />
       </HocuspocusRoom>
     </HocuspocusProviderWebsocketComponent>

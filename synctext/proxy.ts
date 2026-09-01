@@ -8,15 +8,11 @@ import { documentAccessForUser } from "@/lib/documents/documents"
 // all document content and metadata render client-side via Hocuspocus. The
 // client recovers the id from the browser's own URL (see sync-editor.tsx),
 // which a rewrite never changes.
-//
-// Single target for now (/doc/edit) — the viewer/editor split lands in the
-// next commit. Everyone with any access reaches the same page here, same as
-// main's current (unfixed) behavior.
 export const config = {
   matcher: ["/doc/:path*"],
 }
 
-const INTERNAL_TARGETS = new Set(["/doc/edit"])
+const INTERNAL_TARGETS = new Set(["/doc/edit", "/doc/view"])
 
 // Rewriting to a path with no matching route (no page.tsx anywhere) makes
 // Next's own not-found pipeline handle the response — the same, real 404 for
@@ -31,10 +27,10 @@ function notFoundResponse(request: NextRequest) {
 export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // /doc/edit only exists to be rewritten into below. A rewrite dispatches
-  // straight to the app renderer without re-entering proxy, so any request
-  // that reaches proxy already pointed at this path came in directly from
-  // outside — refuse it.
+  // /doc/edit and /doc/view only exist to be rewritten into below. A
+  // rewrite dispatches straight to the app renderer without re-entering
+  // proxy, so any request that reaches proxy already pointed at one of
+  // these paths came in directly from outside — refuse it.
   if (INTERNAL_TARGETS.has(pathname)) {
     return notFoundResponse(request)
   }
@@ -53,5 +49,6 @@ export default async function proxy(request: NextRequest) {
     return notFoundResponse(request)
   }
 
-  return NextResponse.rewrite(new URL("/doc/edit", request.url))
+  const target = access === "VIEWER" ? "/doc/view" : "/doc/edit"
+  return NextResponse.rewrite(new URL(target, request.url))
 }
