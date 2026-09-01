@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useState } from "react"
 import { ArrowLeft, Check, Pencil } from "lucide-react"
-import type { CollabUser } from "@hocuspocus/provider-react"
+import type { CollabUser, ConnectionStatus } from "@hocuspocus/provider-react"
 import {
   useHocuspocusAwareness,
   useHocuspocusConnectionStatus,
@@ -14,12 +14,6 @@ import { renameDocument_api } from "@/app/dashboard/document/document"
 import { requestSnapshot } from "@/lib/sync/sync-snapshot"
 
 type SyncUser = { name: string; color: string }
-
-type DocumentNavbarProps = {
-  docId: string
-  initialTitle: string
-  canRename: boolean
-}
 
 const STATUS_COLOR = {
   connected: "bg-emerald-400",
@@ -39,56 +33,47 @@ function truncateTitle(title: string, limit: number) {
   return title.length > limit ? `${title.slice(0, limit)}...` : title
 }
 
-export function DocumentNavbar({
-  docId,
-  initialTitle,
+type DocumentNavbarViewProps = {
+  status: ConnectionStatus
+  users: CollabUser[]
+  title: string
+  canRename: boolean
+  isEditing: boolean
+  draftTitle: string
+  isRenaming: boolean
+  renameError: string
+  snapshotTitle: string
+  onStartEditing: () => void
+  onDraftTitleChange: (value: string) => void
+  onSaveTitle: () => void
+  onCancelEditing: () => void
+  onSnapshotTitleChange: (value: string) => void
+  onSaveSnapshot: () => void
+  // No live provider to act on yet (pre-mount shell) — see StaticEditorShell
+  // in sync-editor.tsx.
+  disabled?: boolean
+}
+
+// Pure rendering, shared between the live navbar (below) and the pre-mount
+// static shell in sync-editor.tsx, so both stay visually identical.
+export function DocumentNavbarView({
+  status,
+  users,
+  title,
   canRename,
-}: DocumentNavbarProps) {
-  const provider = useHocuspocusProvider()
-  const status = useHocuspocusConnectionStatus()
-  const users = useHocuspocusAwareness()
-  const [title, setTitle] = useState(initialTitle)
-  const [draftTitle, setDraftTitle] = useState(initialTitle)
-  const [isEditing, setIsEditing] = useState(false)
-  const [isRenaming, setIsRenaming] = useState(false)
-  const [renameError, setRenameError] = useState("")
-  const [snapshotTitle, setSnapshotTitle] = useState("")
-
-  function cancelEditing() {
-    setDraftTitle(title)
-    setRenameError("")
-    setIsEditing(false)
-  }
-
-  async function saveTitle() {
-    const nextTitle = draftTitle.trim()
-    if (!nextTitle || nextTitle === title) {
-      setDraftTitle(title)
-      setIsEditing(false)
-      return
-    }
-
-    setIsRenaming(true)
-    setRenameError("")
-    try {
-      const renamedDocument = await renameDocument_api(docId, nextTitle)
-      setTitle(renamedDocument.title)
-      setDraftTitle(renamedDocument.title)
-      setIsEditing(false)
-    } catch {
-      setRenameError("Could not rename document")
-    } finally {
-      setIsRenaming(false)
-    }
-  }
-
-  function saveSnapshot() {
-    const nextSnapshotTitle = snapshotTitle.trim()
-    if (!nextSnapshotTitle) return
-    requestSnapshot(provider, nextSnapshotTitle)
-    setSnapshotTitle("")
-  }
-
+  isEditing,
+  draftTitle,
+  isRenaming,
+  renameError,
+  snapshotTitle,
+  onStartEditing,
+  onDraftTitleChange,
+  onSaveTitle,
+  onCancelEditing,
+  onSnapshotTitleChange,
+  onSaveSnapshot,
+  disabled,
+}: DocumentNavbarViewProps) {
   return (
     <header className="relative z-20 border-b border-white/15 bg-[oklch(0.12_0.006_285)] font-mono text-[#f4f2ee]">
       <nav
@@ -118,11 +103,11 @@ export function DocumentNavbar({
               className="mx-auto flex max-w-xl items-center gap-2"
               onSubmit={(event) => {
                 event.preventDefault()
-                void saveTitle()
+                onSaveTitle()
               }}
               onBlur={(event) => {
                 if (!event.currentTarget.contains(event.relatedTarget)) {
-                  cancelEditing()
+                  onCancelEditing()
                 }
               }}
             >
@@ -133,11 +118,11 @@ export function DocumentNavbar({
                 disabled={isRenaming}
                 aria-label="Document title"
                 aria-describedby={renameError ? "document-rename-error" : undefined}
-                onChange={(event) => setDraftTitle(event.target.value)}
+                onChange={(event) => onDraftTitleChange(event.target.value)}
                 onFocus={(event) => event.currentTarget.select()}
                 onKeyDown={(event) => {
                   if (event.key === "Escape") {
-                    cancelEditing()
+                    onCancelEditing()
                   }
                 }}
                 className="min-h-10 min-w-0 flex-1 border border-white/25 bg-white/5 px-3 text-center text-sm text-white outline-none transition-colors focus:border-[#8984b5]"
@@ -154,8 +139,8 @@ export function DocumentNavbar({
           ) : (
             <button
               type="button"
-              disabled={!canRename}
-              onClick={() => setIsEditing(true)}
+              disabled={!canRename || disabled}
+              onClick={onStartEditing}
               className="mx-auto flex min-h-10 max-w-xl items-center gap-2 px-3 text-left text-sm tracking-tight text-white transition-colors hover:bg-white/5 disabled:cursor-default disabled:hover:bg-transparent"
               title={canRename ? "Rename document" : "You have view-only access"}
             >
@@ -211,19 +196,20 @@ export function DocumentNavbar({
             className="hidden items-center sm:flex"
             onSubmit={(event) => {
               event.preventDefault()
-              saveSnapshot()
+              onSaveSnapshot()
             }}
           >
             <input
               value={snapshotTitle}
-              onChange={(event) => setSnapshotTitle(event.target.value)}
+              onChange={(event) => onSnapshotTitleChange(event.target.value)}
               placeholder="Snapshot title"
               aria-label="Snapshot title"
+              disabled={disabled}
               className="min-h-10 w-36 border border-white/15 bg-transparent px-3 text-xs text-white outline-none placeholder:text-white/35 focus:border-white/40"
             />
             <button
               type="submit"
-              disabled={!snapshotTitle.trim()}
+              disabled={disabled || !snapshotTitle.trim()}
               className="min-h-10 border border-l-0 border-white/15 px-3 text-xs transition-colors hover:bg-white/5 disabled:opacity-40"
             >
               Save
@@ -232,5 +218,78 @@ export function DocumentNavbar({
         </div>
       </nav>
     </header>
+  )
+}
+
+type DocumentNavbarProps = {
+  docId: string
+  initialTitle: string
+  canRename: boolean
+}
+
+export function DocumentNavbar({ docId, initialTitle, canRename }: DocumentNavbarProps) {
+  const provider = useHocuspocusProvider()
+  const status = useHocuspocusConnectionStatus()
+  const users = useHocuspocusAwareness()
+  const [title, setTitle] = useState(initialTitle)
+  const [draftTitle, setDraftTitle] = useState(initialTitle)
+  const [isEditing, setIsEditing] = useState(false)
+  const [isRenaming, setIsRenaming] = useState(false)
+  const [renameError, setRenameError] = useState("")
+  const [snapshotTitle, setSnapshotTitle] = useState("")
+
+  function cancelEditing() {
+    setDraftTitle(title)
+    setRenameError("")
+    setIsEditing(false)
+  }
+
+  async function saveTitle() {
+    const nextTitle = draftTitle.trim()
+    if (!nextTitle || nextTitle === title) {
+      setDraftTitle(title)
+      setIsEditing(false)
+      return
+    }
+
+    setIsRenaming(true)
+    setRenameError("")
+    try {
+      const renamedDocument = await renameDocument_api(docId, nextTitle)
+      setTitle(renamedDocument.title)
+      setDraftTitle(renamedDocument.title)
+      setIsEditing(false)
+    } catch {
+      setRenameError("Could not rename document")
+    } finally {
+      setIsRenaming(false)
+    }
+  }
+
+  function saveSnapshot() {
+    const nextSnapshotTitle = snapshotTitle.trim()
+    if (!nextSnapshotTitle) return
+    requestSnapshot(provider, nextSnapshotTitle)
+    setSnapshotTitle("")
+  }
+
+  return (
+    <DocumentNavbarView
+      status={status}
+      users={users}
+      title={title}
+      canRename={canRename}
+      isEditing={isEditing}
+      draftTitle={draftTitle}
+      isRenaming={isRenaming}
+      renameError={renameError}
+      snapshotTitle={snapshotTitle}
+      onStartEditing={() => setIsEditing(true)}
+      onDraftTitleChange={setDraftTitle}
+      onSaveTitle={() => void saveTitle()}
+      onCancelEditing={cancelEditing}
+      onSnapshotTitleChange={setSnapshotTitle}
+      onSaveSnapshot={saveSnapshot}
+    />
   )
 }

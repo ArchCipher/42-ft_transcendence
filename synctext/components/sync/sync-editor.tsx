@@ -18,7 +18,7 @@ import {
   simpleEditorConfig,
   baseTiptapExtensions,
 } from "@/components/tiptap-templates/simple/simple-editor-view"
-import { DocumentNavbar } from "@/components/sync/document-navbar"
+import { DocumentNavbar, DocumentNavbarView } from "@/components/sync/document-navbar"
 import { getDocument_api } from "@/app/dashboard/document/document"
 import { fetchSessionUser, getLocalUser } from "@/lib/sync/sync-user"
 
@@ -89,6 +89,43 @@ function docIdFromPathname(pathname: string): string | null {
   return segments[0] === "doc" ? (segments[1] ?? null) : null
 }
 
+// Shown until identity/title resolve: neither the editor chrome nor the
+// navbar's static parts depend on that fetch, so both render immediately —
+// server-side included, since simpleEditorConfig's immediatelyRender:false
+// keeps useEditor() SSR-safe. Only the live Hocuspocus session (content,
+// presence, rename, snapshot) waits for the real fetch.
+function StaticEditorShell({ mode }: { mode: SyncMode }) {
+  const editor = useEditor({
+    ...simpleEditorConfig,
+    editable: false,
+    extensions: baseTiptapExtensions(),
+  })
+
+  return (
+    <>
+      <DocumentNavbarView
+        status="connecting"
+        users={[]}
+        title=""
+        canRename={false}
+        isEditing={false}
+        draftTitle=""
+        isRenaming={false}
+        renameError=""
+        snapshotTitle=""
+        onStartEditing={() => {}}
+        onDraftTitleChange={() => {}}
+        onSaveTitle={() => {}}
+        onCancelEditing={() => {}}
+        onSnapshotTitleChange={() => {}}
+        onSaveSnapshot={() => {}}
+        disabled
+      />
+      <SimpleEditorView editor={editor} showToolbar={mode === "edit"} />
+    </>
+  )
+}
+
 type SessionData = { user: SyncUser; title: string; canRename: boolean }
 
 export function SyncEditorPage({ mode = "edit" }: { mode?: SyncMode }) {
@@ -112,7 +149,7 @@ export function SyncEditorPage({ mode = "edit" }: { mode?: SyncMode }) {
     }
   }, [docId])
 
-  if (!session) return null
+  if (!session) return <StaticEditorShell mode={mode} />
 
   return (
     // Keyed by docId: forces the whole subtree (provider, room, editor) to
