@@ -16,12 +16,16 @@ import {
   simpleEditorConfig,
   baseTiptapExtensions,
 } from "@/components/tiptap-templates/simple/simple-editor-view"
-import { SyncHeader } from "@/components/sync/sync-header"
+import { DocumentNavbar } from "@/app/doc/[id]/navbar"
 import { getLocalUser } from "@/lib/sync/sync-user"
 
-// nginx proxies /collab to Hocuspocus on the same host.
-// Keep this same-origin so it works behind the app's CSP and TLS setup.
+type SyncUser = { name: string; color: string }
+
+// nginx proxies /collab to Hocuspocus on the same host, kept same-origin so it
+// works behind the app's CSP and TLS setup. Guarded for SSR: real value only
+// matters once the provider actually connects, in the browser.
 function getCollabUrl() {
+  if (typeof window === "undefined") return ""
   const protocol = window.location.protocol === "https:" ? "wss" : "ws"
   return `${protocol}://${window.location.host}/collab`
 }
@@ -29,11 +33,15 @@ function getCollabUrl() {
 // Rendered as a child of HocuspocusRoom (below), since useHocuspocusProvider()
 // can only be called by a descendant of that component, not by the
 // component that renders it — SyncEditorPage can't build the editor itself.
-function SyncEditorSession() {
+type SyncEditorSessionProps = {
+  docId: string
+  title: string
+  user: SyncUser
+  canRename: boolean
+}
+
+function SyncEditorSession({ docId, title, user, canRename }: SyncEditorSessionProps) {
   const provider = useHocuspocusProvider()
-  // Keep user identity separate from the editor configuration so it can later
-  // come from authentication instead of the local mock.
-  const localUser = getLocalUser()
 
   const editor = useEditor({
     ...simpleEditorConfig,
@@ -44,23 +52,46 @@ function SyncEditorSession() {
     extensions: [
       ...baseTiptapExtensions({ undoRedo: false }),
       Collaboration.configure({ document: provider.document }),
-      CollaborationCaret.configure({ provider, user: localUser }),
+      CollaborationCaret.configure({ provider, user }),
     ],
   })
 
   return (
     <>
-      <SyncHeader />
+      <DocumentNavbar
+        docId={docId}
+        initialTitle={title}
+        canRename={canRename}
+      />
       <SimpleEditorView editor={editor} />
     </>
   )
 }
 
-export function SyncEditorPage() {
+type SyncEditorPageProps = {
+  docId?: string
+  title?: string
+  user?: SyncUser
+  canRename?: boolean
+}
+
+export function SyncEditorPage({
+  docId = "example-document",
+  title = "Untitled Document",
+  user,
+  canRename = true,
+}: SyncEditorPageProps) {
+  const localUser = user ?? getLocalUser()
+
   return (
     <HocuspocusProviderWebsocketComponent url={getCollabUrl()}>
-      <HocuspocusRoom name="example-document">
-        <SyncEditorSession />
+      <HocuspocusRoom name={docId}>
+        <SyncEditorSession
+          docId={docId}
+          title={title}
+          user={localUser}
+          canRename={canRename}
+        />
       </HocuspocusRoom>
     </HocuspocusProviderWebsocketComponent>
   )
