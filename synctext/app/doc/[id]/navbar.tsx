@@ -18,7 +18,6 @@ type SyncUser = { name: string; color: string }
 type DocumentNavbarProps = {
   docId: string
   initialTitle: string
-  user: SyncUser
   canRename: boolean
 }
 
@@ -36,10 +35,13 @@ function collaboratorIdentity({ user }: CollabUser): SyncUser {
   }
 }
 
+function truncateTitle(title: string, limit: number) {
+  return title.length > limit ? `${title.slice(0, limit)}...` : title
+}
+
 export function DocumentNavbar({
   docId,
   initialTitle,
-  user,
   canRename,
 }: DocumentNavbarProps) {
   const provider = useHocuspocusProvider()
@@ -51,6 +53,12 @@ export function DocumentNavbar({
   const [isRenaming, setIsRenaming] = useState(false)
   const [renameError, setRenameError] = useState("")
   const [snapshotTitle, setSnapshotTitle] = useState("")
+
+  function cancelEditing() {
+    setDraftTitle(title)
+    setRenameError("")
+    setIsEditing(false)
+  }
 
   async function saveTitle() {
     const nextTitle = draftTitle.trim()
@@ -85,29 +93,37 @@ export function DocumentNavbar({
     <header className="relative z-20 border-b border-white/15 bg-[oklch(0.12_0.006_285)] font-mono text-[#f4f2ee]">
       <nav
         aria-label="Document navigation"
-        className="flex min-h-16 flex-wrap items-center gap-3 px-4 py-2 sm:px-6"
+        className="grid min-h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-3 py-2 sm:gap-3 sm:px-6"
       >
         <div className="flex min-w-0 items-center gap-3">
-          <Link
-            href="/dashboard"
-            className="inline-flex min-h-10 items-center gap-2 border border-white/15 px-3 text-xs text-[#f4f2ee] transition-colors hover:border-white/45 hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-          >
-            <ArrowLeft aria-hidden="true" size={15} />
-            Dashboard
-          </Link>
+          {!isEditing ? (
+            <Link
+              href="/dashboard"
+              aria-label="Back to dashboard"
+              className="inline-flex size-10 items-center justify-center border border-white/15 text-xs text-[#f4f2ee] transition-colors hover:border-white/45 hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:w-auto sm:gap-2 sm:px-3"
+            >
+              <ArrowLeft aria-hidden="true" size={15} />
+              <span className="hidden sm:inline">Dashboard</span>
+            </Link>
+          ) : null}
 
-          <span className="hidden text-sm tracking-[-0.04em] text-white/55 sm:inline">
+          <span className="hidden text-sm tracking-[-0.04em] text-white/55 lg:inline">
             SyncText<span className="text-[#8984b5]">↗</span>
           </span>
         </div>
 
-        <div className="min-w-0 flex-1 sm:px-3">
+        <div className="min-w-0 sm:px-3">
           {isEditing ? (
             <form
               className="mx-auto flex max-w-xl items-center gap-2"
               onSubmit={(event) => {
                 event.preventDefault()
                 void saveTitle()
+              }}
+              onBlur={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget)) {
+                  cancelEditing()
+                }
               }}
             >
               <input
@@ -121,9 +137,7 @@ export function DocumentNavbar({
                 onFocus={(event) => event.currentTarget.select()}
                 onKeyDown={(event) => {
                   if (event.key === "Escape") {
-                    setDraftTitle(title)
-                    setRenameError("")
-                    setIsEditing(false)
+                    cancelEditing()
                   }
                 }}
                 className="min-h-10 min-w-0 flex-1 border border-white/25 bg-white/5 px-3 text-center text-sm text-white outline-none transition-colors focus:border-[#8984b5]"
@@ -145,7 +159,8 @@ export function DocumentNavbar({
               className="mx-auto flex min-h-10 max-w-xl items-center gap-2 px-3 text-left text-sm tracking-tight text-white transition-colors hover:bg-white/5 disabled:cursor-default disabled:hover:bg-transparent"
               title={canRename ? "Rename document" : "You have view-only access"}
             >
-              <span className="truncate">{title}</span>
+              <span className="sm:hidden">{truncateTitle(title, 15)}</span>
+              <span className="hidden sm:inline">{truncateTitle(title, 50)}</span>
               {canRename ? <Pencil aria-hidden="true" className="shrink-0 text-white/45" size={14} /> : null}
             </button>
           )}
@@ -156,14 +171,20 @@ export function DocumentNavbar({
           ) : null}
         </div>
 
-        <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
-          <span className="inline-flex items-center gap-2 border border-white/15 px-2.5 py-2 text-[11px] text-white/65">
-            <span className={`size-2 rounded-full ${STATUS_COLOR[status]}`} aria-hidden="true" />
-            {status}
-          </span>
+        <div className="ml-auto flex min-w-0 items-center justify-end gap-2">
+          {!isEditing ? (
+            <span
+              className="inline-flex size-10 items-center justify-center border border-white/15 text-[11px] text-white/65 sm:w-auto sm:gap-2 sm:px-2.5 sm:py-2"
+              aria-label={`Connection status: ${status}`}
+              title={status}
+            >
+              <span className={`size-2 rounded-full ${STATUS_COLOR[status]}`} aria-hidden="true" />
+              <span className="hidden sm:inline">{status}</span>
+            </span>
+          ) : null}
 
-          <div className="flex -space-x-1" aria-label={`${users.length} online`}>
-            {users.map((onlineUser) => {
+          <div className="flex min-w-0 -space-x-1" aria-label={`${users.length} online`}>
+            {users.slice(0, 4).map((onlineUser) => {
               const identity = collaboratorIdentity(onlineUser)
               return (
                 <span
@@ -176,6 +197,14 @@ export function DocumentNavbar({
                 </span>
               )
             })}
+            {users.length > 4 ? (
+              <span
+                className="inline-flex size-8 items-center justify-center rounded-full border-2 border-[oklch(0.12_0.006_285)] bg-zinc-700 text-[10px] font-semibold text-white"
+                title={`${users.length - 4} more online`}
+              >
+                +{users.length - 4}
+              </span>
+            ) : null}
           </div>
 
           <form
@@ -200,15 +229,6 @@ export function DocumentNavbar({
               Save
             </button>
           </form>
-
-          <span
-            className="inline-flex size-9 items-center justify-center rounded-full border-2 border-white/20 text-xs font-semibold text-white"
-            style={{ backgroundColor: user.color }}
-            title={user.name}
-            aria-label={`Signed in as ${user.name}`}
-          >
-            {user.name[0]?.toUpperCase()}
-          </span>
         </div>
       </nav>
     </header>

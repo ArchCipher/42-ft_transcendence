@@ -61,7 +61,6 @@ function SyncEditorSession({ docId, title, user, canRename }: SyncEditorSessionP
       <DocumentNavbar
         docId={docId}
         initialTitle={title}
-        user={user}
         canRename={canRename}
       />
       <SimpleEditorView editor={editor} />
