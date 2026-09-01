@@ -24,6 +24,20 @@ function randomFrom<T>(items: T[]): T {
 // which matters more for this mock.
 let cachedUser: { name: string; color: string } | null = null
 
+// Resolves the signed-in visitor's identity client-side, after the page has
+// mounted. The static doc pages can't read the session themselves, so
+// per-visitor data can only enter through a call like this, from the
+// browser.
+export async function fetchSessionUser(): Promise<{ name: string; color: string } | null> {
+  try {
+    const response = await fetch("/api/auth/me", { cache: "no-store" })
+    if (!response.ok) return null
+    return await response.json()
+  } catch {
+    return null
+  }
+}
+
 export function getLocalUser(): { name: string; color: string } {
   if (typeof window === "undefined") {
     return { name: "Guest", color: "#94a3b8" }
