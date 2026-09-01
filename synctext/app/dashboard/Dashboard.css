@@ -1,7 +1,7 @@
 :root {
-  --panel-bg: rgba(8, 25, 55, 0.5);
-   --panel-bg2: rgba(8, 25, 55, 0.6);
-  --panel-border: rgba(100, 190, 255, 0.1);
+  --panel-bg: rgba(13, 40, 87, 0.5);
+  --panel-bg2: rgba(8, 25, 55, 0.6);
+  --panel-border: rgba(100, 190, 255, 0.2);
   --text-main: #ffffff;
   --accent: #6fd3ff;
 }
@@ -24,6 +24,9 @@
   align-items: center;
 
   padding: 10px 0 28px;
+
+  position: relative;
+  z-index: 20;
 }
 
 .Brand {
@@ -61,34 +64,6 @@
   margin: 0;
   color: var(--text-main);
   font-size: 17px;
-}
-
-/*  ---------------------------- */
-
-
-.UserMenu {
-  background-color: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  border-radius: 10px;
-
-  text-align: center;
-  padding: 10px 16px;
-
-  color: var(--text-main);
-  cursor: pointer;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-}
-
-.UserMenu img {
-  width: 48px;
-  height: 48px;
-
-  border-radius: 50%;
-  object-fit: cover;
 }
 
 /*  ---------------------------- */
@@ -631,3 +606,75 @@
     box-sizing: border-box;
   }
 }
+
+/*------------------ dropdown menu ----------------------*/
+
+.UserMenu {
+  background-color: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+
+  min-width: 100px;
+  align-items: center;
+
+  text-align: center;
+  padding: 10px 16px;
+
+  color: var(--text-main);
+  cursor: pointer;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.UserMenu svg {
+  width: 25px;
+  height: 25px;
+}
+
+.UserMenuContainer {
+  margin-right: 40px;
+  position: relative;
+  top: 5px;
+}
+
+.UserDropdown {
+  position: absolute;
+
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+
+  width: 150px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  backdrop-filter: blur(6px);
+
+  z-index: 10;
+}
+
+.UserDropdownItem {
+  padding: 8px 12px;
+
+  color: var(--text-main);
+  background: transparent;
+  border-radius: 6px;
+
+  text-align: center;
+  cursor: pointer;
+}
+
+.UserDropdownItem:hover,
+.UserDropdownItem[data-highlighted] {
+  background: rgba(111, 211, 255, 0.12);
+}
+
+/*---------------------------------------------------*/
