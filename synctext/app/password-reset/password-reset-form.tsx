@@ -1,12 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { authPost, FALLBACK } from "../auth/api";
 
-export default function PasswordResetForm({ token }: { token: string }) {
+export default function PasswordResetForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token") ?? "";
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState(
@@ -34,7 +35,7 @@ export default function PasswordResetForm({ token }: { token: string }) {
     setLoading(true);
 
     try {
-      const { ok, fields, error } = await authPost("/api/auth/reset-password", {
+      const { ok, fields, error } = await authPost("/api/auth/password-reset", {
         token,
         password,
       });
@@ -103,9 +104,6 @@ export default function PasswordResetForm({ token }: { token: string }) {
       <button type="submit" disabled={loading || !token}>
         {loading ? "Resetting..." : "Reset password"}
       </button>
-      <div className="RegisterLinks">
-        <Link href="/auth">Log in</Link>
-      </div>
     </form>
   );
 }

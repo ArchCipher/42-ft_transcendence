@@ -1,17 +1,14 @@
 import "./Password_reset.css";
+import { Suspense } from "react";
 import PasswordResetForm from "./password-reset-form";
 
-export default async function PasswordReset({
-  searchParams,
-}: {
-  searchParams: Promise<{ token?: string }>;
-}) {
-  const { token } = await searchParams;
-
+export default function PasswordReset() {
   return (
     <div className="PasswordResetPage">
       <Header />
-      <PasswordResetForm token={token ?? ""} />
+      <Suspense fallback={null}>
+        <PasswordResetForm />
+      </Suspense>
     </div>
   );
 }
