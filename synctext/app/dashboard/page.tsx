@@ -7,6 +7,7 @@ import Image from "next/image";
 import { Dialog } from "@base-ui/react/dialog";
 import { User } from "lucide-react";
 import { Menu } from "@base-ui/react/menu";
+import AppBackground from "../../components/AppBackground";
 
 export default function MainPage() {
 
@@ -14,14 +15,18 @@ export default function MainPage() {
   const [order, setOrder] = useState("creation"); // to order by creation, name, modification
 
   return (
-    <div className="MainPage">
-      <Header />
-      <ControlBar
-        search={search} setSearch={setSearch}
-        order={order} setOrder={setOrder}
-      />
-      <Dashboard search={search} order={order} />
-    </div>
+    <AppBackground>
+      <div className="MainPage">
+        <Header />
+        <ControlBar 
+          search={search}
+          setSearch={setSearch}
+          order={order}
+          setOrder={setOrder}
+        />
+        <Dashboard search={search} order={order} />
+      </div>
+    </AppBackground>
   );
 }
 

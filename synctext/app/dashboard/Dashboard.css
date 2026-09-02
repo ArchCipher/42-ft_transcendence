@@ -1,22 +1,6 @@
-:root {
-  --panel-bg: rgba(13, 40, 87, 0.5);
-  --panel-bg2: rgba(8, 25, 55, 0.6);
-  --panel-border: rgba(100, 190, 255, 0.2);
-  --text-main: #ffffff;
-  --accent: #6fd3ff;
-}
-
 .MainPage {
-  min-height: 100vh;
   padding: 10px 20px;
-  background-image: url('/assets/space-background.png');
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
 }
-
-/*  ---------------------------- */
-
 
 .Header {
   display: flex;
@@ -54,7 +38,7 @@
   margin: 0;
   padding-top: 10px;
   font-size: 24px;
-  color: var(--accent);
+  color: var(--app-accent);
   letter-spacing: 1px;
 }
 
@@ -62,7 +46,7 @@
 .OrderBar span {
   text-align: left;
   margin: 0;
-  color: var(--text-main);
+  color: var(--app-text-main);
   font-size: 17px;
 }
 
@@ -97,9 +81,9 @@
 .OrderBox select,
 .GroupFilter select {
   padding: 10px 16px;
-  background-color: var(--panel-bg);
-  color: var(--text-main);
-  border: 1px solid var(--panel-border);
+  background-color: var(--app-panel-bg);
+  color: var(--app-text-main);
+  border: 1px solid var(--app-panel-border);
   border-radius: 10px;
 }
 
@@ -112,16 +96,16 @@
 
 .SearchBox input {
   padding: 10px 16px;
-  background-color: var(--panel-bg);
-  color: var(--text-main);
-  border: 1px solid var(--panel-border);
+  background-color: var(--app-panel-bg);
+  color: var(--app-text-main);
+  border: 1px solid var(--app-panel-border);
   border-radius: 10px;
 }
 
 .Dashboard {
   min-height: 100vh;
-  background-color: var(--panel-bg);
-  border: 1px solid var(--panel-border);
+  background-color: var(--app-panel-bg);
+  border: 1px solid var(--app-panel-border);
   border-radius: 12px;
   backdrop-filter: blur(3px);
   padding: 24px;
@@ -143,7 +127,8 @@
   font-size: 40px;
 
   background: transparent;
-  border: 1px dashed var(--accent);
+  color: var(--app-text-main);
+  border: 1px dashed var(--app-accent);
   border-radius: 10px;
 
   cursor: pointer;
@@ -164,7 +149,7 @@
 
 .AddDoc:hover {
   background-color: rgba(50, 91, 94, 0.2);
-  border-color: var(--accent);
+  border-color: var(--app-accent);
 }
 
 .DocumentIcon {
@@ -202,7 +187,7 @@
 .CreateDoc {
   --dialog-width: 500px;
   --corner-size: 18px;
-  --border-color: var(--accent);
+  --border-color: var(--app-accent);
   --glow-strength: 12px;
 
   width: min(90vw, var(--dialog-width));
@@ -227,7 +212,7 @@
     rgba(15, 35, 70, 0.92)
   );
 
-  border: 1px solid var(--accent);
+  border: 1px solid var(--app-accent);
   border-radius: 18px;
 
   box-shadow:
@@ -249,7 +234,7 @@
   top: 10px;
   left: 24px;
 
-  color: var(--accent);
+  color: var(--app-accent);
   font-size: 10px;
   letter-spacing: 3px;
 
@@ -267,8 +252,8 @@
   width: 120px;
   height: 3px;
 
-  background: var(--accent);
-  box-shadow: 0 0 10px var(--accent);
+  background: var(--app-accent);
+  box-shadow: 0 0 10px var(--app-accent);
 
   pointer-events: none;
 }
@@ -322,7 +307,7 @@
   letter-spacing: 4px;
   text-transform: uppercase;
 
-  color: var(--accent);
+  color: var(--app-accent);
 
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   letter-spacing: 4px;
@@ -339,7 +324,7 @@
   color: white;
   background: transparent;
 
-  border: 1px solid var(--panel-border);
+  border: 1px solid var(--app-panel-border);
   border-radius: 8px;
 
   font-size: 18px;
@@ -365,7 +350,7 @@
   align-items: center;
   gap: 16px;
 
-  border: 1px solid var(--panel-border);
+  border: 1px solid var(--app-panel-border);
   border-radius: 8px;
 }
 
@@ -434,6 +419,10 @@
 
 /* ---------- DELETE ---------- */
 
+.DeleteDoc {
+  color: var(--app-text-main);
+}
+
 .DeleteDocOverlay {
   position: fixed;
   inset: 0;
@@ -460,7 +449,7 @@
     rgba(15, 35, 70, 0.92)
   );
 
-  border: 1px solid var(--accent);
+  border: 1px solid var(--app-accent);
   border-radius: 16px;
 
   outline: 1px solid rgba(111, 211, 255, 0.25);
@@ -483,8 +472,8 @@
   width: 90px;
   height: 3px;
 
-  background: var(--accent);
-  box-shadow: 0 0 10px var(--accent);
+  background: var(--app-accent);
+  box-shadow: 0 0 10px var(--app-accent);
 
   pointer-events: none;
 }
@@ -492,7 +481,7 @@
 .DeleteDocPopup h2 {
   margin: 6px 0 0;
 
-  color: var(--accent);
+  color: var(--app-accent);
 
   font-family:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
@@ -510,7 +499,7 @@
 .DeleteDocMessage {
   margin: 0;
 
-  color: var(--accent);
+  color: var(--app-accent);
   opacity: 0.7;
 
   font-size: 11px;
@@ -610,8 +599,8 @@
 /*------------------ dropdown menu ----------------------*/
 
 .UserMenu {
-  background-color: var(--panel-bg);
-  border: 1px solid var(--panel-border);
+  background-color: var(--app-panel-bg);
+  border: 1px solid var(--app-panel-border);
   border-radius: 10px;
 
   min-width: 100px;
@@ -620,7 +609,7 @@
   text-align: center;
   padding: 10px 16px;
 
-  color: var(--text-main);
+  color: var(--app-text-main);
   cursor: pointer;
 
   display: flex;
@@ -653,8 +642,8 @@
   flex-direction: column;
   gap: 6px;
 
-  background: var(--panel-bg);
-  border: 1px solid var(--panel-border);
+  background: var(--app-panel-bg);
+  border: 1px solid var(--app-panel-border);
   border-radius: 10px;
   backdrop-filter: blur(6px);
 
@@ -664,7 +653,7 @@
 .UserDropdownItem {
   padding: 8px 12px;
 
-  color: var(--text-main);
+  color: var(--app-text-main);
   background: transparent;
   border-radius: 6px;
 

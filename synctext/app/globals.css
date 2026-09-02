@@ -84,6 +84,12 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+ --app-panel-bg: rgba(13, 40, 87, 0.5);
+  --app-panel-bg2: rgba(8, 25, 55, 0.6);
+  --app-panel-border: rgba(100, 190, 255, 0.2);
+  --app-text-main: #ffffff;
+  --app-accent: #6fd3ff;
 }
 
 .dark {
