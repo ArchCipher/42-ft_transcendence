@@ -2,8 +2,10 @@ import argon2 from "argon2";
 import * as Y from "yjs";
 import { prisma, OrgRole, DocRole } from "../src/index.js";
 
-// same argon2id config as synctext/lib/auth/password.ts, kept in sync so
-// seeded hashes are verifiable by the real login route
+// Keep the Argon2id config aligned with synctext/lib/auth/password.ts
+// so seeded passwords use the same hashing policy as real user passwords.
+// argon2.verify() reads the parameters from the encoded hash itself.
+// TODO: just one location instead
 async function hashPassword(password: string): Promise<string> {
   return argon2.hash(password, {
     type: argon2.argon2id,
