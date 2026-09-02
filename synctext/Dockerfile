@@ -7,13 +7,16 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 COPY synctext/package.json ./synctext/package.json
 COPY packages/db/package.json ./packages/db/package.json
+COPY packages/shared/package.json ./packages/shared/package.json
 RUN npm ci
 
 COPY packages/db ./packages/db
+COPY packages/shared ./packages/shared
 COPY synctext ./synctext
 
-# @synctext/db must be built before synctext, which imports it
+# @synctext/db, @synctext/shared must be built before synctext, which imports it
 RUN npm run build -w @synctext/db
+RUN npm run build -w @synctext/shared
 RUN npm run build -w synctext
 
 # ---- runtime image ----

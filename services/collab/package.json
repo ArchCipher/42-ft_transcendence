@@ -9,7 +9,7 @@
   "dependencies": {
     "@hocuspocus/extension-database": "^4.5.0",
     "@hocuspocus/server": "^4.5.0",
-    "@synctext/db": "*"
+    "@synctext/shared": "*"
   },
   "devDependencies": {
     "@types/node": "^20",
