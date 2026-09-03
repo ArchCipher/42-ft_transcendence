@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authPost, FALLBACK } from "../auth/api";
@@ -79,9 +78,6 @@ export default function ForgotPasswordForm() {
       <button type="submit" disabled={loading}>
         {loading ? "Sending..." : "Send password reset email"}
       </button>
-      <div className="RegisterLinks">
-        <Link href="/auth">Log in</Link>
-      </div>
     </form>
   );
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authPost, FALLBACK } from "../auth/api";
@@ -139,9 +138,6 @@ export default function RegisterForm() {
       <button type="submit" disabled={loading}>
         {loading ? "Registering..." : "Register"}
       </button>
-      <div className="RegisterLinks">
-        <Link href="/auth">Log in</Link>
-      </div>
     </form>
   );
 }
