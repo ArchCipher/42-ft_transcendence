@@ -1,6 +1,8 @@
 import { isAuthorized } from "@/lib/auth/internal";
 import { prisma as db } from "@synctext/db";
 
+const SNAPSHOT_INTERVAL_MS = 5 * 60 * 1000;
+
 // load the persisted Yjs state for the document requested by hocuspocus
 export async function GET(
   request: Request,
@@ -63,21 +65,54 @@ export async function PUT(
 
   const { id } = await params;
 
-  // check that the document exists before trying to update its saved state
-  const document = await db.document.findUnique({
-    where: { id },
-    select: { id: true },
+  const result = await db.$transaction(async (tx) => {
+    const document = await tx.document.findUnique({
+      where: { id },
+      select: { ystate: true },
+    });
+
+    if (!document) return "not-found" as const;
+
+    const previousState = document.ystate
+      ? Buffer.from(document.ystate)
+      : null;
+
+    // Hocuspocus can ask us to persist a state that is already current.
+    if (previousState?.equals(state)) return "unchanged" as const;
+
+    if (previousState) {
+      const latestSnapshot = await tx.documentSnapshot.findFirst({
+        where: { documentId: id },
+        orderBy: { createdAt: "desc" },
+        select: { createdAt: true },
+      });
+
+      const snapshotDue =
+        !latestSnapshot ||
+        Date.now() - latestSnapshot.createdAt.getTime() >= SNAPSHOT_INTERVAL_MS;
+
+      if (snapshotDue) {
+        // Preserve the last known-good state before replacing it.
+        await tx.documentSnapshot.create({
+          data: {
+            documentId: id,
+            ystate: previousState,
+          },
+        });
+      }
+    }
+
+    await tx.document.update({
+      where: { id },
+      data: { ystate: state },
+    });
+
+    return "updated" as const;
   });
 
-  if (!document) {
+  if (result === "not-found") {
     return Response.json({ error: "Document not found" }, { status: 404 });
   }
-
-  // prisma stores the binary Yjs state in the Document.ystate column
-  await db.document.update({
-    where: { id },
-    data: { ystate: state },
-  });
 
   return Response.json({ ok: true });
 }
