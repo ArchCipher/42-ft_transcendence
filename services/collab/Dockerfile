@@ -3,16 +3,16 @@ FROM node:22-alpine
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-COPY packages/db/package.json ./packages/db/package.json
+COPY packages/shared/package.json ./packages/shared/package.json
 COPY services/collab/package.json ./services/collab/package.json
 
 RUN npm ci
 
-COPY packages/db ./packages/db
+COPY packages/shared ./packages/shared
 COPY services/collab ./services/collab
 
-# @synctext/db must be built before collab
-RUN npm run build -w @synctext/db \
+# @synctext/shared must be built before collab
+RUN npm run build -w @synctext/shared \
     && npm run build -w @synctext/collab
 
 # run application without root privileges

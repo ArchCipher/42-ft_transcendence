@@ -9,14 +9,15 @@ import {
 import { getDummyHash, verifyPassword } from "@/lib/auth/password";
 import {
   generateSessionToken,
-  hashSessionToken,
   MAX_SESSIONS,
   sessionExpiresAt,
   setSessionCookie,
 } from "@/lib/auth/session";
+
 import { prisma as db } from "@synctext/db";
 import { hashForLog } from "@/lib/auth/log";
 import { parseRequest } from "@/lib/auth/parse-request";
+import { hashSessionToken } from "@synctext/shared";
 
 /*
 Login Handler: validation -> rate limit -> auth -> session
@@ -98,6 +99,7 @@ export async function POST(request: Request) {
         tokenHash,
         userId: user.id,
         expiresAt: sessionExpiresAt(),
+		lastUsedAt: new Date(),
         ip,
         userAgent: request.headers.get("user-agent") ?? null,
       },

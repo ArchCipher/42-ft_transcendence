@@ -1,16 +1,16 @@
 import "server-only";
 
-import { createHash, randomBytes } from "node:crypto";
+import { randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { prisma as db } from "@synctext/db";
 import type { Session, User } from "@synctext/db";
-
-// Cookie name must match in setSessionCookie(), getSessionToken(), clearSessionCookie
-export const SESSION_COOKIE_NAME = "session";
-
-// Session lifetime in seconds
-// cookie `maxAge` and DB `expiresAt` both should use this
-export const SESSION_TTL_SECONDS = 7 * 24 * 60 * 60; // 7 days
+import {
+  hashSessionToken,
+  SESSION_TTL_SECONDS,
+  IDLE_TIMEOUT_MS,
+  SESSION_COOKIE_NAME,
+  SESSION_LAST_USED_UPDATE_THRESHOLD,
+} from "@synctext/shared";
 
 // Max sessions per user
 export const MAX_SESSIONS = 5;
@@ -31,11 +31,6 @@ Encoding used:
 */
 export function generateSessionToken(): string {
   return randomBytes(32).toString("base64url");
-}
-
-// Hashed token for DB storage, so DB leak would not create usable sessions.
-export function hashSessionToken(token: string): string {
-  return createHash("sha256").update(token).digest("hex");
 }
 
 // Token TTL
@@ -84,9 +79,22 @@ export async function validateSession(
   });
   if (!session || session.revokedAt !== null || session.expiresAt < new Date())
     return null;
-  await db.session.update({
-    where: { id: session.id },
-    data: { lastUsedAt: new Date() },
-  });
+
+  if (
+    session.lastUsedAt &&
+    Date.now() - session.lastUsedAt.getTime() > IDLE_TIMEOUT_MS
+  )
+    return null;
+
+  if (
+    !session.lastUsedAt ||
+    Date.now() - session.lastUsedAt.getTime() >
+      SESSION_LAST_USED_UPDATE_THRESHOLD
+  ) {
+    await db.session.update({
+      where: { id: session.id },
+      data: { lastUsedAt: new Date() },
+    });
+  }
   return session;
 }

@@ -13,9 +13,27 @@ export default async function DocPage({ params }: { params: Promise<{ id: string
 
   const document = await db.document.findFirst({
     where: { id, ...documentReadWhere(session.user.id) },
-    select: { id: true },
+    select: {
+      id: true,
+      title: true,
+      ownerId: true,
+      collab: {
+        where: { userId: session.user.id },
+        select: { docRole: true },
+      },
+    },
   })
   if (!document) notFound()
 
-  return <SyncEditorPage docId={id} user={identityFromUser(session.user)} />
+  const canRename =
+    document.ownerId === session.user.id || document.collab[0]?.docRole === "EDITOR"
+
+  return (
+    <SyncEditorPage
+      docId={id}
+      title={document.title}
+      user={identityFromUser(session.user)}
+      canRename={canRename}
+    />
+  )
 }

@@ -152,10 +152,24 @@
   border-color: var(--app-accent);
 }
 
+.AddDoc:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
 .DocumentIcon {
   width: 90px;
   height: 90px;
   object-fit: contain;
+}
+
+.DocumentOpen {
+  width: 90px;
+  height: 90px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
 }
 
 .DocumentTitle {

@@ -1,9 +1,9 @@
 import {
   clearSessionCookie,
   getSessionToken,
-  hashSessionToken,
 } from "@/lib/auth/session";
 import { prisma as db } from "@synctext/db";
+import { hashSessionToken } from "@synctext/shared";
 
 /*
 API Response contracts: POST /api/auth/logout
