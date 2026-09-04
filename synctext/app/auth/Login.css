@@ -1,12 +1,3 @@
-.HummaBanner {
-  margin-top: 20px;
-  text-align: center;
-
-  color: var(--accent);
-  font-size: 18px;
-  letter-spacing: 4px;
-}
-
 :root {
   --panel-bg: rgba(8, 25, 55, 0.5);
   --panel-border: rgba(100, 190, 255, 0.1);
@@ -17,10 +8,6 @@
 .LoginPage {
   min-height: 100vh;
   padding: 10px 20px;
-  background-image: url('/assets/space-background.png');
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
 }
 
 .Header {
@@ -60,18 +47,11 @@
   letter-spacing: 1px;
 }
 
-.BrandText p,
 .OrderBar span {
   text-align: left;
   margin: 0;
   color: var(--text-main);
   font-size: 17px;
-}
-
-.HummaBanner {
-  display: block;
-  width: 380px;
-  margin: 25px auto 0;
 }
 
 .NoticeBar {

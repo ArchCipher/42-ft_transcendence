@@ -1,8 +1,285 @@
 .background {
+  position: relative;
   min-height: 100vh;
+  overflow: hidden;
 
-  background-image: url('/assets/space-background.png');
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
+  background: linear-gradient(
+      145deg,
+      #030a1e 0%,
+      #050320 30%,
+      #04041a 55%,
+      #030210 80%,
+      #020110 100%
+    );
+  }
+
+  .nebula {
+  position: absolute;
+  inset: 0;
+
+  background:
+    radial-gradient(
+      ellipse 16% 14% at 73% 28%,
+      rgba(155, 65, 255, 0.48) 0%,
+      rgba(120, 40, 230, 0.34) 30%,
+      rgba(85, 25, 190, 0.18) 60%,
+      transparent 100%
+    ),
+
+    radial-gradient(
+      ellipse 27% 23% at 72% 27%,
+      rgba(95, 30, 205, 0.22) 0%,
+      rgba(65, 18, 165, 0.13) 55%,
+      transparent 100%
+    ),
+
+    radial-gradient(
+      ellipse 42% 34% at 70% 26%,
+      rgba(55, 15, 145, 0.16) 0%,
+      rgba(35, 10, 100, 0.08) 60%,
+      transparent 100%
+    );
+
+  pointer-events: none;
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+}
+
+/*------------------ STARS --------------------------------------------------------------------*/
+
+.starField {
+  position: absolute;
+  inset: -25px;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.starLayerFar,
+.starLayerMid,
+.starLayerNear {
+  position: absolute;
+  inset: 0;
+}
+
+/*------------------ Drift ----------------------*/
+
+.starLayerFar  { animation: driftFar 90s ease-in-out infinite; }
+.starLayerMid  { animation: driftMid 60s ease-in-out infinite; }
+.starLayerNear { animation: driftNear 36s ease-in-out infinite; }
+
+.star {
+  position: absolute;
+  border-radius: 50%;
+  background: white;
+}
+
+@keyframes driftFar {
+  0%, 100% { transform: translate3d(-8px, 0, 0); }
+  50%      { transform: translate3d(12px, 2px, 0); }
+}
+
+@keyframes driftMid {
+  0%, 100% { transform: translate3d(-18px, 2px, 0); }
+  50%      { transform: translate3d(30px, -3px, 0); }
+}
+
+@keyframes driftNear {
+  0%, 100% { transform: translate3d(-30px, -3px, 0); }
+  50%      { transform: translate3d(55px, 5px, 0); }
+}
+
+/*------------------Sparling stars --------------------------------------------------------------------*/
+
+.sparkle {
+  position: absolute;
+
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.8);
+
+  box-shadow:
+    0 0 3px rgba(255, 255, 255, 0.45),
+    0 0 7px rgba(150, 195, 255, 0.2);
+
+  filter: blur(0.4px);
+
+  transform: translate(-50%, -50%);
+
+  animation-name: sparklePulse;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+.sparkleField {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+@keyframes sparklePulse {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: translate(-50%, -50%) scale(0.65);
+    filter: blur(0.7px) brightness(0.65);
+  }
+
+  25% {
+    opacity: 0.65;
+    transform: translate(-50%, -50%) scale(0.85);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.5);
+    filter: blur(0px) brightness(2.8);
+  }
+
+  68% {
+    opacity: 0.72;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  82% {
+    opacity: 0.5;
+    transform: translate(-50%, -50%) scale(0.75);
+  }
+}
+
+/*------------------ Comet --------------------------------------------------------------------*/
+
+.comet {
+  position: absolute;
+  left: -150px;
+  top: 14%;
+
+  width: 150px;
+  height: 20px;
+
+  opacity: 0.45;
+  pointer-events: none;
+
+  animation: cometTravel 8s linear forwards;
+}
+
+.cometTail {
+  position: absolute;
+  right: 7px;
+  top: 10px;
+
+  width: 135px;
+  height: 1px;
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(150, 190, 255, 0.08),
+    rgba(210, 230, 255, 0.28),
+    rgba(255, 255, 255, 0.65)
+  );
+
+  transform: rotate(18deg);
+  transform-origin: right center;
+
+  filter: blur(0.5px);
+}
+
+.cometHead {
+  position: absolute;
+  right: 3px;
+  top: 8px;
+
+  width: 4px;
+  height: 4px;
+
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.8);
+
+  box-shadow: 0 0 6px rgba(170, 210, 255, 0.35);
+}
+
+@keyframes cometTravel {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 0.45;
+  }
+
+  85% {
+    opacity: 0.4;
+  }
+
+  100% {
+    transform: translate(135vw, 45vh);
+    opacity: 0;
+  }
+}
+
+/*------------------ GALAXY --------------------------------------------------------------------*/
+
+.galaxy {
+  position: absolute;
+
+  width: clamp(480px, 48vw, 780px);
+  height: clamp(300px, 34vw, 520px);
+
+  right: 3%;
+  top: -3%;
+
+  pointer-events: none;
+
+  animation: galaxyBreath 22s ease-in-out infinite alternate;
+  transform-origin: center;
+}
+
+.galaxyParticle {
+  position: absolute;
+
+  border-radius: 50%;
+
+  box-shadow:
+    0 0 3px currentColor,
+    0 0 7px currentColor;
+
+  filter: blur(0.15px);
+}
+
+.galaxyCore {
+  position: absolute;
+
+  width: 13%;
+  height: 12%;
+
+  left: 43.5%;
+  top: 44%;
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      ellipse,
+      rgba(255,255,255,0.85),
+      rgba(240,190,255,0.4) 30%,
+      rgba(180,70,255,0.15) 55%,
+      transparent 75%
+    );
+
+  filter: blur(7px);
+}
+
+@keyframes galaxyBreath {
+  from {
+    scale: 0.97;
+    filter: brightness(0.92);
+  }
+
+  to {
+    scale: 1.03;
+    filter: brightness(1.12);
+  }
 }

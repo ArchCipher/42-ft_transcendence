@@ -1,5 +1,5 @@
 import "./Login.css";
-import Image from "next/image";
+import AppBackground from "../../components/AppBackground";
 import LoginForm from "./login-form";
 
 // NOTICES displayed in navtab
@@ -21,24 +21,16 @@ export default async function Login({
 
 function LoginPage({ verify }: { verify?: string }) {
   return (
-    <div>
+    <AppBackground>
       {verify && NOTICES[verify] && (
         <nav className="NoticeBar">{NOTICES[verify]}</nav>
       )}
+
       <div className="LoginPage">
         <Header />
-
         <LoginForm />
-
-        <Image
-          src="/assets/humma-kavula.png"
-          alt="Humma Kavula"
-          width={220}
-          height={220}
-          className="HummaBanner"
-        />
       </div>
-    </div>
+    </AppBackground>
   );
 }
 
