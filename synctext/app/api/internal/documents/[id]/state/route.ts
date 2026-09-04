@@ -77,7 +77,7 @@ export async function PUT(
       ? Buffer.from(document.ystate)
       : null;
 
-    // Hocuspocus can ask us to persist a state that is already current.
+    // hocuspocus can ask us to persist a state that is already current
     if (previousState?.equals(state)) return "unchanged" as const;
 
     if (previousState) {
@@ -92,7 +92,7 @@ export async function PUT(
         Date.now() - latestSnapshot.createdAt.getTime() >= SNAPSHOT_INTERVAL_MS;
 
       if (snapshotDue) {
-        // Preserve the last known-good state before replacing it.
+        // preserve the last persisted state before replacing it
         await tx.documentSnapshot.create({
           data: {
             documentId: id,
