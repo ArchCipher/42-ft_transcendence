@@ -1,12 +1,15 @@
 import "./Forgot_password.css";
 import ForgotPasswordForm from "./forgot-password-form";
+import AppBackground from "@/components/AppBackground";
 
 export default function ForgotPassword() {
   return (
-    <div className="FP_Page">
-      <Header />
-      <ForgotPasswordForm />
-    </div>
+    <AppBackground>
+      <div className="FP_Page">
+        <Header />
+        <ForgotPasswordForm />
+      </div>
+    </AppBackground>
   );
 }
 

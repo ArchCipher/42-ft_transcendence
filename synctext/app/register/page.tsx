@@ -1,12 +1,15 @@
 import "./Register.css";
 import RegisterForm from "./register-form";
+import AppBackground from "@/components/AppBackground";
 
 export default async function Register(){
    return (
-    <div className="RegisterPage">
-      <Header />
-      <RegisterForm />
-    </div>
+    <AppBackground>
+      <div className="RegisterPage">
+        <Header />
+        <RegisterForm />
+      </div>
+    </AppBackground>
   );
 }
 

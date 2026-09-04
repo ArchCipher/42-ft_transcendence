@@ -1,15 +1,18 @@
 import "./Password_reset.css";
 import { Suspense } from "react";
 import PasswordResetForm from "./password-reset-form";
+import AppBackground from "@/components/AppBackground";
 
 export default function PasswordReset() {
   return (
-    <div className="PasswordResetPage">
-      <Header />
-      <Suspense fallback={null}>
-        <PasswordResetForm />
-      </Suspense>
-    </div>
+    <AppBackground>
+      <div className="PasswordResetPage">
+        <Header />
+        <Suspense fallback={null}>
+          <PasswordResetForm />
+        </Suspense>
+      </div>
+    </AppBackground>
   );
 }
 
