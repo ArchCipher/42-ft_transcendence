@@ -25,7 +25,7 @@ export default async function DocPage({ params }: { params: Promise<{ id: string
   })
   if (!document) notFound()
 
-  const canRename =
+  const canEdit =
     document.ownerId === session.user.id || document.collab[0]?.docRole === "EDITOR"
 
   return (
@@ -33,7 +33,7 @@ export default async function DocPage({ params }: { params: Promise<{ id: string
       docId={id}
       title={document.title}
       user={identityFromUser(session.user)}
-      canRename={canRename}
+      canEdit={canEdit}
     />
   )
 }

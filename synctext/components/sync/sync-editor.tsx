@@ -37,14 +37,15 @@ type SyncEditorSessionProps = {
   docId: string
   title: string
   user: SyncUser
-  canRename: boolean
+  canEdit: boolean
 }
 
-function SyncEditorSession({ docId, title, user, canRename }: SyncEditorSessionProps) {
+function SyncEditorSession({ docId, title, user, canEdit }: SyncEditorSessionProps) {
   const provider = useHocuspocusProvider()
 
   const editor = useEditor({
     ...simpleEditorConfig,
+    editable: canEdit,
     // Same rich-text feature set as simple-editor.tsx (baseTiptapExtensions,
     // undoRedo off since Collaboration manages history itself through Yjs),
     // plus Collaboration/CollaborationCaret bound to the Hocuspocus provider
@@ -61,9 +62,9 @@ function SyncEditorSession({ docId, title, user, canRename }: SyncEditorSessionP
       <DocumentNavbar
         docId={docId}
         initialTitle={title}
-        canRename={canRename}
+        canRename={canEdit}
       />
-      <SimpleEditorView editor={editor} />
+      <SimpleEditorView editor={editor} showToolbar={canEdit} />
     </>
   )
 }
@@ -72,14 +73,14 @@ type SyncEditorPageProps = {
   docId?: string
   title?: string
   user?: SyncUser
-  canRename?: boolean
+  canEdit?: boolean
 }
 
 export function SyncEditorPage({
   docId = "example-document",
   title = "Untitled Document",
   user,
-  canRename = true,
+  canEdit = true,
 }: SyncEditorPageProps) {
   const localUser = user ?? getLocalUser()
 
@@ -90,7 +91,7 @@ export function SyncEditorPage({
           docId={docId}
           title={title}
           user={localUser}
-          canRename={canRename}
+          canEdit={canEdit}
         />
       </HocuspocusRoom>
     </HocuspocusProviderWebsocketComponent>
