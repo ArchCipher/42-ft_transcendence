@@ -1,10 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import './Dashboard.css';
 import Image from "next/image";
 import { Dialog } from "@base-ui/react/dialog";
+import type { DocumentSummary } from "@/lib/documents/documents";
+import {
+  createDocument_api,
+  deleteDocument_api,
+  listDocuments_api,
+  renameDocument_api,
+} from "./document/document";
+import { useRouter } from "next/navigation";
 import { User } from "lucide-react";
 import { Menu } from "@base-ui/react/menu";
 
@@ -48,6 +56,16 @@ type UserNameProps = {
 };
 
 function UserName({ username }: UserNameProps) {
+  const router = useRouter();
+
+  async function handleLogout(){
+	try{
+		await fetch("/api/auth/logout", {method: "POST"});
+	} finally{
+		router.push("/auth?verify=logged-out");
+	}
+  }
+
   return (
     <div className="UserMenuContainer">
       <Menu.Root modal={false}>
@@ -67,7 +85,7 @@ function UserName({ username }: UserNameProps) {
                 Groups
               </Menu.Item>
 
-              <Menu.Item className="UserDropdownItem">
+              <Menu.Item className="UserDropdownItem" onClick={() => void handleLogout()}>
                 Logout
               </Menu.Item>
             </Menu.Popup>
@@ -77,8 +95,6 @@ function UserName({ username }: UserNameProps) {
     </div>
   );
 }
-
-// TODO: replace mock data with documents fetched from backend/database.
 
 function FilterBox() {
   return (
@@ -170,69 +186,90 @@ function ControlBar({ search, setSearch, order, setOrder }: ControlBarProps) {
 
 // docs
 
-type Document = {
-  id: number;
-  title: string;
-  createdAt: number;
-  group: string;
-};
-
 type DashboardProps = {
   search: string;
   order: string;
 };
 
 function Dashboard({ search, order }: DashboardProps) {
-  
- const [documents, setDocuments] = useState<Document[]>([]);
 
-  const [isCreating, setIsCreating] = useState(false); 
-  const [newTitle, setNewTitle] = useState("");  // const for naming docs
-  const [documentToDelete, setDocumentToDelete] = useState<number | null>(null);// for deleting docs
+ const [documents, setDocuments] = useState<DocumentSummary[]>([]);
+  const [isLoadingDocuments, setIsLoadingDocuments] = useState(true);
+  const [documentsError, setDocumentsError] = useState("");
+
+  const [isCreatingDocument, setIsCreatingDocument] = useState(false);
+  const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);// for deleting docs
   const [createError, setCreateError] = useState("");
 
-  const [documentToEdit, setDocumentToEdit] = useState<number | null>(null);
+  const [documentToEdit, setDocumentToEdit] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editError, setEditError] = useState("");
-  const [newGroup, setNewGroup] = useState("none");
-  const [editGroup, setEditGroup] = useState("none");
+  const router = useRouter();
 
-  function addDocument(title: string, group: string) {
-    const newDocument = {
-      id: Date.now(),
-      title: title,
-      createdAt: Date.now(),
-      group,
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadDocuments() {
+      try {
+        setIsLoadingDocuments(true);
+        setDocumentsError("");
+
+        const listedDocuments = await listDocuments_api(controller.signal);
+        setDocuments(listedDocuments);
+      } catch {
+        if (!controller.signal.aborted) {
+          setDocumentsError("Failed to load your documents. Please try again.");
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoadingDocuments(false);
+        }
+      }
+    }
+
+    void loadDocuments();
+
+    return () => {
+      controller.abort();
     };
+  }, []);
 
-    setDocuments([...documents, newDocument]);
+
+
+  async function deleteDocument(id: string) {
+    try {
+      await deleteDocument_api(id);
+
+      setDocuments((currentDocuments) =>
+        currentDocuments.filter((doc) => doc.id !== id)
+      );
+
+      setDocumentToDelete(null);
+    } catch {
+      console.error("Failed to delete document");
+    }
   }
 
-  function deleteDocument(id: number) {
-    setDocuments(documents.filter((doc) => doc.id !== id));
-  }
+  async function createDocument() {
+      if (isCreatingDocument) return;
 
-  function createDocument() {
-    const titleExists = documents.some(                                  // .some
-      (doc) => doc.title.toLowerCase() === newTitle.trim().toLowerCase());
-
-    if (!newTitle.trim()) {
-      setCreateError("Please enter a document title");
-      return;
+      setCreateError("");
+      setIsCreatingDocument(true);
+      try {
+        const createdDocument = await createDocument_api();
+        router.push(`/doc/${encodeURIComponent(createdDocument.id)}`);
+      } catch {
+        setCreateError("Failed to create the document. Please try again.");
+      } finally {
+        setIsCreatingDocument(false);
+      }
     }
 
-    if (titleExists) {
-      setCreateError("A document with this title already exists");
-      return;
-    }
-
-    setCreateError("");
-    addDocument(newTitle, newGroup);
-    setIsCreating(false); // reset pop-up window
-    setNewTitle("");
+  function openDocument(id: string) {
+    router.push(`/doc/${encodeURIComponent(id)}`);
   }
 
-  function saveRename() {
+  async function saveRename() {
     const titleExists = documents.some(
       (doc) =>
         doc.id !== documentToEdit &&
@@ -249,110 +286,72 @@ function Dashboard({ search, order }: DashboardProps) {
       return;
     }
 
-    setDocuments(documents.map((doc) =>
-      doc.id === documentToEdit
-        ? { ...doc, title: editTitle, group: editGroup } : doc
-    ));
+    if (documentToEdit === null) return;
 
-    setDocumentToEdit(null);
     setEditError("");
+
+    try {
+      const renamedDocument = await renameDocument_api(
+        documentToEdit,
+        editTitle,
+      );
+
+      setDocuments((currentDocuments) =>
+        currentDocuments.map((doc) =>
+          doc.id === documentToEdit ? renamedDocument : doc
+        )
+      );
+
+      setDocumentToEdit(null);
+    } catch {
+      setEditError("Failed to rename the document. Please try again.");
+    }
   }
 
   return (
     <>
-      <main className="Dashboard">             
+      <main className="Dashboard">
 
-        <AddDoc onAdd={() => setIsCreating(true)} />
+        <AddDoc
+          onAdd={() => void createDocument()}
+          disabled={isCreatingDocument}
+        />
 
-        {documents.filter((doc) =>
+        {isLoadingDocuments ? <p>Loading documents...</p> : null}
+
+        {documentsError ? <p role="alert">{documentsError}</p> : null}
+
+        {createError ? <p role="alert">{createError}</p> : null}
+
+        {!isLoadingDocuments && !documentsError && documents.length === 0 ? (
+          <p>You do not have any documents yet.</p>
+        ) : null}
+
+        {!isLoadingDocuments && !documentsError ? documents.filter((doc) =>
             doc.title.toLowerCase().includes(search.toLowerCase()))
           .sort((a, b) => {
           if (order == "name")
             return a.title.localeCompare(b.title);
-          return b.createdAt - a.createdAt;
+          const dateField = order === "modification" ? "updatedAt" : "createdAt";
+          return new Date(b[dateField]).getTime() - new Date(a[dateField]).getTime();
           })
           .map((doc) => (
             <DocumentCard
               key={doc.id}
               title={doc.title}
-              onDelete={() => setDocumentToDelete(doc.id)}
-              onEdit={() => {
+              onOpen={() => openDocument(doc.id)}
+              onDelete={doc.canDelete
+                ? () => setDocumentToDelete(doc.id)
+                : undefined}
+              onEdit={doc.canRename ? () => {
                 setDocumentToEdit(doc.id);
                 setEditTitle(doc.title);
-                setEditGroup(doc.group);
                 setEditError("");
-              }}
+              } : undefined}
             />
-          ))}
+          )) : null}
 
       </main>
-
-      <Dialog.Root
-        open={isCreating}
-        onOpenChange={setIsCreating}
-      >
-        <Dialog.Portal>
-          <Dialog.Backdrop className="CreateDocOverlay" />
-
-          <Dialog.Popup className="CreateDoc">
-            <Dialog.Title>Create document</Dialog.Title>
-
-            <input
-              id="document-title"
-              className="CreateDocTitle"
-              type="text"
-              placeholder="Title"
-              autoComplete="off"
-              value={newTitle}
-              onChange={(e) => setNewTitle(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  createDocument();
-                }
-              }}
-              aria-describedby={createError ? "create-doc-error" : undefined}
-            />
-
-            {createError && (
-              <p className="CreateDocError" id="create-doc-error">
-                {createError}
-              </p>
-            )}
-
-            <div className="CreateDocGroup">
-              <label htmlFor="document-group">Group:</label>
-
-              <select
-                id="document-group"
-                value={newGroup}
-                onChange={(e) => setNewGroup(e.target.value)}
-              >
-                <option value="none">None</option>
-                <option value="wu-tang clan">Wu-Tang</option>
-                <option value="transcendence">Transcendence</option>
-              </select>
-            </div>
-
-            <button
-              className="CreateDocButton"
-              onClick={createDocument}
-            >
-              Add to the Guide
-            </button>
-
-            <div className="LedStrip" aria-hidden="true">
-              <span />
-              <span />
-              <span />
-              <span />
-              <span />
-              <span />
-              <span />
-            </div>
-
-          </Dialog.Popup>
-        </Dialog.Portal>
-      </Dialog.Root>
 
       <Dialog.Root
         open={documentToEdit !== null}
@@ -391,20 +390,6 @@ function Dashboard({ search, order }: DashboardProps) {
                 {editError}
               </p>
             )}
-
-            <div className="CreateDocGroup">
-              <label htmlFor="edit-document-group">Group:</label>
-
-              <select
-                id="edit-document-group"
-                value={editGroup}
-                onChange={(e) => setEditGroup(e.target.value)}
-              >
-                <option value="none">None</option>
-                <option value="wu-tang clan">Wu-Tang</option>
-                <option value="transcendence">Transcendence</option>
-              </select>
-            </div>
 
             <button
               className="CreateDocButton"
@@ -449,8 +434,7 @@ function Dashboard({ search, order }: DashboardProps) {
             autoFocus
             onClick={() => {
               if (documentToDelete !== null) {
-                deleteDocument(documentToDelete);
-                setDocumentToDelete(null);
+                void deleteDocument(documentToDelete);
               }
             }}
           >
@@ -466,11 +450,18 @@ function Dashboard({ search, order }: DashboardProps) {
 
 type AddDocProps = {
   onAdd: () => void;
+  disabled: boolean;
 };
 
-function AddDoc({ onAdd }: AddDocProps) {
+function AddDoc({ onAdd, disabled }: AddDocProps) {
   return (
-    <button type="button" className="AddDoc" onClick={onAdd}>
+    <button
+      type="button"
+      className="AddDoc"
+      onClick={onAdd}
+      disabled={disabled}
+      aria-label={disabled ? "Creating document" : "Create document"}
+    >
       +
     </button>
   );
@@ -479,16 +470,24 @@ function AddDoc({ onAdd }: AddDocProps) {
 
 type DocumentCardProps = {
   title: string;
-  onDelete: () => void;
-  onEdit: () => void;
+  onOpen: () => void;
+  onDelete?: () => void;
+  onEdit?: () => void;
 };
 
-function DocumentCard({ title, onDelete, onEdit }: DocumentCardProps) {
+function DocumentCard({ title, onOpen, onDelete, onEdit }: DocumentCardProps) {
   return (
     <div className="DocumentCard">
-      <button className="DeleteDoc" onClick={onDelete}>×</button>
+      {onDelete ? (
+        <button className="DeleteDoc" onClick={onDelete}>×</button>
+      ) : null}
 
-      <div className="DocumentIcon">
+      <button
+        type="button"
+        className="DocumentOpen"
+        onClick={onOpen}
+        aria-label={`Open ${title}`}
+      >
         <Image
           src="/assets/doc-icon.png"
           alt="Document icon"
@@ -496,7 +495,7 @@ function DocumentCard({ title, onDelete, onEdit }: DocumentCardProps) {
           height={90}
           className="DocumentIcon"
         />
-      </div>
+      </button>
 
       <span
         className="DocumentTitle"

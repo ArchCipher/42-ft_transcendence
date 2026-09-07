@@ -1,9 +1,7 @@
 import {
-  clearSessionCookie,
-  getSessionToken,
+  logoutCurrentSession,
 } from "@/lib/auth/session";
-import { prisma as db } from "@synctext/db";
-import { hashSessionToken } from "@synctext/shared";
+
 
 /*
 API Response contracts: POST /api/auth/logout
@@ -15,20 +13,6 @@ API Response contracts: POST /api/auth/logout
 */
 
 export async function POST() {
-  const token = await getSessionToken();
-
-  await clearSessionCookie();
-
-  if (token) {
-    try {
-      await db.session.updateMany({
-        where: { tokenHash: hashSessionToken(token), revokedAt: null },
-        data: { revokedAt: new Date() },
-      }); // revoke session
-    } catch (error) {
-      console.error("[session] revoke failed:", error);
-    }
-  }
-
+  await logoutCurrentSession();
   return Response.json({ ok: true }, { status: 200 });
 }

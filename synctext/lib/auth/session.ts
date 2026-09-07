@@ -98,3 +98,22 @@ export async function validateSession(
   }
   return session;
 }
+
+/*
+Logout session (clear cookie and remove DB row)
+Safe to call when session is invalid/expired/idle
+*/
+export async function logoutCurrentSession(): Promise<void> {
+  const token = await getSessionToken();
+  if (token) {
+    try {
+      await db.session.updateMany({
+        where: { tokenHash: hashSessionToken(token), revokedAt: null },
+        data: { revokedAt: new Date() },
+      }); // revoke session
+    } catch (error) {
+      console.error("[session] revoke failed:", error);
+    }
+  }
+  await clearSessionCookie();
+}
