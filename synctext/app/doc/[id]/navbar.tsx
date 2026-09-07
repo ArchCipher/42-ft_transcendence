@@ -3,11 +3,8 @@
 import Link from "next/link"
 import { useState } from "react"
 import { ArrowLeft, Check, Pencil } from "lucide-react"
-import type { CollabUser } from "@hocuspocus/provider-react"
-import {
-  useHocuspocusAwareness,
-  useHocuspocusConnectionStatus,
-} from "@hocuspocus/provider-react"
+import type { HocuspocusProvider } from "@hocuspocus/provider"
+import type { CollabUser, ConnectionStatus } from "@hocuspocus/provider-react"
 
 import { renameDocument_api } from "@/app/dashboard/document/document"
 
@@ -17,6 +14,9 @@ type DocumentNavbarProps = {
   docId: string
   initialTitle: string
   canRename: boolean
+  provider: HocuspocusProvider | null
+  status: ConnectionStatus
+  users: CollabUser[]
 }
 
 const STATUS_COLOR = {
@@ -41,9 +41,10 @@ export function DocumentNavbar({
   docId,
   initialTitle,
   canRename,
+  provider,
+  status,
+  users,
 }: DocumentNavbarProps) {
-  const status = useHocuspocusConnectionStatus()
-  const users = useHocuspocusAwareness()
   const [title, setTitle] = useState(initialTitle)
   const [draftTitle, setDraftTitle] = useState(initialTitle)
   const [isEditing, setIsEditing] = useState(false)
@@ -172,7 +173,10 @@ export function DocumentNavbar({
             </span>
           ) : null}
 
-          <div className="flex min-w-0 -space-x-1" aria-label={`${users.length} online`}>
+          <div
+            className="flex min-w-0 -space-x-1"
+            aria-label={`${users.length} other${users.length === 1 ? "" : "s"} online`}
+          >
             {users.slice(0, 4).map((onlineUser) => {
               const identity = collaboratorIdentity(onlineUser)
               return (
