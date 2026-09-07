@@ -2,6 +2,7 @@ import { isAuthorized } from "@/lib/auth/internal";
 import { prisma as db } from "@synctext/db";
 
 const SNAPSHOT_INTERVAL_MS = 5 * 60 * 1000;
+const SNAPSHOT_RETENTION_LIMIT = 5;
 
 // load the persisted Yjs state for the document requested by hocuspocus
 export async function GET(
@@ -66,6 +67,16 @@ export async function PUT(
   const { id } = await params;
 
   const result = await db.$transaction(async (tx) => {
+    // serialize writes for the same document before checking snapshot timing
+    const lockedDocuments = await tx.$queryRaw<Array<{ id: string }>>`
+      SELECT "id"
+      FROM "Document"
+      WHERE "id" = ${id}
+      FOR UPDATE
+    `;
+
+    if (lockedDocuments.length === 0) return "not-found" as const;
+
     const document = await tx.document.findUnique({
       where: { id },
       select: { ystate: true },
@@ -99,6 +110,22 @@ export async function PUT(
             ystate: previousState,
           },
         });
+
+        // keep only the newest snapshots for recovery
+        const snapshotsToDelete = await tx.documentSnapshot.findMany({
+          where: { documentId: id },
+          orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+          skip: SNAPSHOT_RETENTION_LIMIT,
+          select: { id: true },
+        });
+
+        if (snapshotsToDelete.length > 0) {
+          await tx.documentSnapshot.deleteMany({
+            where: {
+              id: { in: snapshotsToDelete.map((snapshot) => snapshot.id) },
+            },
+          });
+        }
       }
     }
 
