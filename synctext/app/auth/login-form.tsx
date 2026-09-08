@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authPost, FALLBACK } from "./api";
-import { notifySignedIn } from "@/lib/auth/session-state";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -38,9 +37,6 @@ export default function LoginForm() {
         else setError(error ?? FALLBACK);
         return;
       }
-
-      // broadcast sign in to other tabs
-      notifySignedIn();
 
       // Success - redirect to dashboard
       router.push("/dashboard");

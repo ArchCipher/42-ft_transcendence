@@ -3,11 +3,9 @@
 /*
 Broadcast Channel - sender
 
-Cross-tab session markers.
-
-The session cookie is HttpOnly, so JS can't read it directly. BroadcastChannel
-lets open tabs on the same origin talk directly to each other, so when one tab
-signs in or signs out, the others hear about it instantly.
+Cross-tab session markers. BroadcastChannel lets open tabs on the same origin
+talk directly to each other, so when one tab signs out, the others hear about
+it instantly.
 
 The tab that posts a message also receives it. So each message carries a unique
 tabId, and listeners ignore messages with their own tabId.
@@ -29,20 +27,12 @@ export function getTabId(): number {
 }
 
 export type SessionMessage =
-  | { action: "signed-in"; tabId: number }
-  | { action: "signed-out"; tabId: number };
+  { action: "signed-out"; tabId: number };
 
 function postMessage(action: SessionMessage["action"]): void {
   const channel = new BroadcastChannel(SESSION_CHANNEL);
   channel.postMessage({ action, tabId: getTabId() });
   channel.close(); // sender: done after one send
-}
-
-// Call after a successful login so other tabs can show the
-// "You signed in with another tab or window. Reload to refresh your session."
-// notice.
-export function notifySignedIn(): void {
-  postMessage("signed-in");
 }
 
 // Call on logout OR when a tab detects an expired/idle session, so all other

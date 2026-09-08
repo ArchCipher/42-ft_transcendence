@@ -1,6 +1,6 @@
 import { isAuthorized } from "@/lib/auth/internal";
 import { parseRequest } from "@/lib/auth/parse-request";
-import { checkSessionByHash, touchSession } from "@/lib/auth/session";
+import { checkSessionByHash } from "@/lib/auth/session";
 import { sessionVerifySchema } from "@/lib/auth/validation";
 import { prisma as db } from "@synctext/db";
 
@@ -45,6 +45,5 @@ export async function POST(request: Request) {
   const collabRole = doc.collab[0]?.docRole; // undefined for owner
   const readOnly = !isOwner && collabRole === "VIEWER";
 
-  await touchSession(session);
   return Response.json({ valid: true, userId: session.userId, readOnly });
 }

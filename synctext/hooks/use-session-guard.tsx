@@ -4,7 +4,6 @@ import {
   useCallback,
   useEffect,
   useRef,
-  useState,
   type ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
@@ -41,13 +40,11 @@ doc editor etc).
    This refreshes lastUsedAt server-side, so a user doing client-side-only
    activity stays logged in.
 3. Cross-tab sync via BroadcastChannel: another tab's session event is broadcast
-   (sender lives in lib/auth/session-state.ts). A signed-in event shows
-   "signed in with another tab or window" notice, a signed-out event clears state
+   (sender lives in lib/auth/session-state.ts). A signed-out event clears state
    + redirects to login page.
 */
 export function SessionGuard({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const [showOtherTabNotice, setShowOtherTabNotice] = useState(false);
   const lastTouchRef = useRef(0);
 
   const checkSession = useCallback(async () => {
@@ -82,13 +79,9 @@ export function SessionGuard({ children }: { children: ReactNode }) {
       const message = event.data;
       if (!message || message.tabId === ownTabId) return; // ignore own broadcast
 
-      //  another tab signed-in
-      if (message.action === "signed-in") setShowOtherTabNotice(true);
       // another tab signed-out
-      else if (message.action === "signed-out") {
-        setShowOtherTabNotice(false);
+      if (message.action === "signed-out")
         router.replace(LOGGED_OUT_URL);
-      }
     };
 
     // ask the server every POLL_MS, on focus / visibility.
@@ -123,49 +116,4 @@ export function SessionGuard({ children }: { children: ReactNode }) {
       window.removeEventListener("keydown", onKeyDown, true);
     };
   }, [checkSession, touchSession]);
-
-  return (
-    <>
-      {children}
-      {showOtherTabNotice && (
-        <div
-          role="status"
-          style={{
-            position: "fixed",
-            insetInline: 0,
-            top: 0,
-            zIndex: 9999,
-            background: "#6fd3ff",
-            color: "#000",
-            padding: "10px 16px",
-            display: "flex",
-            gap: 12,
-            justifyContent: "center",
-            alignItems: "center",
-            fontFamily: "var(--font-mono)",
-            fontSize: "13px",
-          }}
-        >
-          <span>
-            You signed in with another tab or window. Reload to refresh your
-            session.
-          </span>
-          <button
-            onClick={() => window.location.reload()}
-            style={{
-              background: "none",
-              border: "none",
-              textDecoration: "underline",
-              color: "#000",
-              fontSize: "inherit",
-              fontFamily: "inherit",
-              cursor: "pointer",
-            }}
-          >
-            Reload
-          </button>
-        </div>
-      )}
-    </>
-  );
 }
