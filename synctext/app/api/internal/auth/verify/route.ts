@@ -1,9 +1,6 @@
 import { isAuthorized } from "@/lib/auth/internal";
+import { checkSessionByHash, touchSession } from "@/lib/auth/session";
 import { prisma as db } from "@synctext/db";
-import {
-  IDLE_TIMEOUT_MS,
-  SESSION_LAST_USED_UPDATE_THRESHOLD,
-} from "@synctext/shared";
 
 // verify a connection/session and return the user's access for a document
 export async function POST(request: Request) {
@@ -25,30 +22,8 @@ export async function POST(request: Request) {
 
   const { tokenHash, documentName } = body;
 
-  const session = await db.session.findUnique({
-    where: { tokenHash },
-    select: {
-      id: true,
-      userId: true,
-      revokedAt: true,
-      expiresAt: true,
-      lastUsedAt: true,
-    },
-  });
-  if (
-    !session ||
-    session.revokedAt !== null ||
-    session.expiresAt < new Date()
-  ) {
-    return Response.json({ valid: false, reason: "invalid" }, { status: 401 });
-  }
-
-  // idle timeout
-  if (
-    session.lastUsedAt &&
-    Date.now() - session.lastUsedAt.getTime() > IDLE_TIMEOUT_MS
-  )
-    return Response.json({ valid: false, reason: "idle" }, { status: 401 });
+  const session = await checkSessionByHash(tokenHash);
+  if (!session) return Response.json({ valid: false }, { status: 401 });
 
   // 2 queries combined
   // 1. Recheck document access: owner / any collaborator (READ), owner / editor (WRITE)
@@ -71,26 +46,12 @@ export async function POST(request: Request) {
       },
     },
   });
-  if (!doc)
-    return Response.json(
-      { valid: false, reason: "no access" },
-      { status: 401 },
-    );
+  if (!doc) return Response.json({ valid: false }, { status: 401 });
 
   const isOwner = doc.ownerId === session.userId;
   const collabRole = doc.collab[0]?.docRole; // undefined for owner
   const readOnly = !isOwner && collabRole === "VIEWER";
 
-  // refresh lastUsedAt to avoid self-logout
-  if (
-    !session.lastUsedAt ||
-    Date.now() - session.lastUsedAt.getTime() >
-      SESSION_LAST_USED_UPDATE_THRESHOLD
-  ) {
-    await db.session.update({
-      where: { id: session.id },
-      data: { lastUsedAt: new Date() },
-    });
-  }
+  await touchSession(session);
   return Response.json({ valid: true, userId: session.userId, readOnly });
 }

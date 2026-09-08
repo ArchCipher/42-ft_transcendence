@@ -9,6 +9,7 @@ import {
   useHocuspocusProvider,
 } from "@hocuspocus/provider-react"
 import { useEditor } from "@tiptap/react"
+import { SessionGuard } from "@/hooks/use-session-guard"
 
 import Collaboration from "@tiptap/extension-collaboration"
 import CollaborationCaret from "@tiptap/extension-collaboration-caret"
@@ -59,7 +60,7 @@ function SyncEditorSession({ docId, title, user, canEdit }: SyncEditorSessionPro
   })
 
   return (
-    <>
+    <SessionGuard>
       <DocumentNavbar
         docId={docId}
         initialTitle={title}
@@ -69,7 +70,7 @@ function SyncEditorSession({ docId, title, user, canEdit }: SyncEditorSessionPro
         users={others}
       />
       <SimpleEditorView editor={editor} showToolbar={canEdit} />
-    </>
+    </SessionGuard>
   )
 }
 

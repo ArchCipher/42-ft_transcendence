@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import './Dashboard.css';
+import "./Dashboard.css";
 import Image from "next/image";
 import { Dialog } from "@base-ui/react/dialog";
 import type { DocumentSummary } from "@/lib/documents/documents";
@@ -15,18 +15,34 @@ import {
 import { useRouter } from "next/navigation";
 import { User } from "lucide-react";
 import { Menu } from "@base-ui/react/menu";
+import { logoutClient } from "@/lib/auth/session-state";
 
-export default function DashboardClient({username}: {username:string}) {
+type UserProps = {
+  username: string;
+};
 
+export default function DashboardClient({ username }: UserProps) {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [order, setOrder] = useState("creation"); // to order by creation, name, modification
 
+  // cache shouldn't show the dashboard page. It should always run requireSession()
+  useEffect(() => {
+    function handlePageShow(e: PageTransitionEvent) {
+      if (e.persisted) router.refresh();
+    }
+    window.addEventListener("pageshow", handlePageShow);
+    return () => window.removeEventListener("pageshow", handlePageShow);
+  }, [router]);
+
   return (
-    <div className="MainPage">
-      <Header username={username}/>
+    <div className="DashboardPage">
+      <Header username={username} />
       <ControlBar
-        search={search} setSearch={setSearch}
-        order={order} setOrder={setOrder}
+        search={search}
+        setSearch={setSearch}
+        order={order}
+        setOrder={setOrder}
       />
       <Dashboard search={search} order={order} />
     </div>
@@ -35,7 +51,7 @@ export default function DashboardClient({username}: {username:string}) {
 
 // header
 
-function Header({username}:{username:string}) {
+function Header({ username }: UserProps) {
   return (
     <header className="Header">
       <div className="Brand">
@@ -51,21 +67,7 @@ function Header({username}:{username:string}) {
   );
 }
 
-type UserNameProps = {
-  username: string;
-};
-
-function UserName({ username }: UserNameProps) {
-  const router = useRouter();
-
-  async function handleLogout(){
-	try{
-		await fetch("/api/auth/logout", {method: "POST"});
-	} finally{
-		router.push("/auth?verify=logged-out");
-	}
-  }
-
+function UserName({ username }: UserProps) {
   return (
     <div className="UserMenuContainer">
       <Menu.Root modal={false}>
@@ -77,15 +79,14 @@ function UserName({ username }: UserNameProps) {
         <Menu.Portal>
           <Menu.Positioner sideOffset={8} align="center">
             <Menu.Popup className="UserDropdown">
-              <Menu.Item className="UserDropdownItem">
-                Profile
-              </Menu.Item>
+              <Menu.Item className="UserDropdownItem">Profile</Menu.Item>
 
-              <Menu.Item className="UserDropdownItem">
-                Groups
-              </Menu.Item>
+              <Menu.Item className="UserDropdownItem">Groups</Menu.Item>
 
-              <Menu.Item className="UserDropdownItem" onClick={() => void handleLogout()}>
+              <Menu.Item
+                className="UserDropdownItem"
+                onClick={() => logoutClient()}
+              >
                 Logout
               </Menu.Item>
             </Menu.Popup>
@@ -135,10 +136,7 @@ function OrderBox({ orderBy, setOrderBy }: OrderBoxProps) {
     <div className="OrderBox">
       <span>Ordered by</span>
 
-      <select
-        value={orderBy}
-        onChange={(e) => setOrderBy(e.target.value)}
-      >
+      <select value={orderBy} onChange={(e) => setOrderBy(e.target.value)}>
         <option value="creation">Creation date</option>
         <option value="modification">Modification date</option>
         <option value="name">Name</option>
@@ -183,7 +181,6 @@ function ControlBar({ search, setSearch, order, setOrder }: ControlBarProps) {
   );
 }
 
-
 // docs
 
 type DashboardProps = {
@@ -192,13 +189,12 @@ type DashboardProps = {
 };
 
 function Dashboard({ search, order }: DashboardProps) {
-
- const [documents, setDocuments] = useState<DocumentSummary[]>([]);
+  const [documents, setDocuments] = useState<DocumentSummary[]>([]);
   const [isLoadingDocuments, setIsLoadingDocuments] = useState(true);
   const [documentsError, setDocumentsError] = useState("");
 
   const [isCreatingDocument, setIsCreatingDocument] = useState(false);
-  const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);// for deleting docs
+  const [documentToDelete, setDocumentToDelete] = useState<string | null>(null); // for deleting docs
   const [createError, setCreateError] = useState("");
 
   const [documentToEdit, setDocumentToEdit] = useState<string | null>(null);
@@ -234,14 +230,12 @@ function Dashboard({ search, order }: DashboardProps) {
     };
   }, []);
 
-
-
   async function deleteDocument(id: string) {
     try {
       await deleteDocument_api(id);
 
       setDocuments((currentDocuments) =>
-        currentDocuments.filter((doc) => doc.id !== id)
+        currentDocuments.filter((doc) => doc.id !== id),
       );
 
       setDocumentToDelete(null);
@@ -251,19 +245,19 @@ function Dashboard({ search, order }: DashboardProps) {
   }
 
   async function createDocument() {
-      if (isCreatingDocument) return;
+    if (isCreatingDocument) return;
 
-      setCreateError("");
-      setIsCreatingDocument(true);
-      try {
-        const createdDocument = await createDocument_api();
-        router.push(`/doc/${encodeURIComponent(createdDocument.id)}`);
-      } catch {
-        setCreateError("Failed to create the document. Please try again.");
-      } finally {
-        setIsCreatingDocument(false);
-      }
+    setCreateError("");
+    setIsCreatingDocument(true);
+    try {
+      const createdDocument = await createDocument_api();
+      router.push(`/doc/${encodeURIComponent(createdDocument.id)}`);
+    } catch {
+      setCreateError("Failed to create the document. Please try again.");
+    } finally {
+      setIsCreatingDocument(false);
     }
+  }
 
   function openDocument(id: string) {
     router.push(`/doc/${encodeURIComponent(id)}`);
@@ -273,7 +267,7 @@ function Dashboard({ search, order }: DashboardProps) {
     const titleExists = documents.some(
       (doc) =>
         doc.id !== documentToEdit &&
-        doc.title.toLowerCase() === editTitle.trim().toLowerCase()
+        doc.title.toLowerCase() === editTitle.trim().toLowerCase(),
     );
 
     if (!editTitle.trim()) {
@@ -298,8 +292,8 @@ function Dashboard({ search, order }: DashboardProps) {
 
       setDocuments((currentDocuments) =>
         currentDocuments.map((doc) =>
-          doc.id === documentToEdit ? renamedDocument : doc
-        )
+          doc.id === documentToEdit ? renamedDocument : doc,
+        ),
       );
 
       setDocumentToEdit(null);
@@ -311,7 +305,6 @@ function Dashboard({ search, order }: DashboardProps) {
   return (
     <>
       <main className="Dashboard">
-
         <AddDoc
           onAdd={() => void createDocument()}
           disabled={isCreatingDocument}
@@ -327,30 +320,42 @@ function Dashboard({ search, order }: DashboardProps) {
           <p>You do not have any documents yet.</p>
         ) : null}
 
-        {!isLoadingDocuments && !documentsError ? documents.filter((doc) =>
-            doc.title.toLowerCase().includes(search.toLowerCase()))
-          .sort((a, b) => {
-          if (order == "name")
-            return a.title.localeCompare(b.title);
-          const dateField = order === "modification" ? "updatedAt" : "createdAt";
-          return new Date(b[dateField]).getTime() - new Date(a[dateField]).getTime();
-          })
-          .map((doc) => (
-            <DocumentCard
-              key={doc.id}
-              title={doc.title}
-              onOpen={() => openDocument(doc.id)}
-              onDelete={doc.canDelete
-                ? () => setDocumentToDelete(doc.id)
-                : undefined}
-              onEdit={doc.canRename ? () => {
-                setDocumentToEdit(doc.id);
-                setEditTitle(doc.title);
-                setEditError("");
-              } : undefined}
-            />
-          )) : null}
-
+        {!isLoadingDocuments && !documentsError
+          ? documents
+              .filter((doc) =>
+                doc.title.toLowerCase().includes(search.toLowerCase()),
+              )
+              .sort((a, b) => {
+                if (order == "name") return a.title.localeCompare(b.title);
+                const dateField =
+                  order === "modification" ? "updatedAt" : "createdAt";
+                return (
+                  new Date(b[dateField]).getTime() -
+                  new Date(a[dateField]).getTime()
+                );
+              })
+              .map((doc) => (
+                <DocumentCard
+                  key={doc.id}
+                  title={doc.title}
+                  onOpen={() => openDocument(doc.id)}
+                  onDelete={
+                    doc.canDelete
+                      ? () => setDocumentToDelete(doc.id)
+                      : undefined
+                  }
+                  onEdit={
+                    doc.canRename
+                      ? () => {
+                          setDocumentToEdit(doc.id);
+                          setEditTitle(doc.title);
+                          setEditError("");
+                        }
+                      : undefined
+                  }
+                />
+              ))
+          : null}
       </main>
 
       <Dialog.Root
@@ -391,10 +396,7 @@ function Dashboard({ search, order }: DashboardProps) {
               </p>
             )}
 
-            <button
-              className="CreateDocButton"
-              onClick={saveRename}
-            >
+            <button className="CreateDocButton" onClick={saveRename}>
               Save changes
             </button>
 
@@ -423,30 +425,29 @@ function Dashboard({ search, order }: DashboardProps) {
           <Dialog.Backdrop className="DeleteDocOverlay" />
 
           <Dialog.Popup className="DeleteDocPopup">
-          <Dialog.Title>Are you sure?</Dialog.Title>
+            <Dialog.Title>Are you sure?</Dialog.Title>
 
-          <Dialog.Description className="DeleteDocMessage">
-            Think deep!
-          </Dialog.Description>
+            <Dialog.Description className="DeleteDocMessage">
+              Think deep!
+            </Dialog.Description>
 
-          <button
-            className="ConfirmDeleteDoc"
-            autoFocus
-            onClick={() => {
-              if (documentToDelete !== null) {
-                void deleteDocument(documentToDelete);
-              }
-            }}
-          >
-            DELETE
-          </button>
+            <button
+              className="ConfirmDeleteDoc"
+              autoFocus
+              onClick={() => {
+                if (documentToDelete !== null) {
+                  void deleteDocument(documentToDelete);
+                }
+              }}
+            >
+              DELETE
+            </button>
           </Dialog.Popup>
         </Dialog.Portal>
       </Dialog.Root>
     </>
   );
 }
-
 
 type AddDocProps = {
   onAdd: () => void;
@@ -467,7 +468,6 @@ function AddDoc({ onAdd, disabled }: AddDocProps) {
   );
 }
 
-
 type DocumentCardProps = {
   title: string;
   onOpen: () => void;
@@ -479,7 +479,9 @@ function DocumentCard({ title, onOpen, onDelete, onEdit }: DocumentCardProps) {
   return (
     <div className="DocumentCard">
       {onDelete ? (
-        <button className="DeleteDoc" onClick={onDelete}>×</button>
+        <button className="DeleteDoc" onClick={onDelete}>
+          ×
+        </button>
       ) : null}
 
       <button
@@ -497,10 +499,7 @@ function DocumentCard({ title, onOpen, onDelete, onEdit }: DocumentCardProps) {
         />
       </button>
 
-      <span
-        className="DocumentTitle"
-        onDoubleClick={onEdit}
-      >
+      <span className="DocumentTitle" onDoubleClick={onEdit}>
         {title}
       </span>
     </div>

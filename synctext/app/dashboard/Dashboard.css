@@ -6,7 +6,7 @@
   --accent: #6fd3ff;
 }
 
-.MainPage {
+.DashboardPage {
   min-height: 100vh;
   padding: 10px 20px;
   background-image: url('/assets/space-background.png');

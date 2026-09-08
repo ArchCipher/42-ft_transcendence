@@ -6,6 +6,10 @@ import {
 } from "@/lib/auth/session";
 import type { Session, User } from "@synctext/db";
 
+/*
+validateSession,
+if session expired - logout + redirect to login page
+*/
 export async function requireSession(): Promise<Session & { user: User }> {
   const token = await getSessionToken();
   const session = await validateSession(token);
@@ -14,6 +18,5 @@ export async function requireSession(): Promise<Session & { user: User }> {
     if (token) await logoutCurrentSession();
     redirect(token ? "/auth?verify=logged-out" : "/auth");
   }
-
   return session;
 }
