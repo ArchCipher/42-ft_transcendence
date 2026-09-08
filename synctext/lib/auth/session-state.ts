@@ -26,8 +26,7 @@ export function getTabId(): number {
   return tabId;
 }
 
-export type SessionMessage =
-  { action: "signed-out"; tabId: number };
+export type SessionMessage = { action: "signed-out"; tabId: number };
 
 function postMessage(action: SessionMessage["action"]): void {
   const channel = new BroadcastChannel(SESSION_CHANNEL);

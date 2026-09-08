@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  type ReactNode,
-} from "react";
+import { useCallback, useEffect, useRef, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import {
   getTabId,
@@ -43,7 +38,7 @@ doc editor etc).
    (sender lives in lib/auth/session-state.ts). A signed-out event clears state
    + redirects to login page.
 */
-export function SessionGuard({ children }: { children: ReactNode }) {
+export function SessionGuard() {
   const router = useRouter();
   const lastTouchRef = useRef(0);
 
@@ -80,8 +75,7 @@ export function SessionGuard({ children }: { children: ReactNode }) {
       if (!message || message.tabId === ownTabId) return; // ignore own broadcast
 
       // another tab signed-out
-      if (message.action === "signed-out")
-        router.replace(LOGGED_OUT_URL);
+      if (message.action === "signed-out") router.replace(LOGGED_OUT_URL);
     };
 
     // ask the server every POLL_MS, on focus / visibility.
