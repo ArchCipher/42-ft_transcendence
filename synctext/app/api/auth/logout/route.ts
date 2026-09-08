@@ -1,7 +1,4 @@
-import {
-  logoutCurrentSession,
-} from "@/lib/auth/session";
-
+import { logoutCurrentSession } from "@/lib/auth/session";
 
 /*
 API Response contracts: POST /api/auth/logout

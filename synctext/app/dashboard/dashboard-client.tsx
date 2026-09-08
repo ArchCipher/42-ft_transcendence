@@ -85,7 +85,7 @@ function UserName({ username }: UserProps) {
 
               <Menu.Item
                 className="UserDropdownItem"
-                onClick={() => logoutClient()}
+                onClick={() => void logoutClient()}
               >
                 Logout
               </Menu.Item>

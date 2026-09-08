@@ -89,7 +89,10 @@ export async function checkSessionByHash(
 
 // explicit refresh - call ONLY on real user activity
 // update lastUsedAt ONLY every SESSION_LAST_USED_UPDATE_THRESHOLD
-export async function touchSession(session: {id : string; lastUsedAt: Date | null;}):Promise<void>{
+export async function touchSession(session: {
+  id: string;
+  lastUsedAt: Date | null;
+}): Promise<void> {
   if (
     !session.lastUsedAt ||
     Date.now() - session.lastUsedAt.getTime() >

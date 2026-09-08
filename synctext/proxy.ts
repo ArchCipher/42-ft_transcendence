@@ -31,7 +31,6 @@ export function proxy(request: NextRequest) {
   if (!session) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth";
-    url.searchParams.set("next", pathname); // redirect back after successful login
     return NextResponse.redirect(url);
   }
 

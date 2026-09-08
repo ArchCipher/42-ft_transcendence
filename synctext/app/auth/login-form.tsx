@@ -39,8 +39,8 @@ export default function LoginForm() {
         return;
       }
 
-	  // broadcast sign in to other tabs
-	  notifySignedIn();
+      // broadcast sign in to other tabs
+      notifySignedIn();
 
       // Success - redirect to dashboard
       router.push("/dashboard");

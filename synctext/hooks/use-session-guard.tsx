@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { useRouter } from "next/navigation";
 import {
   getTabId,
@@ -11,46 +17,38 @@ import {
 } from "@/lib/auth/session-state";
 
 const POLL_MS = 30_000;
+const TOUCH_MIN_MS = 60_000;
 
 async function fetchSessionStatus(): Promise<{ signedIn: boolean }> {
   try {
     const res = await fetch("/api/session", { cache: "no-store" });
     return res.ok
       ? ((await res.json()) as { signedIn: boolean })
-      : { signedIn: false };
+      : { signedIn: true }; // non-2xx: don't log the user out
   } catch {
     return { signedIn: true }; // network blip: don't log the user out
   }
 }
 
 /*
-Listen for cross-tab session events and fire the matching callback.
+Poll + presence + cross-tab sync. Mounted on every protected page (dashboard,
+doc editor etc).
 
-Mount once per page (inside SessionGuard). We ignore messages we sent
-ourselves (`getTabId()` matches the sender's `tabId`).
-
-- onOtherTabSignedIn: another tab logged in  -> show the "signed in with
-  another tab or window" notice.
-- onOtherTabSignedOut: another tab logged out -> every tab (shared cookie!)
-  now has a dead session, so clear state and go to /auth.
-*/
-
-/*
-Poll + refocus + redirect + banner. Uses BroadcastChannel API sender and
-listener. Mounted on every protected page (dashboard, doc editor etc).
-
-1. Server-side authority: polls /api/session every POLL_MS and re-checks on
-   visibilitychange / focus / pageshow.
-2. Cross-tab sync via BroadcastChannel: a signed-out event from another tab
-   (manual logout or idle/expiry detected there) clears state + redirects +
-   shows the "signed in with another tab or window" notice with a reload
-   action.
-
-BroadcastChannel sender lives in lib/auth/session-state.ts,
+1. Server-side authority: polls GET /api/session every POLL_MS and re-checks on
+   visibilitychange / focus / pageshow. This is READ-ONLY, it detects idle
+   sessions but never refreshes them.
+2. Real presence: pointerdown / keydown gestures ping POST /api/session/activity.
+   This refreshes lastUsedAt server-side, so a user doing client-side-only
+   activity stays logged in.
+3. Cross-tab sync via BroadcastChannel: another tab's session event is broadcast
+   (sender lives in lib/auth/session-state.ts). A signed-in event shows
+   "signed in with another tab or window" notice, a signed-out event clears state
+   + redirects to login page.
 */
 export function SessionGuard({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [showOtherTabNotice, setShowOtherTabNotice] = useState(false);
+  const lastTouchRef = useRef(0);
 
   const checkSession = useCallback(async () => {
     if (
@@ -64,6 +62,18 @@ export function SessionGuard({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // Report REAL user gestures so the server refreshes lastUsedAt.
+  const touchSession = useCallback(() => {
+    if (document.visibilityState !== "visible") return;
+    const now = Date.now();
+    if (now - lastTouchRef.current < TOUCH_MIN_MS) return;
+    lastTouchRef.current = now;
+    void fetch("/api/session/activity", {
+      method: "POST",
+      cache: "no-store",
+    }).catch(() => {});
+  }, []);
+
   useEffect(() => {
     // cross-tab listener - open once and stays open until unmount
     const channel = new BroadcastChannel(SESSION_CHANNEL);
@@ -72,7 +82,9 @@ export function SessionGuard({ children }: { children: ReactNode }) {
       const message = event.data;
       if (!message || message.tabId === ownTabId) return; // ignore own broadcast
 
+      //  another tab signed-in
       if (message.action === "signed-in") setShowOtherTabNotice(true);
+      // another tab signed-out
       else if (message.action === "signed-out") {
         setShowOtherTabNotice(false);
         router.replace(LOGGED_OUT_URL);
@@ -91,9 +103,14 @@ export function SessionGuard({ children }: { children: ReactNode }) {
       if (e.persisted) void checkSession();
     };
 
+    const onPointerDown = () => touchSession();
+    const onKeyDown = () => touchSession();
+
     document.addEventListener("visibilitychange", onVisibility);
     window.addEventListener("focus", onFocus);
     window.addEventListener("pageshow", onPageShow);
+    window.addEventListener("pointerdown", onPointerDown, true);
+    window.addEventListener("keydown", onKeyDown, true);
 
     // cleanup when page unmounts
     return () => {
@@ -102,8 +119,10 @@ export function SessionGuard({ children }: { children: ReactNode }) {
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("focus", onFocus);
       window.removeEventListener("pageshow", onPageShow);
+      window.removeEventListener("pointerdown", onPointerDown, true);
+      window.removeEventListener("keydown", onKeyDown, true);
     };
-  }, [checkSession]);
+  }, [checkSession, touchSession]);
 
   return (
     <>
