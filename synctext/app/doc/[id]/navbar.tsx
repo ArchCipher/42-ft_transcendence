@@ -7,11 +7,9 @@ import type { CollabUser } from "@hocuspocus/provider-react"
 import {
   useHocuspocusAwareness,
   useHocuspocusConnectionStatus,
-  useHocuspocusProvider,
 } from "@hocuspocus/provider-react"
 
 import { renameDocument_api } from "@/app/dashboard/document/document"
-import { requestSnapshot } from "@/lib/sync/sync-snapshot"
 
 type SyncUser = { name: string; color: string }
 
@@ -44,7 +42,6 @@ export function DocumentNavbar({
   initialTitle,
   canRename,
 }: DocumentNavbarProps) {
-  const provider = useHocuspocusProvider()
   const status = useHocuspocusConnectionStatus()
   const users = useHocuspocusAwareness()
   const [title, setTitle] = useState(initialTitle)
@@ -52,7 +49,6 @@ export function DocumentNavbar({
   const [isEditing, setIsEditing] = useState(false)
   const [isRenaming, setIsRenaming] = useState(false)
   const [renameError, setRenameError] = useState("")
-  const [snapshotTitle, setSnapshotTitle] = useState("")
 
   function cancelEditing() {
     setDraftTitle(title)
@@ -80,13 +76,6 @@ export function DocumentNavbar({
     } finally {
       setIsRenaming(false)
     }
-  }
-
-  function saveSnapshot() {
-    const nextSnapshotTitle = snapshotTitle.trim()
-    if (!nextSnapshotTitle) return
-    requestSnapshot(provider, nextSnapshotTitle)
-    setSnapshotTitle("")
   }
 
   return (
@@ -207,28 +196,6 @@ export function DocumentNavbar({
             ) : null}
           </div>
 
-          <form
-            className="hidden items-center sm:flex"
-            onSubmit={(event) => {
-              event.preventDefault()
-              saveSnapshot()
-            }}
-          >
-            <input
-              value={snapshotTitle}
-              onChange={(event) => setSnapshotTitle(event.target.value)}
-              placeholder="Snapshot title"
-              aria-label="Snapshot title"
-              className="min-h-10 w-36 border border-white/15 bg-transparent px-3 text-xs text-white outline-none placeholder:text-white/35 focus:border-white/40"
-            />
-            <button
-              type="submit"
-              disabled={!snapshotTitle.trim()}
-              className="min-h-10 border border-l-0 border-white/15 px-3 text-xs transition-colors hover:bg-white/5 disabled:opacity-40"
-            >
-              Save
-            </button>
-          </form>
         </div>
       </nav>
     </header>

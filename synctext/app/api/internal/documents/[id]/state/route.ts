@@ -1,6 +1,9 @@
 import { isAuthorized } from "@/lib/auth/internal";
 import { prisma as db } from "@synctext/db";
 
+const SNAPSHOT_INTERVAL_MS = 5 * 60 * 1000;
+const SNAPSHOT_RETENTION_LIMIT = 5;
+
 // load the persisted Yjs state for the document requested by hocuspocus
 export async function GET(
   request: Request,
@@ -63,21 +66,80 @@ export async function PUT(
 
   const { id } = await params;
 
-  // check that the document exists before trying to update its saved state
-  const document = await db.document.findUnique({
-    where: { id },
-    select: { id: true },
+  const result = await db.$transaction(async (tx) => {
+    // serialize writes for the same document before checking snapshot timing
+    const lockedDocuments = await tx.$queryRaw<Array<{ id: string }>>`
+      SELECT "id"
+      FROM "Document"
+      WHERE "id" = ${id}
+      FOR UPDATE
+    `;
+
+    if (lockedDocuments.length === 0) return "not-found" as const;
+
+    const document = await tx.document.findUnique({
+      where: { id },
+      select: { ystate: true },
+    });
+
+    if (!document) return "not-found" as const;
+
+    const previousState = document.ystate
+      ? Buffer.from(document.ystate)
+      : null;
+
+    // hocuspocus can ask us to persist a state that is already current
+    if (previousState?.equals(state)) return "unchanged" as const;
+
+    if (previousState) {
+      const latestSnapshot = await tx.documentSnapshot.findFirst({
+        where: { documentId: id },
+        orderBy: { createdAt: "desc" },
+        select: { createdAt: true },
+      });
+
+      const snapshotDue =
+        !latestSnapshot ||
+        Date.now() - latestSnapshot.createdAt.getTime() >= SNAPSHOT_INTERVAL_MS;
+
+      if (snapshotDue) {
+        // preserve the last persisted state before replacing it
+        await tx.documentSnapshot.create({
+          data: {
+            documentId: id,
+            ystate: previousState,
+          },
+        });
+
+        // keep only the newest snapshots for recovery
+        const snapshotsToDelete = await tx.documentSnapshot.findMany({
+          where: { documentId: id },
+          orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+          skip: SNAPSHOT_RETENTION_LIMIT,
+          select: { id: true },
+        });
+
+        if (snapshotsToDelete.length > 0) {
+          await tx.documentSnapshot.deleteMany({
+            where: {
+              id: { in: snapshotsToDelete.map((snapshot) => snapshot.id) },
+            },
+          });
+        }
+      }
+    }
+
+    await tx.document.update({
+      where: { id },
+      data: { ystate: state },
+    });
+
+    return "updated" as const;
   });
 
-  if (!document) {
+  if (result === "not-found") {
     return Response.json({ error: "Document not found" }, { status: 404 });
   }
-
-  // prisma stores the binary Yjs state in the Document.ystate column
-  await db.document.update({
-    where: { id },
-    data: { ystate: state },
-  });
 
   return Response.json({ ok: true });
 }
