@@ -138,6 +138,14 @@ export const verifyEmailSchema = z
   })
   .strict();
 
+// ---- internal --------------------------------------------------------------
+export const sessionVerifySchema = z
+  .object({
+	tokenHash: z.string().min(16).max(256), // server-internal, collab pre-hashed
+	documentName: z.string().min(1),
+  })
+  .strict();
+
 // ---- types & helpers ------------------------------------------------------
 // z.infer yields the OUTPUT type, i.e. after trim/toLowerCase transforms, so
 // route handlers receive normalized values directly.
@@ -147,6 +155,7 @@ export type RegisterInput = z.infer<typeof registerSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type PasswordResetInput = z.infer<typeof passwordResetSchema>;
 export type VerifyEmailInput = z.infer<typeof verifyEmailSchema>;
+export type SessionVerifyInput = z.infer<typeof sessionVerifySchema>;
 
 // Stable JSON shape for the client: { error: "Validation failed", ... } per field.
 export function validationError(

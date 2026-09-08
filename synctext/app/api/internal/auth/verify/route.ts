@@ -1,5 +1,7 @@
 import { isAuthorized } from "@/lib/auth/internal";
+import { parseRequest } from "@/lib/auth/parse-request";
 import { checkSessionByHash, touchSession } from "@/lib/auth/session";
+import { sessionVerifySchema } from "@/lib/auth/validation";
 import { prisma as db } from "@synctext/db";
 
 // verify a connection/session and return the user's access for a document
@@ -8,19 +10,10 @@ export async function POST(request: Request) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = (await request.json().catch(() => null)) as {
-    tokenHash?: unknown;
-    documentName?: unknown;
-  } | null;
-  if (
-    !body ||
-    typeof body.tokenHash !== "string" ||
-    typeof body.documentName !== "string"
-  ) {
-    return Response.json({ error: "Bad request" }, { status: 400 });
-  }
+  const result = await parseRequest(request, sessionVerifySchema);
+  if (result.error) return result.error;
 
-  const { tokenHash, documentName } = body;
+  const { tokenHash, documentName } = result.data;
 
   const session = await checkSessionByHash(tokenHash);
   if (!session) return Response.json({ valid: false }, { status: 401 });

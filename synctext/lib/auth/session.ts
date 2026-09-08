@@ -66,19 +66,7 @@ export async function clearSessionCookie(): Promise<void> {
   store.delete(SESSION_COOKIE_NAME);
 }
 
-// Validate token from request cookie: on every use update `lastUsedAt`, so that
-// `online status` and `idle-timeout` works
-// Note: this takes raw session token
-export async function validateSession(
-  token: string | null,
-): Promise<(Session & { user: User }) | null> {
-  if (!token) return null;
-
-  const session = await checkSessionByHash(hashSessionToken(token));
-  if (session) await touchSession(session);
-  return session;
-}
-
+// Note: this takes a hashed session token
 export async function checkSessionByHash(
   tokenHash: string,
 ): Promise<(Session & { user: User }) | null> {
@@ -101,7 +89,6 @@ export async function checkSessionByHash(
 
 // explicit refresh - call ONLY on real user activity
 // update lastUsedAt ONLY every SESSION_LAST_USED_UPDATE_THRESHOLD
-// Note: this takes a hashed session token
 export async function touchSession(session: {id : string; lastUsedAt: Date | null;}):Promise<void>{
   if (
     !session.lastUsedAt ||
@@ -113,6 +100,19 @@ export async function touchSession(session: {id : string; lastUsedAt: Date | nul
       data: { lastUsedAt: new Date() },
     });
   }
+}
+
+// Validate token from request cookie: on every use update `lastUsedAt`, so that
+// `online status` and `idle-timeout` works
+// Note: this takes raw session token
+export async function validateSession(
+  token: string | null,
+): Promise<(Session & { user: User }) | null> {
+  if (!token) return null;
+
+  const session = await checkSessionByHash(hashSessionToken(token));
+  if (session) await touchSession(session);
+  return session;
 }
 
 /*
