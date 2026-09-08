@@ -1,23 +1,16 @@
 // see : https://tiptap.dev/docs/hocuspocus/provider/react
 "use client"
 
-import {
-  HocuspocusProviderWebsocketComponent,
-  HocuspocusRoom,
-  useHocuspocusProvider,
-} from "@hocuspocus/provider-react"
+import { HocuspocusProviderWebsocketComponent, HocuspocusRoom, useHocuspocusProvider } from "@hocuspocus/provider-react"
 import { useEditor } from "@tiptap/react"
 
 import Collaboration from "@tiptap/extension-collaboration"
 import CollaborationCaret from "@tiptap/extension-collaboration-caret"
 
-import {
-  SimpleEditorView,
-  simpleEditorConfig,
-  baseTiptapExtensions,
-} from "@/components/tiptap-templates/simple/simple-editor-view"
+import { SimpleEditorView, simpleEditorConfig, baseTiptapExtensions } from "@/components/tiptap-templates/simple/simple-editor-view"
 import { DocumentNavbar } from "@/app/doc/[id]/navbar"
 import { getLocalUser } from "@/lib/sync/sync-user"
+import { Footer } from "@/components/Footer"
 
 type SyncUser = { name: string; color: string }
 
@@ -64,6 +57,7 @@ function SyncEditorSession({ docId, title, user, canRename }: SyncEditorSessionP
         canRename={canRename}
       />
       <SimpleEditorView editor={editor} />
+      <Footer />
     </>
   )
 }

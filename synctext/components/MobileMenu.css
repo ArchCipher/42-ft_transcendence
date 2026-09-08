@@ -1,0 +1,48 @@
+.MobileMenu {
+  display: none;
+  position: relative;
+}
+
+.MobileMenuTrigger {
+  width: 44px;
+  height: 44px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #f4f2ee;
+  background: #101b30;
+  border: 1px solid rgba(111, 211, 255, 0.35);
+
+  cursor: pointer;
+}
+
+.MobileMenuPanel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+
+  min-width: 190px;
+  padding: 12px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  background: #071225;
+  border: 1px solid rgba(111, 211, 255, 0.35);
+  z-index: 100;
+}
+
+@media (max-width: 900px) {
+  .MobileMenu {
+    display: block;
+  }
+}
+
+.MobileMenuTrigger {
+  position: relative;
+  z-index: 101;
+  touch-action: manipulation;
+}

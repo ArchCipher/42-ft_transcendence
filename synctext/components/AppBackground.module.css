@@ -2,24 +2,38 @@
   position: relative;
   min-height: 100vh;
   overflow: hidden;
+  background: #020110;
+}
+
+.background::before {
+  content: "";
+  position: fixed;
+  inset: 0;
 
   background: linear-gradient(
-      145deg,
-      #030a1e 0%,
-      #050320 30%,
-      #04041a 55%,
-      #030210 80%,
-      #020110 100%
-    );
-  }
+    145deg,
+    #030a1e 0%,
+    #050320 30%,
+    #04041a 55%,
+    #030210 80%,
+    #020110 100%
+  );
 
-  .nebula {
-  position: absolute;
-  inset: 0;
+  pointer-events: none;
+}
+
+.nebula {
+  position: fixed;
+
+  width: clamp(480px, 48vw, 780px);
+  height: clamp(300px, 34vw, 520px);
+
+  right: 3%;
+  top: -3%;
 
   background:
     radial-gradient(
-      ellipse 16% 14% at 73% 28%,
+      ellipse 16% 14% at 50% 50%,
       rgba(155, 65, 255, 0.48) 0%,
       rgba(120, 40, 230, 0.34) 30%,
       rgba(85, 25, 190, 0.18) 60%,
@@ -27,14 +41,14 @@
     ),
 
     radial-gradient(
-      ellipse 27% 23% at 72% 27%,
+      ellipse 27% 23% at 50% 50%,
       rgba(95, 30, 205, 0.22) 0%,
       rgba(65, 18, 165, 0.13) 55%,
       transparent 100%
     ),
 
     radial-gradient(
-      ellipse 42% 34% at 70% 26%,
+      ellipse 42% 34% at 50% 50%,
       rgba(55, 15, 145, 0.16) 0%,
       rgba(35, 10, 100, 0.08) 60%,
       transparent 100%
@@ -46,12 +60,16 @@
 .content {
   position: relative;
   z-index: 1;
+
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 /*------------------ STARS --------------------------------------------------------------------*/
 
 .starField {
-  position: absolute;
+  position: fixed;
   inset: -25px;
   pointer-events: none;
   overflow: hidden;
@@ -113,7 +131,7 @@
 }
 
 .sparkleField {
-  position: absolute;
+  position: fixed;
   inset: 0;
   pointer-events: none;
 }
@@ -223,7 +241,7 @@
 /*------------------ GALAXY --------------------------------------------------------------------*/
 
 .galaxy {
-  position: absolute;
+  position: fixed;
 
   width: clamp(480px, 48vw, 780px);
   height: clamp(300px, 34vw, 520px);

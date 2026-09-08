@@ -1,6 +1,11 @@
 import "./Login.css";
-import AppBackground from "../../components/AppBackground";
+import AppBackground from "@/components/AppBackground";
 import LoginForm from "./login-form";
+
+import Navbar from "@/components/Navbar";
+import BrandHeader from "@/components/BrandHeader";
+import AppPanel from "@/components/AppPanel";
+import { Footer } from "@/components/Footer";
 
 // NOTICES displayed in navtab
 const NOTICES: Record<string, string> = {
@@ -22,29 +27,21 @@ export default async function Login({
 function LoginPage({ verify }: { verify?: string }) {
   return (
     <AppBackground>
+      <Navbar />
+      <BrandHeader />
+
       {verify && NOTICES[verify] && (
-        <nav className="NoticeBar">{NOTICES[verify]}</nav>
+        <div className="NoticeBar" role="status">
+          {NOTICES[verify]}
+        </div>
       )}
 
       <div className="LoginPage">
-        <Header />
-        <LoginForm />
+        <AppPanel className="LoginPanel">
+          <LoginForm />
+        </AppPanel>
       </div>
+      <Footer />
     </AppBackground>
-  );
-}
-
-function Header() {
-  return (
-    <header className="Header">
-      <div className="Brand">
-        <div className="BrandNumber">42</div>
-
-        <div className="BrandText">
-          <h1>DON&apos;T PANIC</h1>
-          <p>All the documents in the universe</p>
-        </div>
-      </div>
-    </header>
   );
 }

@@ -4,6 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authPost, FALLBACK } from "../auth/api";
 
+import { DisplayText, TechText } from "@/components/Typography";
+import Button from "@/components/Button";
+import Box from "@/components/Box";
+
 export default function RegisterForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -58,15 +62,19 @@ export default function RegisterForm() {
   }
 
   return (
-    <form
-      className="RegisterBox"
-      onSubmit={async (e) => {
-        e.preventDefault(); // don't reload the page
-        await handleRegister(); // handle it with JS
+    <form className="RegisterBox"
+          onSubmit={async (e) => {
+          e.preventDefault(); // don't reload the page
+          await handleRegister(); // handle it with JS
       }}
     >
-      <label htmlFor="email">Email</label>
-      <input
+      <h2 className="RegisterTitle">
+        <DisplayText>Create your account</DisplayText>
+      </h2>
+      <label htmlFor="email">
+        <TechText className="text-xs">Email</TechText>
+      </label>
+      <Box
         id="email"
         type="email"
         placeholder="Email"
@@ -83,8 +91,10 @@ export default function RegisterForm() {
         </p>
       )}
 
-      <label htmlFor="username">Username</label>
-      <input
+      <label htmlFor="username">
+        <TechText className="text-xs">Username</TechText>
+      </label>
+      <Box
         id="username"
         placeholder="Username"
         value={username}
@@ -100,8 +110,10 @@ export default function RegisterForm() {
         </p>
       )}
 
-      <label htmlFor="password">Password</label>
-      <input
+      <label htmlFor="password">
+        <TechText className="text-xs">Password</TechText>
+      </label>
+      <Box
         id="password"
         type="password"
         placeholder="Password"
@@ -118,8 +130,10 @@ export default function RegisterForm() {
         </p>
       )}
 
-      <label htmlFor="confirm-password">Confirm password</label>
-      <input
+      <label htmlFor="confirm-password">
+        <TechText className="text-xs">Confirm password</TechText>
+      </label>
+      <Box
         id="confirm-password"
         type="password"
         placeholder="Confirm Password"
@@ -135,9 +149,9 @@ export default function RegisterForm() {
         </p>
       )}
 
-      <button type="submit" disabled={loading}>
+      <Button type="submit" disabled={loading}>
         {loading ? "Registering..." : "Register"}
-      </button>
-    </form>
+      </Button>
+      </form>
   );
 }

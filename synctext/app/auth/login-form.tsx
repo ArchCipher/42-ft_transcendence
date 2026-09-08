@@ -4,6 +4,9 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authPost, FALLBACK } from "./api";
+import { DisplayText, TechText } from "@/components/Typography";
+import Button from "@/components/Button";
+import Box from "@/components/Box";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -55,10 +58,18 @@ export default function LoginForm() {
         await handleLogin(); // handle it with JS
       }}
     >
-      {/*<h2>Access the Guide</h2>*/}
+      <h2 className="LoginTitle">
+        <DisplayText>
+          Access the Guide
+        </DisplayText>
+      </h2>
 
-      <label htmlFor="email">Email</label>
-      <input
+      <label htmlFor="email">
+        <TechText className="text-xs">
+          Email
+        </TechText>
+      </label>
+      <Box
         id="email"
         type="email"
         placeholder="Email"
@@ -75,8 +86,12 @@ export default function LoginForm() {
         </p>
       )}
 
-      <label htmlFor="password">Password</label>
-      <input
+      <label htmlFor="password">
+        <TechText className="text-xs">
+          Password
+        </TechText>
+      </label>
+      <Box
         id="password"
         type="password"
         placeholder="Password"
@@ -99,12 +114,20 @@ export default function LoginForm() {
         </p>
       )}
 
-      <button type="submit" disabled={loading}>
+      <Button type="submit" disabled={loading}>
         {loading ? "Accessing..." : "Access the Guide"}
-      </button>
+      </Button>
       <div className="LoginLinks">
-        <Link href="/register">Create account</Link>
-        <Link href="/forgot-password">Forgot password?</Link>
+        <Link href="/register">
+          <TechText className="text-xs text-[#6fd3ff]">
+            Create account
+          </TechText>
+        </Link>
+        <Link href="/forgot-password">
+          <TechText className="text-xs text-[#6fd3ff]">
+            Forgot password?
+          </TechText>
+        </Link>
       </div>
     </form>
   );

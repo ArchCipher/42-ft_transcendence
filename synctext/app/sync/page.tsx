@@ -1,10 +1,15 @@
-"use client"
+"use client";
 
-import dynamic from "next/dynamic"
+import dynamic from "next/dynamic";
 
-// SyncEditorPage uses window.location to build websocket URL => {ssr: false}
-const SyncEditorPage = dynamic(() => import("@/components/sync/sync-editor").then((mod)=> mod.SyncEditorPage), {ssr: false})
+const SyncEditorPage = dynamic(
+  () =>
+    import("@/components/sync/sync-editor").then(
+      (mod) => mod.SyncEditorPage
+    ),
+  { ssr: false }
+);
 
 export default function Page() {
-  return <SyncEditorPage />
+  return <SyncEditorPage />;
 }
