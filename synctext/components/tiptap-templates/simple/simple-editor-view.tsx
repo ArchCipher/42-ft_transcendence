@@ -270,7 +270,13 @@ const MobileToolbarContent = ({
 // as a prop instead of building its own — so it can be reused for an editor
 // with different extensions (e.g. the collaborative one in components/sync/)
 // without duplicating this file's ~200 lines a second time.
-export function SimpleEditorView({ editor }: { editor: Editor | null }) {
+export function SimpleEditorView({
+  editor,
+  showToolbar = true,
+}: {
+  editor: Editor | null
+  showToolbar?: boolean
+}) {
   const isMobile = useIsBreakpoint()
   const { height } = useWindowSize()
   const [mobileView, setMobileView] = useState<"main" | "highlighter" | "link">(
@@ -310,6 +316,36 @@ export function SimpleEditorView({ editor }: { editor: Editor | null }) {
     openSearchAndReplace()
   }, [closeSearchAndReplace, isSearchAndReplaceOpen, openSearchAndReplace])
 
+  let toolbarContent
+  if (!showToolbar) {
+    toolbarContent = (
+      <>
+        <Spacer />
+        <ToolbarGroup>
+          <ThemeToggle />
+        </ToolbarGroup>
+      </>
+    )
+  } else if (mobileView === "main") {
+    toolbarContent = (
+      <MainToolbarContent
+        onHighlighterClick={() => setMobileView("highlighter")}
+        onLinkClick={() => setMobileView("link")}
+        onSearchAndReplaceClick={toggleSearchAndReplace}
+        isSearchAndReplaceOpen={isSearchAndReplaceOpen}
+        searchAndReplaceButtonRef={searchAndReplaceButtonRef}
+        isMobile={isMobile}
+      />
+    )
+  } else {
+    toolbarContent = (
+      <MobileToolbarContent
+        type={mobileView === "highlighter" ? "highlighter" : "link"}
+        onBack={() => setMobileView("main")}
+      />
+    )
+  }
+
   return (
     <div className="simple-editor-wrapper">
       <EditorContext.Provider value={{ editor }}>
@@ -323,21 +359,7 @@ export function SimpleEditorView({ editor }: { editor: Editor | null }) {
               : {}),
           }}
         >
-          {mobileView === "main" ? (
-            <MainToolbarContent
-              onHighlighterClick={() => setMobileView("highlighter")}
-              onLinkClick={() => setMobileView("link")}
-              onSearchAndReplaceClick={toggleSearchAndReplace}
-              isSearchAndReplaceOpen={isSearchAndReplaceOpen}
-              searchAndReplaceButtonRef={searchAndReplaceButtonRef}
-              isMobile={isMobile}
-            />
-          ) : (
-            <MobileToolbarContent
-              type={mobileView === "highlighter" ? "highlighter" : "link"}
-              onBack={() => setMobileView("main")}
-            />
-          )}
+          {toolbarContent}
         </Toolbar>
 
         <SearchAndReplace

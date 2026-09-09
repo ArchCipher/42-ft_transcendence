@@ -1,17 +1,12 @@
 "use client"
 
-import { useState } from "react"
 import {
   useHocuspocusAwareness,
   useHocuspocusConnectionStatus,
-  useHocuspocusProvider,
 } from "@hocuspocus/provider-react"
 import type { CollabUser } from "@hocuspocus/provider-react"
 
 import { Badge } from "@/components/tiptap-ui-primitive/badge"
-import { Button } from "@/components/tiptap-ui-primitive/button"
-import { Input } from "@/components/tiptap-ui-primitive/input"
-import { requestSnapshot } from "@/lib/sync/sync-snapshot"
 
 const STATUS_VARIANT = {
   connected: "green",
@@ -36,17 +31,8 @@ function collaboratorIdentity({ user }: CollabUser): { name: string; color: stri
 }
 
 export function SyncHeader() {
-  const provider = useHocuspocusProvider()
   const status = useHocuspocusConnectionStatus()
   const users = useHocuspocusAwareness()
-  const [snapshotTitle, setSnapshotTitle] = useState("")
-
-  const handleRequestSnapshot = () => {
-    const title = snapshotTitle.trim()
-    if (!title) return
-    requestSnapshot(provider, title)
-    setSnapshotTitle("")
-  }
 
   return (
     <header
@@ -87,24 +73,6 @@ export function SyncHeader() {
           )
         })}
       </div>
-
-      <form
-        onSubmit={(event) => {
-          event.preventDefault()
-          handleRequestSnapshot()
-        }}
-        style={{ display: "flex", gap: "0.5rem", marginLeft: "auto" }}
-      >
-        <Input
-          value={snapshotTitle}
-          onChange={(event) => setSnapshotTitle(event.target.value)}
-          placeholder="Snapshot title"
-          aria-label="Snapshot title"
-        />
-        <Button type="submit" disabled={!snapshotTitle.trim()}>
-          Save snapshot
-        </Button>
-      </form>
     </header>
   )
 }

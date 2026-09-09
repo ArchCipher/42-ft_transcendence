@@ -3,14 +3,12 @@
 import Link from "next/link"
 import { useState } from "react"
 import type { CollabUser } from "@hocuspocus/provider-react"
-import { useHocuspocusAwareness, useHocuspocusConnectionStatus, useHocuspocusProvider } from "@hocuspocus/provider-react"
-import Button from "@/components/Button"
-import { Check, Pencil } from "lucide-react"
+import {
+  useHocuspocusAwareness,
+  useHocuspocusConnectionStatus,
+} from "@hocuspocus/provider-react"
+
 import { renameDocument_api } from "@/app/dashboard/document/document"
-import { requestSnapshot } from "@/lib/sync/sync-snapshot"
-import styles from "./navbar.module.css"
-import Box from "@/components/Box"
-import { DisplayText, TechText } from "@/components/Typography"
 
 type SyncUser = { name: string; color: string }
 
@@ -43,7 +41,6 @@ export function DocumentNavbar({
   initialTitle,
   canRename,
 }: DocumentNavbarProps) {
-  const provider = useHocuspocusProvider()
   const status = useHocuspocusConnectionStatus()
   const users = useHocuspocusAwareness()
   const [title, setTitle] = useState(initialTitle)
@@ -51,7 +48,6 @@ export function DocumentNavbar({
   const [isEditing, setIsEditing] = useState(false)
   const [isRenaming, setIsRenaming] = useState(false)
   const [renameError, setRenameError] = useState("")
-  const [snapshotTitle, setSnapshotTitle] = useState("")
 
   function cancelEditing() {
     setDraftTitle(title)
@@ -79,13 +75,6 @@ export function DocumentNavbar({
     } finally {
       setIsRenaming(false)
     }
-  }
-
-  function saveSnapshot() {
-    const nextSnapshotTitle = snapshotTitle.trim()
-    if (!nextSnapshotTitle) return
-    requestSnapshot(provider, nextSnapshotTitle)
-    setSnapshotTitle("")
   }
 
   return (
@@ -234,29 +223,6 @@ export function DocumentNavbar({
             ) : null}
           </div>
 
-          <form
-            className="flex w-full items-center gap-2 min-[901px]:w-auto"
-            onSubmit={(event) => {
-              event.preventDefault()
-              saveSnapshot()
-            }}
-          >
-            <div className="min-w-0 flex-1 min-[901px]:w-40 min-[901px]:flex-none">
-              <Box
-                value={snapshotTitle}
-                onChange={(event) => setSnapshotTitle(event.target.value)}
-                placeholder="Snapshot title"
-                aria-label="Snapshot title"
-              />
-          </div>
-          <Button
-            type="submit"
-            variant="outline"
-            compact
-            disabled={!snapshotTitle.trim()}>
-            Save
-          </Button>
-          </form>
         </div>
       </nav>
     </header>

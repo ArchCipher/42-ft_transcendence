@@ -56,6 +56,18 @@ model Document {
 
   // Collaboration relation
   collab    DocumentShare[] @relation("Collaborator")
+  snapshots DocumentSnapshot[]
+}
+
+model DocumentSnapshot {
+  id         String   @id @default(cuid())
+  documentId String
+  ystate     Bytes
+  createdAt  DateTime @default(now())
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId, createdAt])
 }
 
 model DocumentShare {
