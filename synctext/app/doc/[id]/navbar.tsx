@@ -7,8 +7,11 @@ import {
   useHocuspocusAwareness,
   useHocuspocusConnectionStatus,
 } from "@hocuspocus/provider-react"
-
+import styles from "./navbar.module.css"
+import { DisplayText, TechText } from "@/components/Typography"
+import Button from "@/components/Button"
 import { renameDocument_api } from "@/app/dashboard/document/document"
+import { Check, Pencil } from "lucide-react"
 
 type SyncUser = { name: string; color: string }
 
