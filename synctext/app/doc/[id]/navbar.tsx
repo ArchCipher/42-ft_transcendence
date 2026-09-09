@@ -12,6 +12,7 @@ import { DisplayText, TechText } from "@/components/Typography"
 import Button from "@/components/Button"
 import { renameDocument_api } from "@/app/dashboard/document/document"
 import { Check, Pencil } from "lucide-react"
+import Box from "@/components/Box"
 
 type SyncUser = { name: string; color: string }
 
