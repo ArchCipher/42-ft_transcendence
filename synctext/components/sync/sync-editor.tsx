@@ -8,7 +8,7 @@ import {
   useHocuspocusConnectionStatus,
   useHocuspocusProvider,
 } from "@hocuspocus/provider-react"
-import { useEditor } from "@tiptap/react"
+import { AnyExtension, useEditor } from "@tiptap/react"
 import { SessionGuard } from "@/hooks/use-session-guard"
 
 import Collaboration from "@tiptap/extension-collaboration"
@@ -56,7 +56,7 @@ function SyncEditorSession({ docId, title, user, canEdit }: SyncEditorSessionPro
       ...baseTiptapExtensions({ undoRedo: false }),
       Collaboration.configure({ document: provider.document }),
       CollaborationCaret.configure({ provider, user }),
-    ],
+    ] as AnyExtension[],
   })
 
   return (

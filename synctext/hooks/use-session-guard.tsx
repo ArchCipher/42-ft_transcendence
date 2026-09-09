@@ -38,7 +38,7 @@ doc editor etc).
    (sender lives in lib/auth/session-state.ts). A signed-out event clears state
    + redirects to login page.
 */
-export function SessionGuard() {
+export function SessionGuard({ children }: { children: ReactNode }) {
   const router = useRouter();
   const lastTouchRef = useRef(0);
 
@@ -109,5 +109,6 @@ export function SessionGuard() {
       window.removeEventListener("pointerdown", onPointerDown, true);
       window.removeEventListener("keydown", onKeyDown, true);
     };
-  }, [checkSession, touchSession]);
+  }, [checkSession, touchSession, router]);
+  return <>{children}</>;
 }
