@@ -20,7 +20,7 @@ function Stars() {
     styles.starLayerNear,
   ];
 
-  const amounts = [320, 200, 80];
+  const amounts = [160, 90, 30];
 
   return (
     <div className={styles.starField} aria-hidden="true">
@@ -75,32 +75,14 @@ const SPARKLES = [
   { x: 39, y: 67, size: 3, duration: 11.5, delay: 4.7, glow: 0.45 },
   { x: 61, y: 24, size: 2, duration: 7.1, delay: 2.2, glow: 0.30 },
   { x: 79, y: 49, size: 2.6, duration: 13.4, delay: 6.1, glow: 0.40 },
-  { x: 90, y: 74, size: 2, duration: 9.6, delay: 0.7, glow: 0.28 },
 
-  // tiny, very bright white star
   { x: 52, y: 42, size: 1.7, duration: 15.2, delay: 3.8, glow: 1 },
 
-  { x: 28, y: 82, size: 1.8, duration: 17.5, delay: 8.2, glow: 0.55 },
-  { x: 6,  y: 22, size: 1.8, duration: 12.8, delay: 5.4, glow: 0.45 },
-  { x: 9,  y: 63, size: 2.2, duration: 16.1, delay: 2.7, glow: 0.60 },
-
+  { x: 9, y: 63, size: 2.2, duration: 16.1, delay: 2.7, glow: 0.60 },
   { x: 95, y: 30, size: 1.7, duration: 10.7, delay: 7.1, glow: 0.50 },
-  { x: 97, y: 58, size: 2.0, duration: 14.9, delay: 3.3, glow: 0.65 },
-
-  { x: 4,  y: 18, size: 1.6, duration: 6.8,  delay: 1.1, glow: 0.45 },
-  { x: 7,  y: 42, size: 2.0, duration: 8.4,  delay: 3.7, glow: 0.55 },
-  { x: 5,  y: 76, size: 1.7, duration: 10.2, delay: 5.2, glow: 0.40 },
-
-  { x: 94, y: 20, size: 1.8, duration: 7.2,  delay: 2.4, glow: 0.50 },
-  { x: 96, y: 47, size: 2.1, duration: 9.1,  delay: 4.9, glow: 0.60 },
   { x: 93, y: 80, size: 1.6, duration: 11.3, delay: 0.8, glow: 0.42 },
-
-  { x: 2,  y: 55, size: 1.9, duration: 5.8, delay: 3.2, glow: 0.65 },
   { x: 12, y: 88, size: 2.3, duration: 7.4, delay: 5.7, glow: 0.80 },
-
   { x: 88, y: 12, size: 1.8, duration: 6.3, delay: 1.9, glow: 0.70 },
-  { x: 98, y: 69, size: 2.2, duration: 5.5, delay: 4.1, glow: 0.85 },
-
 ];
 
 function Sparkles() {
@@ -140,11 +122,11 @@ const GALAXY_COLORS = [
 ];
 
 function Galaxy() {
-  const particles = Array.from({ length: 550 }, (_, i) => {
+  const particles = Array.from({ length: 350 }, (_, i) => {
     const t = deterministicRandom(i * 11 + 1);
 
     // più particelle concentrate verso il centro
-    const radius = Math.pow(t, 1.7) * 48;
+    const radius = Math.pow(t, 1.7) * 40;
 
     // 3 bracci principali
     const arm = i % 3;
