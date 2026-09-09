@@ -14,10 +14,34 @@ const features = [
 function FeaturePreview({ index }: { index: number }) {
   if (index === 0) {
     return (
-      <div aria-hidden="true" className="relative h-36 overflow-hidden border-y border-white/10 bg-[oklch(0.17_0.01_285)] px-6 py-5">
-        <div className="flex items-center gap-2 font-mono text-[.62rem] text-[oklch(0.72_0.018_285)]"><span className="size-2 rounded-full bg-[oklch(0.72_0.12_290)]" />Maya is writing</div>
-        <p className="mt-6 max-w-[28ch] font-serif text-lg leading-snug text-[oklch(0.9_0.012_285)]">Ideas get better when the room can think on the same page<span className="ml-0.5 inline-block h-5 w-px translate-y-1 bg-[oklch(0.78_0.12_290)]" /></p>
-        <div className="absolute right-5 bottom-4 flex -space-x-2"><span className="grid size-7 place-items-center rounded-full border border-[#111] bg-[oklch(0.68_0.09_30)] font-mono text-[.55rem] text-[#111]">MK</span><span className="grid size-7 place-items-center rounded-full border border-[#111] bg-[oklch(0.75_0.07_200)] font-mono text-[.55rem] text-[#111]">AL</span><span className="grid size-7 place-items-center rounded-full border border-[#111] bg-[oklch(0.76_0.08_95)] font-mono text-[.55rem] text-[#111]">+2</span></div>
+      <div aria-hidden="true" className="relative h-36 overflow-hidden 
+                                          bg-[oklch(0.17_0.01_285)] px-6 py-5">
+        <div className="flex items-center gap-2 font-mono text-[.62rem] 
+                        text-[oklch(0.72_0.018_285)]"><span className="size-2 
+                        rounded-full bg-[oklch(0.72_0.12_290)]" />
+                        Maya is writing</div>
+        <p className="mt-6 max-w-[28ch] font-serif text-lg 
+                      leading-snug text-[oklch(0.9_0.012_285)]">
+                        Ideas get better when the room can think on the same page
+                      <span className="ml-0.5 inline-block h-5 w-px 
+                      translate-y-1 bg-[oklch(0.78_0.12_290)]" />
+        </p>
+        <div className="absolute right-5 bottom-4 flex -space-x-2">
+                        <span className="grid size-7 place-items-center 
+                        rounded-full border border-[#111] 
+                        bg-[oklch(0.68_0.09_30)] 
+                        font-mono text-[.55rem] text-[#111]">
+                          MK</span>
+                          <span className="grid size-7 
+                          place-items-center rounded-full 
+                          border border-[#111] bg-[oklch(0.75_0.07_200)] 
+                          font-mono text-[.55rem] text-[#111]">
+                            AL</span>
+                            <span className="grid size-7 
+                            place-items-center rounded-full 
+                            border border-[#111] bg-[oklch(0.76_0.08_95)] 
+                            font-mono text-[.55rem] text-[#111]">+2</span>
+        </div>
       </div>
     );
   }
@@ -83,7 +107,7 @@ export function Features() {
                   </TechText>
                   <Icon aria-hidden="true" className="size-4 text-[oklch(0.72_0.04_285)] [stroke-width:1.35]" />
                   </CardHeader>
-                <CardContent className="flex flex-1 flex-col justify-end p-0 -ml-1">
+                <CardContent className="flex flex-1 flex-col justify-end p-0">
                   <FeaturePreview index={index} />
                   <div className="px-6 pt-7 pb-8">
                     <CardTitle>

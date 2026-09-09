@@ -1,30 +1,15 @@
 .MobileMenu {
   display: none;
   position: relative;
-}
-
-.MobileMenuTrigger {
-  width: 44px;
-  height: 44px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  color: #f4f2ee;
-  background: #101b30;
-  border: 1px solid rgba(111, 211, 255, 0.35);
-
-  cursor: pointer;
+  z-index: 200;
 }
 
 .MobileMenuPanel {
   position: absolute;
-  top: calc(100% + 10px);
+  top: calc(100% + 12px);
   right: 0;
-
-  min-width: 190px;
-  padding: 12px;
+  min-width: 140px;
+  padding: 15px;
 
   display: flex;
   flex-direction: column;
@@ -32,17 +17,30 @@
 
   background: #071225;
   border: 1px solid rgba(111, 211, 255, 0.35);
-  z-index: 100;
+
+  z-index: 201;
+}
+
+.MobileMenuTrigger {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  position: relative;
+  z-index: 202;
+
+  color: #f4f2ee;
+  background: #101b30;
+  border: 1px solid rgba(111, 211, 255, 0.35);
+
+  cursor: pointer;
+  touch-action: manipulation;
 }
 
 @media (max-width: 900px) {
   .MobileMenu {
     display: block;
   }
-}
-
-.MobileMenuTrigger {
-  position: relative;
-  z-index: 101;
-  touch-action: manipulation;
 }

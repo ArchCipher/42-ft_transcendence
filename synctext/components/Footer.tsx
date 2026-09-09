@@ -13,11 +13,11 @@ export function Footer() {
               px-[clamp(1.25rem,5vw,5rem)] py-4
               text-[#f4f2ee]
               max-sm:min-h-0 max-sm:flex-col max-sm:items-stretch
-              max-sm:gap-6 max-sm:py-10">
+              max-sm:gap-3 max-sm:py-4">
         <nav aria-label="Legal navigation" className="flex flex-wrap gap-[clamp(1rem,3vw,2.5rem)] max-sm:grid max-sm:grid-cols-2 max-sm:gap-x-6 max-sm:gap-y-1">
           {legalLinks.map(([label, href]) => (
             <Link
-              className="text-inherit no-underline hover:text-[#f4f2ee] focus-visible:outline-2 focus-visible:outline-white max-sm:flex max-sm:min-h-11 max-sm:items-center"
+              className="text-inherit no-underline hover:text-[#f4f2ee] focus-visible:outline-2 focus-visible:outline-white max-sm:flex max-sm:min-h-5 max-sm:items-center"
               href={href}
               key={label}
             >

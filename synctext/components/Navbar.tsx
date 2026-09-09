@@ -11,7 +11,7 @@ export default function Navbar({ children,
                                   mobileMenu = true,
                                 }: NavbarProps) {
   return (
-    <header className="relative z-10 w-full border-b border-white/15">
+    <header className="relative z-50 w-full border-b border-white/15">
       <nav
         aria-label="Main navigation"
         className="

@@ -19,6 +19,8 @@ export default function MainPage() {
                             text-[oklch(0.94_0.012_285)]
                             selection:bg-[oklch(0.72_0.1_290)]
                             selection:text-[oklch(0.12_0.006_285)]">
+            <div className="relative z-50">
+
             <Navbar>
               <Button href="#features" variant="outline">
                 Features
@@ -33,7 +35,11 @@ export default function MainPage() {
               </Button>
             </Navbar>
 
-            <BrandHeader />
+            </div>
+
+            <div className="relative z-0">
+              <BrandHeader />
+            </div>
 
             <Hero />
             <Features />
