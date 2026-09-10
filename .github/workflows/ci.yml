@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build with make
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Prepare local configuration
+        run: make setup
+
+      - name: Build and start the application
+        run: make
+
+      - name: Verify Compose services are ready
+        run: |
+          expected='{"db":"healthy","web":"healthy","nginx":"running","migrate":"exited","collab":"running"}'
+          for attempt in {1..30}; do
+            services="$(docker compose -f compose.yaml ps --all --format json)"
+            printf '%s\n' "$services"
+            if jq -s -e --argjson expected "$expected" '
+              ($expected | to_entries) as $expected_entries
+              | (reduce .[] as $service ({}; .[$service.Service] = (if $service.Health == "" then $service.State else $service.Health end))) as $actual
+              | all($expected_entries[]; $actual[.key] == .value)
+            ' <<<"$services"; then
+              exit 0
+            fi
+            sleep 5
+          done
+
+          echo "Compose services did not reach their expected states." >&2
+          exit 1
+
+      - name: Show Compose logs on failure
+        if: failure()
+        run: docker compose -f compose.yaml logs --no-color
+
+      - name: Clean up Compose resources
+        if: always()
+        run: docker compose -f compose.yaml down -v --remove-orphans
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint frontend
+        run: npm --prefix synctext run lint -- --max-warnings=0
