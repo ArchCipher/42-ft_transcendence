@@ -127,12 +127,11 @@ export function DocumentNavbar({
           </Link>
 
           {!isEditing ? (
-            <Button
-              href="/dashboard"
-              compact
-              className="max-[900px]:min-h-6 max-[900px]:px-1.5 max-[900px]:py-0 max-[900px]:text-[9px]">
-              Dashboard
-            </Button>
+            <div className="max-[900px]:scale-75 max-[900px]:origin-left">
+              <Button href="/dashboard" compact>
+                Dashboard
+              </Button>
+            </div>
           ) : null}
         </div>
 
