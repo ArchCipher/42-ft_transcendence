@@ -15,7 +15,7 @@ import {
 import { useRouter } from "next/navigation";
 import { User } from "lucide-react";
 import { Menu } from "@base-ui/react/menu";
-import { logoutClient } from "@/lib/auth/session-state";
+import { LOGGED_OUT_URL, logoutClient } from "@/lib/auth/session-state";
 
 type UserProps = {
   username: string;
@@ -68,6 +68,7 @@ function Header({ username }: UserProps) {
 }
 
 function UserName({ username }: UserProps) {
+  const router = useRouter();
   return (
     <div className="UserMenuContainer">
       <Menu.Root modal={false}>
@@ -85,7 +86,7 @@ function UserName({ username }: UserProps) {
 
               <Menu.Item
                 className="UserDropdownItem"
-                onClick={() => void logoutClient()}
+                onClick={() => void logoutClient(()=> router.push(LOGGED_OUT_URL))}
               >
                 Logout
               </Menu.Item>

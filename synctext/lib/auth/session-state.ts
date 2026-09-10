@@ -40,12 +40,12 @@ export function notifySignedOut(): void {
   postMessage("signed-out");
 }
 
-export async function logoutClient(): Promise<void> {
+export async function logoutClient(navigate: () => void): Promise<void> {
   notifySignedOut();
   // wait for logout to return
   await Promise.race([
     fetch("/api/auth/logout", { method: "POST" }).catch(() => {}),
     new Promise((resolve) => setTimeout(resolve, 2000)),
   ]);
-  window.location.assign(LOGGED_OUT_URL);
+  navigate();
 }

@@ -50,9 +50,9 @@ export function SessionGuard({ children }: { children: ReactNode }) {
       return;
     const status = await fetchSessionStatus();
     if (!status.signedIn) {
-      logoutClient();
+      logoutClient(() => router.push(LOGGED_OUT_URL));
     }
-  }, []);
+  }, [router]);
 
   // Report REAL user gestures so the server refreshes lastUsedAt.
   const touchSession = useCallback(() => {
