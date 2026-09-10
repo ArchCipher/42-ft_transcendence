@@ -105,32 +105,41 @@ export function DocumentNavbar({
     >
       <nav
         aria-label="Document navigation"
-        className="grid min-h-16
-                    grid-cols-1
-                    items-center gap-2
-                    px-3 py-2
-                    min-[901px]:grid-cols-[auto_minmax(0,1fr)_auto]
-                    min-[901px]:gap-3
-                    min-[901px]:px-6">
-        <div className="flex min-w-0 items-center gap-5">
+        className="grid min-h-12
+           grid-cols-[1fr_auto]
+           items-center gap-x-2 gap-y-1
+           px-2 py-1
+           min-[901px]:min-h-16
+           min-[901px]:grid-cols-[auto_minmax(0,1fr)_auto]
+           min-[901px]:gap-3
+           min-[901px]:px-6
+           min-[901px]:py-2">
+        <div className="row-start-2 flex min-w-0 items-center gap-2
+                        min-[901px]:row-auto min-[901px]:gap-5">
           <Link
             href="/"
             aria-label="SyncText home"
             className="text-[#f4f2ee] no-underline"
           >
-            <DisplayText className="text-2xl">
+            <DisplayText className="text-lg min-[901px]:text-2xl">
               SyncText
             </DisplayText>
           </Link>
 
           {!isEditing ? (
-            <Button href="/dashboard" compact>
+            <Button
+              href="/dashboard"
+              compact
+              className="max-[900px]:min-h-6 max-[900px]:px-1.5 max-[900px]:py-0 max-[900px]:text-[9px]">
               Dashboard
             </Button>
           ) : null}
         </div>
 
-        <div className="min-w-0 sm:px-3">
+        <div className="col-span-2 row-start-1 min-w-0
+                min-[901px]:col-span-1
+                min-[901px]:row-auto
+                min-[901px]:px-3">
           {isEditing ? (
             <form
               className="mx-auto flex max-w-xl items-center gap-2"
@@ -178,17 +187,24 @@ export function DocumentNavbar({
                 setDraftTitle(title)
                 setIsEditing(true)
               }}
-              className="mx-auto flex min-h-10 max-w-xl items-center gap-2 px-3 text-left text-sm tracking-tight text-white transition-colors hover:bg-white/5 disabled:cursor-default disabled:hover:bg-transparent"
+              className="mx-auto flex min-h-10 max-w-xl items-center gap-2
+              px-3 text-left text-sm tracking-tight text-white
+              transition-colors hover:bg-white/5 disabled:cursor-default disabled:hover:bg-transparent
+                          max-[900px]:mx-0
+                          max-[900px]:w-full
+                          max-[900px]:max-w-none
+                          max-[900px]:justify-center
+                          max-[900px]:px-0"
               title={canRename ? "Rename document" : "You have view-only access"}
             >
-              <span className="sm:hidden">
-                <TechText className="text-sm normal-case">
-                  {truncateTitle(title, 15)}
+              <span className="min-[901px]:hidden">
+                <TechText className="text-base normal-case">
+                  {truncateTitle(title, 30)}
                 </TechText>
               </span>
 
-              <span className="hidden sm:inline">
-                <TechText className="text-sm normal-case">
+              <span className="hidden min-[901px]:inline">
+                <TechText className="text-base normal-case">
                   {truncateTitle(title, 50)}
                 </TechText>
               </span>
@@ -202,21 +218,23 @@ export function DocumentNavbar({
           ) : null}
         </div>
 
-        <div className="ml-auto flex min-w-0 items-center justify-end gap-2
-                        max-[900px]:ml-0
-                        max-[900px]:w-full
-                        max-[900px]:flex-wrap
-                        max-[900px]:justify-start">
+          <div className="col-start-2 row-start-2 ml-auto flex min-w-0 items-center justify-end gap-2
+                min-[901px]:col-auto
+                min-[901px]:row-auto">
           {!isEditing ? (
             <span
               className="inline-flex min-h-11 items-center
                         justify-center border border-[#6fd3ff]/30
-                        bg-[#101b30] px-3 text-white/70 sm:gap-2"
+                        bg-[#101b30] px-3 text-white/70 sm:gap-2
+                        max-[900px]:min-h-0
+                        max-[900px]:border-0
+                        max-[900px]:bg-transparent
+                        max-[900px]:p-0"
               aria-label={`Connection status: ${status}`}
               title={status}
             >
               <span className={`size-2 rounded-full ${STATUS_COLOR[status]}`} aria-hidden="true" />
-              <TechText className="text-sm normal-case">
+              <TechText className="text-sm normal-case max-[900px]:hidden">
                 {status}
               </TechText>
             </span>
