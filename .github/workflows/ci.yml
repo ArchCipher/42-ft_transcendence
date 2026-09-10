@@ -27,11 +27,11 @@ jobs:
         run: |
           expected='{"db":"healthy","web":"healthy","nginx":"running","migrate":"exited","collab":"running"}'
           for attempt in {1..30}; do
-            services="$(docker compose -f compose.yaml ps --format json)"
+            services="$(docker compose -f compose.yaml ps --all --format json)"
             printf '%s\n' "$services"
-            if jq -e --argjson expected "$expected" '
+            if jq -s -e --argjson expected "$expected" '
               ($expected | to_entries) as $expected_entries
-              | (reduce .[] as $service ({}; .[$service.Service] = ($service.Health // $service.State))) as $actual
+              | (reduce .[] as $service ({}; .[$service.Service] = (if $service.Health == "" then $service.State else $service.Health end))) as $actual
               | all($expected_entries[]; $actual[.key] == .value)
             ' <<<"$services"; then
               exit 0
