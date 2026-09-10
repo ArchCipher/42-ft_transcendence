@@ -21,6 +21,7 @@ export default function RegisterForm() {
     password?: string;
   }>({});
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // calls /api/auth/register and either sets error or calls /auth?verify=pending
   async function handleRegister() {
@@ -87,7 +88,7 @@ export default function RegisterForm() {
       />
       {fieldErrors?.email && (
         <p id="email-error" className="FieldError">
-          {fieldErrors.email}
+          <TechText className="text-xs">{fieldErrors.email}</TechText>
         </p>
       )}
 
@@ -106,7 +107,7 @@ export default function RegisterForm() {
       />
       {fieldErrors?.username && (
         <p id="username-error" className="FieldError">
-          {fieldErrors.username}
+          <TechText className="text-xs">{fieldErrors.username}</TechText>
         </p>
       )}
 
@@ -115,7 +116,7 @@ export default function RegisterForm() {
       </label>
       <Box
         id="password"
-        type="password"
+        type={showPassword ? "text" : "password"}
         placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
@@ -126,7 +127,7 @@ export default function RegisterForm() {
       />
       {fieldErrors?.password && (
         <p id="password-error" className="FieldError">
-          {fieldErrors.password}
+          <TechText className="text-xs">{fieldErrors.password}</TechText>
         </p>
       )}
 
@@ -135,7 +136,7 @@ export default function RegisterForm() {
       </label>
       <Box
         id="confirm-password"
-        type="password"
+        type={showPassword ? "text" : "password"}
         placeholder="Confirm Password"
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
@@ -143,9 +144,18 @@ export default function RegisterForm() {
         autoComplete="new-password"
       />
 
+      <label className="ShowPassword">
+        <input
+          type="checkbox"
+          checked={showPassword}
+          onChange={(e) => setShowPassword(e.target.checked)}
+        />
+        <TechText className="text-xs">Show password</TechText>
+      </label>
+
       {error && (
         <p className="FormError" role="alert">
-          {error}
+          <TechText className="text-xs">{error}</TechText>
         </p>
       )}
 

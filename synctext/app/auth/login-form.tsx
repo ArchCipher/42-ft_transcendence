@@ -18,6 +18,7 @@ export default function LoginForm() {
     password?: string;
   }>({});
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // calls /api/auth/login and either sets error or calls /dashboard
   async function handleLogin() {
@@ -82,7 +83,7 @@ export default function LoginForm() {
       />
       {fieldErrors?.email && (
         <p id="email-error" className="FieldError">
-          {fieldErrors.email}
+          <TechText className="text-xs">{fieldErrors.email}</TechText>
         </p>
       )}
 
@@ -93,7 +94,7 @@ export default function LoginForm() {
       </label>
       <Box
         id="password"
-        type="password"
+        type={showPassword ? "text" : "password"}
         placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
@@ -104,13 +105,22 @@ export default function LoginForm() {
       />
       {fieldErrors?.password && (
         <p id="password-error" className="FieldError">
-          {fieldErrors.password}
+          <TechText className="text-xs">{fieldErrors.password}</TechText>
         </p>
       )}
 
+      <label className="ShowPassword">
+        <input
+          type="checkbox"
+          checked={showPassword}
+          onChange={(e) => setShowPassword(e.target.checked)}
+        />
+        <TechText className="text-xs">Show password</TechText>
+      </label>
+
       {error && (
         <p className="FormError" role="alert">
-          {error}
+          <TechText className="text-xs">{error}</TechText>
         </p>
       )}
 

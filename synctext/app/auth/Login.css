@@ -63,3 +63,10 @@
   color: #ff6b6b;
   font-size: 12px;
 }
+
+.ShowPassword {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}

@@ -2,12 +2,10 @@
 
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { ArrowLeft, Check, Pencil } from "lucide-react"
+import { Check, Pencil } from "lucide-react"
 
 import type { HocuspocusProvider } from "@hocuspocus/provider"
 import type { CollabUser, ConnectionStatus } from "@hocuspocus/provider-react"
-import {useHocuspocusAwareness, useHocuspocusConnectionStatus } from "@hocuspocus/provider-react"
-
 import { renameDocument_api } from "@/app/dashboard/document/document"
 import { DisplayText, TechText } from "@/components/Typography"
 import Button from "@/components/Button"

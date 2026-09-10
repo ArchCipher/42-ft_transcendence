@@ -157,7 +157,9 @@ export default function Dashboard({ search, order }: DashboardProps) {
         ) : null}
 
         {!isLoadingDocuments && !documentsError && documents.length === 0 ? (
-          <p><BodyText>You do not have any documents yet.</BodyText></p>
+          <p className="DashboardStatus">
+            <BodyText>You do not have any documents yet.</BodyText>
+          </p>
         ) : null}
 
         {!isLoadingDocuments && !documentsError ? documents.filter((doc) =>
