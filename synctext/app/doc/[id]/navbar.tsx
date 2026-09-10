@@ -1,18 +1,19 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
-import type { CollabUser } from "@hocuspocus/provider-react"
-import {
-  useHocuspocusAwareness,
-  useHocuspocusConnectionStatus,
-} from "@hocuspocus/provider-react"
-import styles from "./navbar.module.css"
+import { useEffect, useState } from "react"
+import { ArrowLeft, Check, Pencil } from "lucide-react"
+
+import type { HocuspocusProvider } from "@hocuspocus/provider"
+import type { CollabUser, ConnectionStatus } from "@hocuspocus/provider-react"
+import {useHocuspocusAwareness, useHocuspocusConnectionStatus } from "@hocuspocus/provider-react"
+
+import { renameDocument_api } from "@/app/dashboard/document/document"
 import { DisplayText, TechText } from "@/components/Typography"
 import Button from "@/components/Button"
-import { renameDocument_api } from "@/app/dashboard/document/document"
-import { Check, Pencil } from "lucide-react"
 import Box from "@/components/Box"
+
+import styles from "./navbar.module.css"
 
 type SyncUser = { name: string; color: string }
 
@@ -20,6 +21,9 @@ type DocumentNavbarProps = {
   docId: string
   initialTitle: string
   canRename: boolean
+  provider: HocuspocusProvider | null
+  status: ConnectionStatus
+  users: CollabUser[]
 }
 
 const STATUS_COLOR = {
@@ -44,14 +48,29 @@ export function DocumentNavbar({
   docId,
   initialTitle,
   canRename,
+  provider,
+  status,
+  users,
 }: DocumentNavbarProps) {
-  const status = useHocuspocusConnectionStatus()
-  const users = useHocuspocusAwareness()
   const [title, setTitle] = useState(initialTitle)
   const [draftTitle, setDraftTitle] = useState(initialTitle)
   const [isEditing, setIsEditing] = useState(false)
   const [isRenaming, setIsRenaming] = useState(false)
   const [renameError, setRenameError] = useState("")
+
+  // Broadcast only: the map is observed but never read at mount, because
+  // Postgres is the source of truth and a rename from the dashboard never
+  // touches Yjs — a title stored here can be older than the database.
+  useEffect(() => {
+    if (!provider) return
+    const meta = provider.document.getMap<string>("meta")
+    const onMetaChange = () => {
+      const nextTitle = meta.get("title")
+      if (nextTitle) setTitle(nextTitle)
+    }
+    meta.observe(onMetaChange)
+    return () => meta.unobserve(onMetaChange)
+  }, [provider])
 
   function cancelEditing() {
     setDraftTitle(title)
@@ -74,6 +93,7 @@ export function DocumentNavbar({
       setTitle(renamedDocument.title)
       setDraftTitle(renamedDocument.title)
       setIsEditing(false)
+      provider?.document.getMap<string>("meta").set("title", renamedDocument.title)
     } catch {
       setRenameError("Could not rename document")
     } finally {
@@ -156,8 +176,11 @@ export function DocumentNavbar({
             <button
               type="button"
               disabled={!canRename}
-              onClick={() => setIsEditing(true)}
-              className="mx-auto flex min-h-10 max-w-xl items-center gap-2 px-3 text-left text-white transition-colors hover:bg-white/5 disabled:cursor-default disabled:hover:bg-transparent"
+              onClick={() => {
+                setDraftTitle(title)
+                setIsEditing(true)
+              }}
+              className="mx-auto flex min-h-10 max-w-xl items-center gap-2 px-3 text-left text-sm tracking-tight text-white transition-colors hover:bg-white/5 disabled:cursor-default disabled:hover:bg-transparent"
               title={canRename ? "Rename document" : "You have view-only access"}
             >
               <span className="sm:hidden">
@@ -201,7 +224,10 @@ export function DocumentNavbar({
             </span>
           ) : null}
 
-          <div className="flex min-w-0 -space-x-1" aria-label={`${users.length} online`}>
+          <div
+            className="flex min-w-0 -space-x-1"
+            aria-label={`${users.length} other${users.length === 1 ? "" : "s"} online`}
+          >
             {users.slice(0, 4).map((onlineUser) => {
               const identity = collaboratorIdentity(onlineUser)
               return (

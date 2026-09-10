@@ -1,7 +1,13 @@
 // see : https://tiptap.dev/docs/hocuspocus/provider/react
 "use client"
 
-import { HocuspocusProviderWebsocketComponent, HocuspocusRoom, useHocuspocusProvider } from "@hocuspocus/provider-react"
+import {
+  HocuspocusProviderWebsocketComponent,
+  HocuspocusRoom,
+  useHocuspocusAwareness,
+  useHocuspocusConnectionStatus,
+  useHocuspocusProvider,
+} from "@hocuspocus/provider-react"
 import { useEditor } from "@tiptap/react"
 
 import Collaboration from "@tiptap/extension-collaboration"
@@ -14,18 +20,16 @@ import { Footer } from "@/components/Footer"
 
 type SyncUser = { name: string; color: string }
 
-// nginx proxies /collab to Hocuspocus on the same host, kept same-origin so it
-// works behind the app's CSP and TLS setup. Guarded for SSR: real value only
-// matters once the provider actually connects, in the browser.
+// nginx proxies /collab to Hocuspocus on the same origin, so this works behind
+// the app's CSP and TLS. Only ever read in the browser, when the provider connects.
 function getCollabUrl() {
   if (typeof window === "undefined") return ""
   const protocol = window.location.protocol === "https:" ? "wss" : "ws"
   return `${protocol}://${window.location.host}/collab`
 }
 
-// Rendered as a child of HocuspocusRoom (below), since useHocuspocusProvider()
-// can only be called by a descendant of that component, not by the
-// component that renders it — SyncEditorPage can't build the editor itself.
+// Child of HocuspocusRoom, since useHocuspocusProvider() only works below it —
+// SyncEditorPage cannot build the editor itself.
 type SyncEditorSessionProps = {
   docId: string
   title: string
@@ -35,14 +39,15 @@ type SyncEditorSessionProps = {
 
 function SyncEditorSession({ docId, title, user, canEdit }: SyncEditorSessionProps) {
   const provider = useHocuspocusProvider()
+  const status = useHocuspocusConnectionStatus()
+  const users = useHocuspocusAwareness()
+  // Everyone but us — a fresh Awareness already registers the local client.
+  const others = users.filter((user) => user.clientId !== provider.awareness?.clientID)
 
   const editor = useEditor({
     ...simpleEditorConfig,
     editable: canEdit,
-    // Same rich-text feature set as simple-editor.tsx (baseTiptapExtensions,
-    // undoRedo off since Collaboration manages history itself through Yjs),
-    // plus Collaboration/CollaborationCaret bound to the Hocuspocus provider
-    // instead of a static content document.
+    // undoRedo off: Collaboration manages history itself, through Yjs.
     extensions: [
       ...baseTiptapExtensions({ undoRedo: false }),
       Collaboration.configure({ document: provider.document }),
@@ -56,10 +61,32 @@ function SyncEditorSession({ docId, title, user, canEdit }: SyncEditorSessionPro
         docId={docId}
         initialTitle={title}
         canRename={canEdit}
+        provider={provider}
+        status={status}
+        users={others}
       />
       <SimpleEditorView editor={editor} 
                         showToolbar={canEdit} />
       <Footer />
+    </>
+  )
+}
+
+// What the server paints, title included. Its markup must stay identical to
+// SyncEditorSession's first render — same empty user list, same "connecting" —
+// or React discards the served HTML instead of hydrating it.
+function StaticEditorShell({ docId, title, canEdit }: { docId: string; title: string; canEdit: boolean }) {
+  return (
+    <>
+      <DocumentNavbar
+        docId={docId}
+        initialTitle={title}
+        canRename={canEdit}
+        provider={null}
+        status="connecting"
+        users={[]}
+      />
+      <SimpleEditorView editor={null} showToolbar={canEdit} />
     </>
   )
 }
@@ -77,6 +104,12 @@ export function SyncEditorPage({
   user,
   canEdit = true,
 }: SyncEditorPageProps) {
+  // HocuspocusProviderWebsocket's constructor starts a timer and opens a socket
+  // during render, so it must never run on the server: one leak per request.
+  if (typeof window === "undefined") {
+    return <StaticEditorShell docId={docId} title={title} canEdit={canEdit} />
+  }
+
   const localUser = user ?? getLocalUser()
 
   return (
