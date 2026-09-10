@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { ArrowLeft, Check, Pencil } from "lucide-react"
 import type { HocuspocusProvider } from "@hocuspocus/provider"
 import type { CollabUser, ConnectionStatus } from "@hocuspocus/provider-react"
@@ -51,6 +51,20 @@ export function DocumentNavbar({
   const [isRenaming, setIsRenaming] = useState(false)
   const [renameError, setRenameError] = useState("")
 
+  // Broadcast only: the map is observed but never read at mount, because
+  // Postgres is the source of truth and a rename from the dashboard never
+  // touches Yjs — a title stored here can be older than the database.
+  useEffect(() => {
+    if (!provider) return
+    const meta = provider.document.getMap<string>("meta")
+    const onMetaChange = () => {
+      const nextTitle = meta.get("title")
+      if (nextTitle) setTitle(nextTitle)
+    }
+    meta.observe(onMetaChange)
+    return () => meta.unobserve(onMetaChange)
+  }, [provider])
+
   function cancelEditing() {
     setDraftTitle(title)
     setRenameError("")
@@ -72,6 +86,7 @@ export function DocumentNavbar({
       setTitle(renamedDocument.title)
       setDraftTitle(renamedDocument.title)
       setIsEditing(false)
+      provider?.document.getMap<string>("meta").set("title", renamedDocument.title)
     } catch {
       setRenameError("Could not rename document")
     } finally {
@@ -145,7 +160,10 @@ export function DocumentNavbar({
             <button
               type="button"
               disabled={!canRename}
-              onClick={() => setIsEditing(true)}
+              onClick={() => {
+                setDraftTitle(title)
+                setIsEditing(true)
+              }}
               className="mx-auto flex min-h-10 max-w-xl items-center gap-2 px-3 text-left text-sm tracking-tight text-white transition-colors hover:bg-white/5 disabled:cursor-default disabled:hover:bg-transparent"
               title={canRename ? "Rename document" : "You have view-only access"}
             >
