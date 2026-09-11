@@ -1,133 +1,49 @@
 :root {
-  --panel-bg: rgba(8, 25, 55, 0.5);
-  --panel-border: rgba(100, 190, 255, 0.1);
   --text-main: #ffffff;
   --accent: #6fd3ff;
 }
 
 .RegisterPage {
-  min-height: 100vh;
-  padding: 10px 20px;
-  background-image: url('/assets/space-background.png');
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
-}
-
-.Header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  justify-content: center;
 
-  padding: 10px 0 28px;
+  padding: 56px 20px 80px;
 }
 
-.Brand {
-  display: flex;
-  align-items: flex-start;
-  gap: 18px;
-}
-
-.BrandText {
-  height: 68px;
-
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.BrandNumber {
-  font-size: 78px;
-  font-weight: bold;
-  line-height: 0.85;
-  color: var(--text-main);
-}
-
-.BrandText h1 {
-  text-align: left;
-  margin: 0;
-  padding-top: 10px;
-  font-size: 24px;
-  color: var(--accent);
-  letter-spacing: 1px;
-}
-
-.BrandText p {
-  text-align: left;
-  margin: 0;
-  color: var(--text-main);
-  font-size: 17px;
+.RegisterPanel {
+  width: min(440px, 100%);
+  padding: 30px;
 }
 
 .RegisterBox {
-  width: 340px;
-  margin: 50px auto 0;
-  padding: 30px;
-
-  color: var(--text-main);
-
-  background-color: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  border-radius: 12px;
-  backdrop-filter: blur(3px);
-
   display: flex;
   flex-direction: column;
   gap: 14px;
-}
-
-.RegisterBox label {
-  color: var(--text-main);
-}
-
-.RegisterBox input {
-  padding: 10px 12px;
 
   color: var(--text-main);
-  background: rgba(8, 25, 55, 0.6);
-
-  border: 1px solid var(--panel-border);
-  border-radius: 6px;
 }
 
-.RegisterBox input::placeholder {
-  color: rgba(255, 255, 255, 0.5);
-}
+.RegisterTitle {
+  margin: 0 0 14px;
 
-.RegisterBox button {
-  align-self: center;
-  padding: 10px 32px;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  line-height: 1;
 
-  color: #081937;
-  background-color: var(--accent);
-
-  border: none;
-  border-radius: 6px;
-
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.RegisterLinks {
-  display: flex;
-  flex-direction: column;
-  font-size: 14px;
-  gap: 6px;
-}
-
-.RegisterLinks a {
-  color: var(--accent);
   text-align: center;
-}
-
-.RegisterLinks a:hover {
-  text-decoration: underline;
 }
 
 .FieldError,
 .FormError {
   margin: 0;
+
   color: #ff6b6b;
+  font-family: monospace;
   font-size: 12px;
+}
+
+.ShowPassword {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
 }

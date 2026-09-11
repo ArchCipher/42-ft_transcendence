@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { authPost, FALLBACK } from "../auth/api";
+import Box from "@/components/Box";
+import Button from "@/components/Button";
+import { DisplayText, TechText } from "@/components/Typography";
 
 export default function PasswordResetForm() {
   const router = useRouter();
@@ -62,12 +65,19 @@ export default function PasswordResetForm() {
     <form
       className="PasswordResetBox"
       onSubmit={async (e) => {
-        e.preventDefault(); // don't reload the page
-        await handlePasswordReset(); // handle it with JS
+        e.preventDefault();
+        await handlePasswordReset();
       }}
     >
-      <label htmlFor="password">Password</label>
-      <input
+      <h2 className="PasswordResetTitle">
+        <DisplayText>Choose a new password</DisplayText>
+      </h2>
+
+      <label htmlFor="password">
+        <TechText className="text-xs">Password</TechText>
+      </label>
+
+      <Box
         id="password"
         type="password"
         placeholder="New Password"
@@ -78,14 +88,18 @@ export default function PasswordResetForm() {
         aria-describedby={fieldErrors?.password ? "password-error" : undefined}
         autoComplete="new-password"
       />
+
       {fieldErrors?.password && (
         <p id="password-error" className="FieldError">
           {fieldErrors.password}
         </p>
       )}
 
-      <label htmlFor="confirm-password">Confirm password</label>
-      <input
+      <label htmlFor="confirm-password">
+        <TechText className="text-xs">Confirm password</TechText>
+      </label>
+
+      <Box
         id="confirm-password"
         type="password"
         placeholder="Confirm Password"
@@ -101,9 +115,9 @@ export default function PasswordResetForm() {
         </p>
       )}
 
-      <button type="submit" disabled={loading || !token}>
+      <Button type="submit" disabled={loading || !token}>
         {loading ? "Resetting..." : "Reset password"}
-      </button>
+      </Button>
     </form>
   );
 }

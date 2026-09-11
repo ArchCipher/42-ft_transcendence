@@ -1,6 +1,11 @@
 import "./Login.css";
-import Image from "next/image";
+import AppBackground from "@/components/AppBackground";
 import LoginForm from "./login-form";
+
+import Navbar from "@/components/Navbar";
+import BrandHeader from "@/components/BrandHeader";
+import AppPanel from "@/components/AppPanel";
+import { Footer } from "@/components/Footer";
 
 // NOTICES displayed in navtab
 const NOTICES: Record<string, string> = {
@@ -21,38 +26,22 @@ export default async function Login({
 
 function LoginPage({ verify }: { verify?: string }) {
   return (
-    <div>
+    <AppBackground>
+      <Navbar />
+      <BrandHeader />
+
       {verify && NOTICES[verify] && (
-        <nav className="NoticeBar">{NOTICES[verify]}</nav>
-      )}
-      <div className="LoginPage">
-        <Header />
-
-        <LoginForm />
-
-        <Image
-          src="/assets/humma-kavula.png"
-          alt="Humma Kavula"
-          width={220}
-          height={220}
-          className="HummaBanner"
-        />
-      </div>
-    </div>
-  );
-}
-
-function Header() {
-  return (
-    <header className="Header">
-      <div className="Brand">
-        <div className="BrandNumber">42</div>
-
-        <div className="BrandText">
-          <h1>DON&apos;T PANIC</h1>
-          <p>All the documents in the universe</p>
+        <div className="NoticeBar" role="status">
+          {NOTICES[verify]}
         </div>
+      )}
+
+      <div className="LoginPage">
+        <AppPanel className="LoginPanel">
+          <LoginForm />
+        </AppPanel>
       </div>
-    </header>
+      <Footer />
+    </AppBackground>
   );
 }
