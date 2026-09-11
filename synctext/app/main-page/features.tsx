@@ -3,6 +3,7 @@
 import { ArrowRight, Check, Clock3, MessageSquareText, MousePointer2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { DisplayText, TechText, BodyText, SupportText } from "@/components/Typography";
 
 const features = [
   { number: "01", title: "Write in the same moment", description: "See every keystroke as it happens. No refreshing, no conflicts—just a shared page that keeps pace with the room.", detail: "Live collaboration", icon: MousePointer2 },
@@ -13,10 +14,34 @@ const features = [
 function FeaturePreview({ index }: { index: number }) {
   if (index === 0) {
     return (
-      <div aria-hidden="true" className="relative h-36 overflow-hidden border-y border-white/10 bg-[oklch(0.17_0.01_285)] px-6 py-5">
-        <div className="flex items-center gap-2 font-mono text-[.62rem] text-[oklch(0.72_0.018_285)]"><span className="size-2 rounded-full bg-[oklch(0.72_0.12_290)]" />Maya is writing</div>
-        <p className="mt-6 max-w-[28ch] font-serif text-lg leading-snug text-[oklch(0.9_0.012_285)]">Ideas get better when the room can think on the same page<span className="ml-0.5 inline-block h-5 w-px translate-y-1 bg-[oklch(0.78_0.12_290)]" /></p>
-        <div className="absolute right-5 bottom-4 flex -space-x-2"><span className="grid size-7 place-items-center rounded-full border border-[#111] bg-[oklch(0.68_0.09_30)] font-mono text-[.55rem] text-[#111]">MK</span><span className="grid size-7 place-items-center rounded-full border border-[#111] bg-[oklch(0.75_0.07_200)] font-mono text-[.55rem] text-[#111]">AL</span><span className="grid size-7 place-items-center rounded-full border border-[#111] bg-[oklch(0.76_0.08_95)] font-mono text-[.55rem] text-[#111]">+2</span></div>
+      <div aria-hidden="true" className="relative h-36 overflow-hidden 
+                                          bg-[oklch(0.17_0.01_285)] px-6 py-5">
+        <div className="flex items-center gap-2 font-mono text-[.62rem] 
+                        text-[oklch(0.72_0.018_285)]"><span className="size-2 
+                        rounded-full bg-[oklch(0.72_0.12_290)]" />
+                        Maya is writing</div>
+        <p className="mt-6 max-w-[28ch] font-serif text-lg 
+                      leading-snug text-[oklch(0.9_0.012_285)]">
+                        Ideas get better when the room can think on the same page
+                      <span className="ml-0.5 inline-block h-5 w-px 
+                      translate-y-1 bg-[oklch(0.78_0.12_290)]" />
+        </p>
+        <div className="absolute right-5 bottom-4 flex -space-x-2">
+                        <span className="grid size-7 place-items-center 
+                        rounded-full border border-[#111] 
+                        bg-[oklch(0.68_0.09_30)] 
+                        font-mono text-[.55rem] text-[#111]">
+                          MK</span>
+                          <span className="grid size-7 
+                          place-items-center rounded-full 
+                          border border-[#111] bg-[oklch(0.75_0.07_200)] 
+                          font-mono text-[.55rem] text-[#111]">
+                            AL</span>
+                            <span className="grid size-7 
+                            place-items-center rounded-full 
+                            border border-[#111] bg-[oklch(0.76_0.08_95)] 
+                            font-mono text-[.55rem] text-[#111]">+2</span>
+        </div>
       </div>
     );
   }
@@ -48,34 +73,78 @@ function FeaturePreview({ index }: { index: number }) {
 
 export function Features() {
   return (
-    <section aria-labelledby="features-title" className="relative py-[clamp(6rem,11vw,10rem)]">
+    <section id="features" aria-labelledby="features-title" className="relative py-[clamp(6rem,11vw,10rem)]">
       <div className="mb-[clamp(3.5rem,7vw,6rem)] grid grid-cols-[minmax(0,1.4fr)_minmax(17rem,.6fr)] items-end gap-16 px-[clamp(1.25rem,5vw,5rem)] max-md:grid-cols-1 max-md:gap-7">
-        <h2 className="max-w-[11ch] font-serif text-[clamp(3rem,6vw,6.5rem)] leading-[.9] font-normal tracking-[-0.065em] text-[oklch(0.94_0.012_285)] max-md:text-[clamp(3rem,14vw,5rem)]" id="features-title">Made for the way ideas actually happen.</h2>
-        <p className="max-w-sm font-mono text-[clamp(.78rem,1vw,.9rem)] leading-[1.75] text-[oklch(0.68_0.018_285)]">Thoughtful tools that disappear into the background, so your team can stay with the words.</p>
+        <h2 className="max-w-[11ch]
+            text-[clamp(3rem,6vw,6.5rem)]
+            leading-[.9] font-normal
+            max-md:text-[clamp(3rem,14vw,5rem)]"
+            id="features-title">
+          <DisplayText>
+            Made for the way ideas actually happen.
+          </DisplayText>
+        </h2>
+        <p className="max-w-sm text-[clamp(.78rem,1vw,.9rem)] leading-[1.75]">
+          <BodyText>
+            Thoughtful tools that disappear into the background, so your team can stay with the words.
+          </BodyText>
+        </p>
       </div>
       <Carousel aria-label="Product features" className="px-[clamp(1.25rem,5vw,5rem)]" opts={{ align: "start" }}>
-        <CarouselContent className="-ml-3 lg:-ml-[10px]">
+        <CarouselContent className="ml-0 md:-ml-3 lg:-ml-[10px]">
         {features.map((feature, index) => {
           const Icon = feature.icon;
           return (
-            <CarouselItem className="flex basis-[86%] pl-1 md:basis-[56%] lg:basis-1/3 lg:pl-[10px]" key={feature.number}>
+            <CarouselItem className="flex basis-full
+                          pl-0
+                          md:basis-[56%] md:pl-3
+                          lg:basis-1/3 lg:pl-[10px]"
+                          key={feature.number}>
               <Card className="group h-full min-h-[30rem] gap-0 rounded-none border border-white/12 bg-[oklch(0.145_0.008_285)] py-0 text-inherit ring-0 transition-[border-color,transform] duration-300 ease-out hover:-translate-y-1 hover:border-white/30 lg:w-full">
-                <CardHeader className="flex flex-row items-center justify-between rounded-none p-6 font-mono text-[.65rem] tracking-[.08em] text-[oklch(0.58_0.015_285)] uppercase"><span>Feature / {feature.number}</span><Icon aria-hidden="true" className="size-4 text-[oklch(0.72_0.04_285)] [stroke-width:1.35]" /></CardHeader>
-                <CardContent className="flex flex-1 flex-col justify-end p-0 -ml-1 -pl-1">
+                <CardHeader className="flex flex-row items-center justify-between rounded-none p-6">
+                  <TechText className="text-[.65rem]">
+                    Feature / {feature.number}
+                  </TechText>
+                  <Icon aria-hidden="true" className="size-4 text-[oklch(0.72_0.04_285)] [stroke-width:1.35]" />
+                  </CardHeader>
+                <CardContent className="flex flex-1 flex-col justify-end p-0">
                   <FeaturePreview index={index} />
                   <div className="px-6 pt-7 pb-8">
-                    <CardTitle><h3 className="max-w-[13ch] font-serif text-[clamp(2rem,3vw,3rem)] leading-[1.02] font-normal tracking-[-0.05em] text-[oklch(0.92_0.012_285)]">{feature.title}</h3></CardTitle>
-                    <CardDescription className="mt-4 max-w-[48ch] font-mono text-xs leading-[1.75] text-[oklch(0.66_0.016_285)]">{feature.description}</CardDescription>
+                    <CardTitle>
+                      <h3 className="max-w-[13ch]
+                                      text-[clamp(2rem,3vw,3rem)]
+                                      leading-[1.02] font-normal
+                                      text-[oklch(0.92_0.012_285)]">
+                        <DisplayText>
+                          {feature.title}
+                        </DisplayText>
+                      </h3>
+                    </CardTitle>
+                    <CardDescription className="mt-4 max-w-[48ch] text-xs leading-[1.75]">
+                      <BodyText>
+                        {feature.description}
+                      </BodyText>
+                    </CardDescription>
                   </div>
                 </CardContent>
-                <CardFooter className="justify-between rounded-none border-white/10 bg-transparent p-6 font-mono text-[.65rem] tracking-[.08em] text-[oklch(0.58_0.015_285)] uppercase"><span>{feature.detail}</span><ArrowRight aria-hidden="true" className="size-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-[oklch(0.82_0.08_290)]" /></CardFooter>
+                <CardFooter className=" justify-between
+                                        rounded-none border-white/10 bg-transparent
+                                        p-6 text-[oklch(0.58_0.015_285)]">
+                <TechText className="text-[.65rem]">
+                  {feature.detail}
+                </TechText>
+                <ArrowRight aria-hidden="true" className="size-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:text-[oklch(0.82_0.08_290)]" /></CardFooter>
               </Card>
             </CarouselItem>
           );
         })}
         </CarouselContent>
         <div className="mt-8 flex items-center justify-between">
-          <p className="font-mono text-[.62rem] tracking-[.08em] text-[oklch(0.5_0.012_285)] uppercase">Drag or use arrows</p>
+          <p>
+          <SupportText className="text-[.62rem] uppercase tracking-[.08em]">
+            Drag or use arrows
+          </SupportText>
+        </p>
           <div aria-label="Feature carousel controls" className="flex gap-2">
             <CarouselPrevious className="static m-0 size-11 translate-none rounded-none border-white/12 bg-transparent text-[oklch(0.82_0.012_285)] hover:border-white/35 hover:bg-white/5 hover:text-[oklch(0.92_0.012_285)] focus-visible:ring-[oklch(0.76_0.1_290)]" />
             <CarouselNext className="static m-0 size-11 translate-none rounded-none border-white/12 bg-transparent text-[oklch(0.82_0.012_285)] hover:border-white/35 hover:bg-white/5 hover:text-[oklch(0.92_0.012_285)] focus-visible:ring-[oklch(0.76_0.1_290)]" />
