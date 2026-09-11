@@ -7,6 +7,7 @@ import type { HocuspocusProvider } from "@hocuspocus/provider"
 import type { CollabUser, ConnectionStatus } from "@hocuspocus/provider-react"
 
 import { renameDocument_api } from "@/app/dashboard/document/document"
+import { SnapshotHistory } from "@/components/sync/snapshot-history"
 
 type SyncUser = { name: string; color: string }
 
@@ -180,6 +181,7 @@ export function DocumentNavbar({
         </div>
 
         <div className="ml-auto flex min-w-0 items-center justify-end gap-2">
+          <SnapshotHistory key={docId} docId={docId} />
           {!isEditing ? (
             <span
               className="inline-flex size-10 items-center justify-center border border-white/15 text-[11px] text-white/65 sm:w-auto sm:gap-2 sm:px-2.5 sm:py-2"

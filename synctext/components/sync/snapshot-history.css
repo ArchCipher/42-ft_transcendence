@@ -1,0 +1,26 @@
+/* keep the shared editor styles scoped to the snapshot preview */
+.snapshot-history-preview {
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.snapshot-history-preview > p {
+  padding: 1rem;
+  font-size: 0.875rem;
+}
+
+.snapshot-history-preview .simple-editor-wrapper {
+  width: 100%;
+  height: auto;
+  min-height: 100%;
+  overflow: visible;
+}
+
+.snapshot-history-preview .simple-editor-content {
+  height: auto;
+  min-height: 100%;
+}
+
+.snapshot-history-preview .simple-editor-content .tiptap.ProseMirror.simple-editor {
+  padding: 1.5rem;
+}
