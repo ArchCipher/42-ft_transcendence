@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authPost, FALLBACK } from "../auth/api";
+import Button from "@/components/Button";
+import Box from "@/components/Box";
+import { DisplayText, TechText } from "@/components/Typography";
 
 export default function ForgotPasswordForm() {
   const router = useRouter();
@@ -47,12 +50,19 @@ export default function ForgotPasswordForm() {
     <form
       className="ForgotPasswordBox"
       onSubmit={async (e) => {
-        e.preventDefault(); // don't reload the page
-        await handleForgotPassword(); // handle it with JS
+        e.preventDefault();
+        await handleForgotPassword();
       }}
     >
-      <label htmlFor="email">Email</label>
-      <input
+      <h2 className="ForgotPasswordTitle">
+        <DisplayText>Reset your password</DisplayText>
+      </h2>
+
+      <label htmlFor="email">
+        <TechText className="text-xs">Email</TechText>
+      </label>
+
+      <Box
         id="email"
         type="email"
         placeholder="Email"
@@ -63,6 +73,7 @@ export default function ForgotPasswordForm() {
         aria-describedby={fieldErrors?.email ? "email-error" : undefined}
         autoComplete="email"
       />
+
       {fieldErrors?.email && (
         <p id="email-error" className="FieldError">
           {fieldErrors.email}
@@ -75,9 +86,9 @@ export default function ForgotPasswordForm() {
         </p>
       )}
 
-      <button type="submit" disabled={loading}>
+      <Button type="submit" disabled={loading}>
         {loading ? "Sending..." : "Send password reset email"}
-      </button>
+      </Button>
     </form>
   );
 }

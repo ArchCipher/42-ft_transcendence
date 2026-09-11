@@ -1,0 +1,75 @@
+.ControlBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 28px;
+  padding: 0 24px;
+  gap: 24px;
+}
+
+.FilterBox,
+.OrderBox,
+.GroupFilter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 6px;
+}
+
+.FilterBox select,
+.OrderBox select,
+.GroupFilter select {
+  padding: 10px 16px;
+  background-color: var(--app-panel-bg);
+  color: var(--app-text-main);
+  border: 1px solid var(--app-panel-border);
+  border-radius: 10px;
+  font-family: monospace;
+  font-size: 14px;
+}
+
+.FilterBox select:focus,
+.OrderBox select:focus,
+.GroupFilter select:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.FilterBox option,
+.OrderBox option,
+.GroupFilter option {
+  font-family: monospace;
+}
+
+/* -----------------    Cellphone      -------------------*/
+
+@media (max-width: 900px) {
+  .ControlBar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 16px 12px;
+    gap: 14px;
+    margin-top: 40px;
+  }
+
+  .FilterBox,
+  .OrderBox,
+  .GroupFilter{
+    width: 100%;
+    padding: 0;
+
+    display: grid;
+    grid-template-columns: 120px minmax(0, 1fr);
+    align-items: center;
+    gap: 10px;
+  }
+
+  .FilterBox select,
+  .OrderBox select,
+  .GroupFilter select {
+    width: 100%;
+    min-width: 0;
+  }
+}

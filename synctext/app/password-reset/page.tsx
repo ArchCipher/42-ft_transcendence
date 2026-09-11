@@ -2,29 +2,26 @@ import "./Password_reset.css";
 import { Suspense } from "react";
 import PasswordResetForm from "./password-reset-form";
 
+import AppBackground from "@/components/AppBackground";
+import Navbar from "@/components/Navbar";
+import BrandHeader from "@/components/BrandHeader";
+import AppPanel from "@/components/AppPanel";
+import { Footer } from "@/components/Footer";
+
 export default function PasswordReset() {
   return (
-    <div className="PasswordResetPage">
-      <Header />
-      <Suspense fallback={null}>
-        <PasswordResetForm />
-      </Suspense>
-    </div>
-  );
-}
+    <AppBackground>
+      <Navbar />
+      <BrandHeader />
 
-function Header() {
-  return (
-    <header className="Header">
-      <div className="Brand">
-        <div className="BrandNumber">42</div>
-
-        <div className="BrandText">
-          <h1>DON&apos;T PANIC</h1>
-          <p>All the documents in the universe</p>
-        </div>
+      <div className="PasswordResetPage">
+        <AppPanel className="PasswordResetPanel">
+          <Suspense fallback={null}>
+            <PasswordResetForm />
+          </Suspense>
+        </AppPanel>
       </div>
-    </header>
+      <Footer />
+    </AppBackground>
   );
 }
-

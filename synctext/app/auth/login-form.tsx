@@ -4,6 +4,9 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authPost, FALLBACK } from "./api";
+import { DisplayText, TechText } from "@/components/Typography";
+import Button from "@/components/Button";
+import Box from "@/components/Box";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -15,6 +18,7 @@ export default function LoginForm() {
     password?: string;
   }>({});
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // calls /api/auth/login and either sets error or calls /dashboard
   async function handleLogin() {
@@ -55,10 +59,18 @@ export default function LoginForm() {
         await handleLogin(); // handle it with JS
       }}
     >
-      {/*<h2>Access the Guide</h2>*/}
+      <h2 className="LoginTitle">
+        <DisplayText>
+          Access the Guide
+        </DisplayText>
+      </h2>
 
-      <label htmlFor="email">Email</label>
-      <input
+      <label htmlFor="email">
+        <TechText className="text-xs">
+          Email
+        </TechText>
+      </label>
+      <Box
         id="email"
         type="email"
         placeholder="Email"
@@ -71,14 +83,18 @@ export default function LoginForm() {
       />
       {fieldErrors?.email && (
         <p id="email-error" className="FieldError">
-          {fieldErrors.email}
+          <TechText className="text-xs">{fieldErrors.email}</TechText>
         </p>
       )}
 
-      <label htmlFor="password">Password</label>
-      <input
+      <label htmlFor="password">
+        <TechText className="text-xs">
+          Password
+        </TechText>
+      </label>
+      <Box
         id="password"
-        type="password"
+        type={showPassword ? "text" : "password"}
         placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
@@ -89,22 +105,39 @@ export default function LoginForm() {
       />
       {fieldErrors?.password && (
         <p id="password-error" className="FieldError">
-          {fieldErrors.password}
+          <TechText className="text-xs">{fieldErrors.password}</TechText>
         </p>
       )}
+
+      <label className="ShowPassword">
+        <input
+          type="checkbox"
+          checked={showPassword}
+          onChange={(e) => setShowPassword(e.target.checked)}
+        />
+        <TechText className="text-xs">Show password</TechText>
+      </label>
 
       {error && (
         <p className="FormError" role="alert">
-          {error}
+          <TechText className="text-xs">{error}</TechText>
         </p>
       )}
 
-      <button type="submit" disabled={loading}>
+      <Button type="submit" disabled={loading}>
         {loading ? "Accessing..." : "Access the Guide"}
-      </button>
+      </Button>
       <div className="LoginLinks">
-        <Link href="/register">Create account</Link>
-        <Link href="/forgot-password">Forgot password?</Link>
+        <Link href="/register">
+          <TechText className="text-xs text-[#6fd3ff]">
+            Create account
+          </TechText>
+        </Link>
+        <Link href="/forgot-password">
+          <TechText className="text-xs text-[#6fd3ff]">
+            Forgot password?
+          </TechText>
+        </Link>
       </div>
     </form>
   );

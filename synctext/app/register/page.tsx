@@ -1,27 +1,24 @@
 import "./Register.css";
 import RegisterForm from "./register-form";
+import AppBackground from "@/components/AppBackground";
 
-export default async function Register(){
-   return (
-    <div className="RegisterPage">
-      <Header />
-      <RegisterForm />
-    </div>
-  );
-}
+import Navbar from "@/components/Navbar";
+import BrandHeader from "@/components/BrandHeader";
+import AppPanel from "@/components/AppPanel";
+import { Footer } from "@/components/Footer";
 
-function Header() {
+export default async function Register() {
   return (
-    <header className="Header">
-      <div className="Brand">
-        <div className="BrandNumber">42</div>
+    <AppBackground>
+      <Navbar />
+      <BrandHeader />
 
-        <div className="BrandText">
-          <h1>DON&apos;T PANIC</h1>
-          <p>All the documents in the universe</p>
-        </div>
+      <div className="RegisterPage">
+        <AppPanel className="RegisterPanel">
+          <RegisterForm />
+        </AppPanel>
       </div>
-    </header>
+      <Footer />
+    </AppBackground>
   );
 }
-

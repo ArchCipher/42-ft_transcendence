@@ -4,6 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authPost, FALLBACK } from "../auth/api";
 
+import { DisplayText, TechText } from "@/components/Typography";
+import Button from "@/components/Button";
+import Box from "@/components/Box";
+
 export default function RegisterForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -17,6 +21,7 @@ export default function RegisterForm() {
     password?: string;
   }>({});
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // calls /api/auth/register and either sets error or calls /auth?verify=pending
   async function handleRegister() {
@@ -58,15 +63,19 @@ export default function RegisterForm() {
   }
 
   return (
-    <form
-      className="RegisterBox"
-      onSubmit={async (e) => {
-        e.preventDefault(); // don't reload the page
-        await handleRegister(); // handle it with JS
+    <form className="RegisterBox"
+          onSubmit={async (e) => {
+          e.preventDefault(); // don't reload the page
+          await handleRegister(); // handle it with JS
       }}
     >
-      <label htmlFor="email">Email</label>
-      <input
+      <h2 className="RegisterTitle">
+        <DisplayText>Create your account</DisplayText>
+      </h2>
+      <label htmlFor="email">
+        <TechText className="text-xs">Email</TechText>
+      </label>
+      <Box
         id="email"
         type="email"
         placeholder="Email"
@@ -79,12 +88,14 @@ export default function RegisterForm() {
       />
       {fieldErrors?.email && (
         <p id="email-error" className="FieldError">
-          {fieldErrors.email}
+          <TechText className="text-xs">{fieldErrors.email}</TechText>
         </p>
       )}
 
-      <label htmlFor="username">Username</label>
-      <input
+      <label htmlFor="username">
+        <TechText className="text-xs">Username</TechText>
+      </label>
+      <Box
         id="username"
         placeholder="Username"
         value={username}
@@ -96,14 +107,16 @@ export default function RegisterForm() {
       />
       {fieldErrors?.username && (
         <p id="username-error" className="FieldError">
-          {fieldErrors.username}
+          <TechText className="text-xs">{fieldErrors.username}</TechText>
         </p>
       )}
 
-      <label htmlFor="password">Password</label>
-      <input
+      <label htmlFor="password">
+        <TechText className="text-xs">Password</TechText>
+      </label>
+      <Box
         id="password"
-        type="password"
+        type={showPassword ? "text" : "password"}
         placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
@@ -114,14 +127,16 @@ export default function RegisterForm() {
       />
       {fieldErrors?.password && (
         <p id="password-error" className="FieldError">
-          {fieldErrors.password}
+          <TechText className="text-xs">{fieldErrors.password}</TechText>
         </p>
       )}
 
-      <label htmlFor="confirm-password">Confirm password</label>
-      <input
+      <label htmlFor="confirm-password">
+        <TechText className="text-xs">Confirm password</TechText>
+      </label>
+      <Box
         id="confirm-password"
-        type="password"
+        type={showPassword ? "text" : "password"}
         placeholder="Confirm Password"
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
@@ -129,15 +144,24 @@ export default function RegisterForm() {
         autoComplete="new-password"
       />
 
+      <label className="ShowPassword">
+        <input
+          type="checkbox"
+          checked={showPassword}
+          onChange={(e) => setShowPassword(e.target.checked)}
+        />
+        <TechText className="text-xs">Show password</TechText>
+      </label>
+
       {error && (
         <p className="FormError" role="alert">
-          {error}
+          <TechText className="text-xs">{error}</TechText>
         </p>
       )}
 
-      <button type="submit" disabled={loading}>
+      <Button type="submit" disabled={loading}>
         {loading ? "Registering..." : "Register"}
-      </button>
-    </form>
+      </Button>
+      </form>
   );
 }

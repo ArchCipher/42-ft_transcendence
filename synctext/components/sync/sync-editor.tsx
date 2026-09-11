@@ -13,13 +13,10 @@ import { useEditor } from "@tiptap/react"
 import Collaboration from "@tiptap/extension-collaboration"
 import CollaborationCaret from "@tiptap/extension-collaboration-caret"
 
-import {
-  SimpleEditorView,
-  simpleEditorConfig,
-  baseTiptapExtensions,
-} from "@/components/tiptap-templates/simple/simple-editor-view"
+import { SimpleEditorView, simpleEditorConfig, baseTiptapExtensions } from "@/components/tiptap-templates/simple/simple-editor-view"
 import { DocumentNavbar } from "@/app/doc/[id]/navbar"
 import { getLocalUser } from "@/lib/sync/sync-user"
+import { Footer } from "@/components/Footer"
 
 type SyncUser = { name: string; color: string }
 
@@ -68,7 +65,9 @@ function SyncEditorSession({ docId, title, user, canEdit }: SyncEditorSessionPro
         status={status}
         users={others}
       />
-      <SimpleEditorView editor={editor} showToolbar={canEdit} />
+      <SimpleEditorView editor={editor} 
+                        showToolbar={canEdit} />
+      <Footer />
     </>
   )
 }

@@ -2,11 +2,16 @@
 
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { ArrowLeft, Check, Pencil } from "lucide-react"
+import { Check, Pencil } from "lucide-react"
+
 import type { HocuspocusProvider } from "@hocuspocus/provider"
 import type { CollabUser, ConnectionStatus } from "@hocuspocus/provider-react"
-
 import { renameDocument_api } from "@/app/dashboard/document/document"
+import { DisplayText, TechText } from "@/components/Typography"
+import Button from "@/components/Button"
+import Box from "@/components/Box"
+
+import styles from "./navbar.module.css"
 
 type SyncUser = { name: string; color: string }
 
@@ -95,29 +100,45 @@ export function DocumentNavbar({
   }
 
   return (
-    <header className="relative z-20 border-b border-white/15 bg-[oklch(0.12_0.006_285)] font-mono text-[#f4f2ee]">
+    <header
+      className={`relative z-20 border-b border-white/15 text-[#f4f2ee] ${styles.editorNavbar}`}
+    >
       <nav
         aria-label="Document navigation"
-        className="grid min-h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-3 py-2 sm:gap-3 sm:px-6"
-      >
-        <div className="flex min-w-0 items-center gap-3">
-          {!isEditing ? (
-            <Link
-              href="/dashboard"
-              aria-label="Back to dashboard"
-              className="inline-flex size-10 items-center justify-center border border-white/15 text-xs text-[#f4f2ee] transition-colors hover:border-white/45 hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:w-auto sm:gap-2 sm:px-3"
-            >
-              <ArrowLeft aria-hidden="true" size={15} />
-              <span className="hidden sm:inline">Dashboard</span>
-            </Link>
-          ) : null}
+        className="grid min-h-12
+           grid-cols-[1fr_auto]
+           items-center gap-x-2 gap-y-1
+           px-2 py-1
+           min-[901px]:min-h-16
+           min-[901px]:grid-cols-[auto_minmax(0,1fr)_auto]
+           min-[901px]:gap-3
+           min-[901px]:px-6
+           min-[901px]:py-2">
+        <div className="row-start-2 flex min-w-0 items-center gap-2
+                        min-[901px]:row-auto min-[901px]:gap-5">
+          <Link
+            href="/"
+            aria-label="SyncText home"
+            className="text-[#f4f2ee] no-underline"
+          >
+            <DisplayText className="text-lg min-[901px]:text-2xl">
+              SyncText
+            </DisplayText>
+          </Link>
 
-          <span className="hidden text-sm tracking-[-0.04em] text-white/55 lg:inline">
-            SyncText<span className="text-[#8984b5]">↗</span>
-          </span>
+          {!isEditing ? (
+            <div className="max-[900px]:scale-75 max-[900px]:origin-left">
+              <Button href="/dashboard" compact>
+                Dashboard
+              </Button>
+            </div>
+          ) : null}
         </div>
 
-        <div className="min-w-0 sm:px-3">
+        <div className="col-span-2 row-start-1 min-w-0
+                min-[901px]:col-span-1
+                min-[901px]:row-auto
+                min-[901px]:px-3">
           {isEditing ? (
             <form
               className="mx-auto flex max-w-xl items-center gap-2"
@@ -131,30 +152,31 @@ export function DocumentNavbar({
                 }
               }}
             >
-              <input
-                autoFocus
-                value={draftTitle}
-                maxLength={120}
-                disabled={isRenaming}
-                aria-label="Document title"
-                aria-describedby={renameError ? "document-rename-error" : undefined}
-                onChange={(event) => setDraftTitle(event.target.value)}
-                onFocus={(event) => event.currentTarget.select()}
-                onKeyDown={(event) => {
-                  if (event.key === "Escape") {
-                    cancelEditing()
-                  }
-                }}
-                className="min-h-10 min-w-0 flex-1 border border-white/25 bg-white/5 px-3 text-center text-sm text-white outline-none transition-colors focus:border-[#8984b5]"
-              />
-              <button
+              <div className="min-w-0 flex-1">
+                <Box
+                  autoFocus
+                  value={draftTitle}
+                  maxLength={120}
+                  disabled={isRenaming}
+                  aria-label="Document title"
+                  aria-describedby={renameError ? "document-rename-error" : undefined}
+                  onChange={(event) => setDraftTitle(event.target.value)}
+                  onFocus={(event) => event.currentTarget.select()}
+                  onKeyDown={(event) => {
+                    if (event.key === "Escape") {
+                      cancelEditing()
+                    }
+                  }}
+                />
+              </div>
+              <Button
                 type="submit"
+                compact
                 disabled={isRenaming || !draftTitle.trim()}
                 aria-label="Save document title"
-                className="inline-flex size-10 items-center justify-center border border-white/20 bg-[#f4f2ee] text-[#090909] transition-colors hover:bg-white disabled:cursor-wait disabled:opacity-60"
               >
                 <Check aria-hidden="true" size={16} />
-              </button>
+              </Button>
             </form>
           ) : (
             <button
@@ -164,11 +186,27 @@ export function DocumentNavbar({
                 setDraftTitle(title)
                 setIsEditing(true)
               }}
-              className="mx-auto flex min-h-10 max-w-xl items-center gap-2 px-3 text-left text-sm tracking-tight text-white transition-colors hover:bg-white/5 disabled:cursor-default disabled:hover:bg-transparent"
+              className="mx-auto flex min-h-10 max-w-xl items-center gap-2
+              px-3 text-left text-sm tracking-tight text-white
+              transition-colors hover:bg-white/5 disabled:cursor-default disabled:hover:bg-transparent
+                          max-[900px]:mx-0
+                          max-[900px]:w-full
+                          max-[900px]:max-w-none
+                          max-[900px]:justify-center
+                          max-[900px]:px-0"
               title={canRename ? "Rename document" : "You have view-only access"}
             >
-              <span className="sm:hidden">{truncateTitle(title, 15)}</span>
-              <span className="hidden sm:inline">{truncateTitle(title, 50)}</span>
+              <span className="min-[901px]:hidden">
+                <TechText className="text-base normal-case">
+                  {truncateTitle(title, 30)}
+                </TechText>
+              </span>
+
+              <span className="hidden min-[901px]:inline">
+                <TechText className="text-base normal-case">
+                  {truncateTitle(title, 50)}
+                </TechText>
+              </span>
               {canRename ? <Pencil aria-hidden="true" className="shrink-0 text-white/45" size={14} /> : null}
             </button>
           )}
@@ -179,15 +217,25 @@ export function DocumentNavbar({
           ) : null}
         </div>
 
-        <div className="ml-auto flex min-w-0 items-center justify-end gap-2">
+          <div className="col-start-2 row-start-2 ml-auto flex min-w-0 items-center justify-end gap-2
+                min-[901px]:col-auto
+                min-[901px]:row-auto">
           {!isEditing ? (
             <span
-              className="inline-flex size-10 items-center justify-center border border-white/15 text-[11px] text-white/65 sm:w-auto sm:gap-2 sm:px-2.5 sm:py-2"
+              className="inline-flex min-h-11 items-center
+                        justify-center border border-[#6fd3ff]/30
+                        bg-[#101b30] px-3 text-white/70 sm:gap-2
+                        max-[900px]:min-h-0
+                        max-[900px]:border-0
+                        max-[900px]:bg-transparent
+                        max-[900px]:p-0"
               aria-label={`Connection status: ${status}`}
               title={status}
             >
               <span className={`size-2 rounded-full ${STATUS_COLOR[status]}`} aria-hidden="true" />
-              <span className="hidden sm:inline">{status}</span>
+              <TechText className="text-sm normal-case max-[900px]:hidden">
+                {status}
+              </TechText>
             </span>
           ) : null}
 
@@ -201,7 +249,9 @@ export function DocumentNavbar({
                 <span
                   key={onlineUser.clientId}
                   title={identity.name}
-                  className="inline-flex size-8 items-center justify-center rounded-full border-2 border-[oklch(0.12_0.006_285)] text-xs font-semibold text-white"
+                  className="inline-flex size-8
+                            items-center justify-center rounded-full
+                            border-2 border-[oklch(0.12_0.006_285)] text-xs font-semibold text-white"
                   style={{ backgroundColor: identity.color }}
                 >
                   {identity.name[0]?.toUpperCase()}
