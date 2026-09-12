@@ -61,7 +61,7 @@ export default function LoginForm() {
     >
       <h2 className="LoginTitle">
         <DisplayText>
-          Access the Guide
+          Access the guide
         </DisplayText>
       </h2>
 
@@ -125,7 +125,7 @@ export default function LoginForm() {
       )}
 
       <Button type="submit" disabled={loading}>
-        {loading ? "Accessing..." : "Access the Guide"}
+        {loading ? "Accessing..." : "Login"}
       </Button>
       <div className="LoginLinks">
         <Link href="/register">

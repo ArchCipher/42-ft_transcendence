@@ -63,3 +63,7 @@
 .UserDropdownItem[data-highlighted] {
   background: rgba(111, 211, 255, 0.12);
 }
+
+.UserMenuPositioner {
+  z-index: 9999;
+}
