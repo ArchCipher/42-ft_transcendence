@@ -77,6 +77,13 @@ migrate-dev:
 	migrate \
 	npx prisma migrate dev --name "$(NAME)"
 
+# ---- code quality ------------------------------------------------------------
+
+lint:
+	npm run lint
+
+typecheck:
+	npm run typecheck
 
 # ---- cleanup -----------------------------------------------------------------
 

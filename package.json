@@ -7,6 +7,10 @@
     "packages/shared",
     "services/collab"
   ],
+  "scripts": {
+    "lint": "eslint . --max-warnings=0",
+	"typecheck": "npm --workspaces run typecheck"
+  },
   "allowScripts": {
     "@prisma/engines@7.9.1": true,
     "argon2@0.45.1": true,
@@ -15,6 +19,10 @@
     "@parcel/watcher@2.6.0": true
   },
   "devDependencies": {
-    "@prisma/config": "^7.9.1"
+    "@prisma/config": "^7.9.1",
+    "eslint": "^9",
+    "@eslint/js": "^9",
+    "typescript": "^5",
+    "typescript-eslint": "^8"
   }
 }
