@@ -10,7 +10,8 @@
   "dependencies": {
     "@hocuspocus/extension-database": "^4.5.0",
     "@hocuspocus/server": "^4.5.0",
-    "@synctext/shared": "*"
+    "@synctext/shared": "*",
+    "yjs": "^13.6.32"
   },
   "devDependencies": {
     "@types/node": "^20",
