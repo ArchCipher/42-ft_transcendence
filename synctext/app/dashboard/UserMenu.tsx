@@ -18,7 +18,7 @@ export default function UserMenu({ username }: UserMenuProps) {
         <Menu.Trigger className="UserMenu">
           <User size={25} />
 
-          <TechText className="text-xs">
+          <TechText className="text-xs max-w-[90px] truncate">
             {username}
           </TechText>
         </Menu.Trigger>

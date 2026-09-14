@@ -156,7 +156,7 @@ export function DocumentNavbar({
                 <Box
                   autoFocus
                   value={draftTitle}
-                  maxLength={120}
+                  maxLength={50}
                   disabled={isRenaming}
                   aria-label="Document title"
                   aria-describedby={renameError ? "document-rename-error" : undefined}
@@ -198,7 +198,7 @@ export function DocumentNavbar({
             >
               <span className="min-[901px]:hidden">
                 <TechText className="text-base normal-case">
-                  {truncateTitle(title, 30)}
+                  {truncateTitle(title, 22)}
                 </TechText>
               </span>
 
