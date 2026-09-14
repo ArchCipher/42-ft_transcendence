@@ -33,15 +33,17 @@ export const emailSchema = z
 
     // domain part contains only letters, numbers, hyphens and periods.
     // dot-separated labels, each 1-63 chars, not starting/ending with '-'
-    const domainOk = domain.split(".").every(
+    const domainOk = domain
+      .split(".")
+      .every(
         (label) =>
           label.length > 0 &&
           label.length <= 63 &&
           /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/.test(label),
       );
-      if (!domainOk) {
-        ctx.addIssue({ code: "custom", message: "Email domain is invalid" });
-      }
+    if (!domainOk) {
+      ctx.addIssue({ code: "custom", message: "Email domain is invalid" });
+    }
   });
 
 // ---- password ------------------------------------------------------------
@@ -138,6 +140,14 @@ export const verifyEmailSchema = z
   })
   .strict();
 
+// ---- internal --------------------------------------------------------------
+export const sessionVerifySchema = z
+  .object({
+    tokenHash: z.string().min(16).max(256), // server-internal, collab pre-hashed
+    documentName: z.string().min(1).max(64),
+  })
+  .strict();
+
 // ---- types & helpers ------------------------------------------------------
 // z.infer yields the OUTPUT type, i.e. after trim/toLowerCase transforms, so
 // route handlers receive normalized values directly.
@@ -147,10 +157,9 @@ export type RegisterInput = z.infer<typeof registerSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type PasswordResetInput = z.infer<typeof passwordResetSchema>;
 export type VerifyEmailInput = z.infer<typeof verifyEmailSchema>;
+export type SessionVerifyInput = z.infer<typeof sessionVerifySchema>;
 
 // Stable JSON shape for the client: { error: "Validation failed", ... } per field.
-export function validationError(
-  error: z.ZodError,
-): Record<string, string[]> {
-    return z.flattenError(error).fieldErrors;
-  }
+export function validationError(error: z.ZodError): Record<string, string[]> {
+  return z.flattenError(error).fieldErrors;
+}
