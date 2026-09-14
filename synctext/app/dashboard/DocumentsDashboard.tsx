@@ -15,7 +15,7 @@ type DashboardProps = {
   order: string;
 };
 
-export default function Dashboard({ search, order }: DashboardProps) {
+export default function DocumentsDashboard({ search, order }: DashboardProps) {
 
   const [documents, setDocuments] = useState<DocumentSummary[]>([]);
   const [isLoadingDocuments, setIsLoadingDocuments] = useState(true);

@@ -5,12 +5,10 @@ import { Menu } from "@base-ui/react/menu";
 import { TechText } from "@/components/Typography";
 import "./UserMenu.css";
 import { useRouter } from "next/navigation";
+import { LOGGED_OUT_URL, logoutClient } from "@/lib/auth/session-state";
+import { type UserProps } from "./dashboard-client";
 
-type UserMenuProps = {
-  username: string;
-};
-
-export default function UserMenu({ username }: UserMenuProps) {
+export default function UserMenu({ username }: UserProps) {
   const router = useRouter();
   return (
     <div className="UserMenuContainer">
@@ -38,13 +36,12 @@ export default function UserMenu({ username }: UserMenuProps) {
 
               <Menu.Item
                 className="UserDropdownItem"
-                onClickCapture={() => router.push("/auth")}
+                onClick={() =>
+                  void logoutClient(() => router.push(LOGGED_OUT_URL))
+                }
               >
-                <TechText className="text-xs">
-                  Logout
-                </TechText>
+                <TechText className="text-xs">Logout</TechText>
               </Menu.Item>
-
             </Menu.Popup>
           </Menu.Positioner>
         </Menu.Portal>

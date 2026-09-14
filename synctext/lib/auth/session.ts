@@ -66,26 +66,33 @@ export async function clearSessionCookie(): Promise<void> {
   store.delete(SESSION_COOKIE_NAME);
 }
 
-// Validate token from request cookie: on every use update `lastUsedAt`, so that
-// `online status` and `idle-timeout` works
-export async function validateSession(
-  token: string | null,
+// Note: this takes a hashed session token
+export async function checkSessionByHash(
+  tokenHash: string,
 ): Promise<(Session & { user: User }) | null> {
-  if (!token) return null;
-
   const session = await db.session.findUnique({
-    where: { tokenHash: hashSessionToken(token) },
+    where: { tokenHash },
     include: { user: true },
   });
+
+  // invalid session
   if (!session || session.revokedAt !== null || session.expiresAt < new Date())
     return null;
-
+  // idle session
   if (
     session.lastUsedAt &&
     Date.now() - session.lastUsedAt.getTime() > IDLE_TIMEOUT_MS
   )
     return null;
+  return session;
+}
 
+// explicit refresh - call ONLY on real user activity
+// update lastUsedAt ONLY every SESSION_LAST_USED_UPDATE_THRESHOLD
+export async function touchSession(session: {
+  id: string;
+  lastUsedAt: Date | null;
+}): Promise<void> {
   if (
     !session.lastUsedAt ||
     Date.now() - session.lastUsedAt.getTime() >
@@ -96,5 +103,36 @@ export async function validateSession(
       data: { lastUsedAt: new Date() },
     });
   }
+}
+
+// Validate token from request cookie: on every use update `lastUsedAt`, so that
+// `online status` and `idle-timeout` works
+// Note: this takes raw session token
+export async function validateSession(
+  token: string | null,
+): Promise<(Session & { user: User }) | null> {
+  if (!token) return null;
+
+  const session = await checkSessionByHash(hashSessionToken(token));
+  if (session) await touchSession(session);
   return session;
+}
+
+/*
+Logout session (clear cookie and remove DB row)
+Safe to call when session is invalid/expired/idle/logout
+*/
+export async function logoutCurrentSession(): Promise<void> {
+  const token = await getSessionToken();
+  if (token) {
+    try {
+      await db.session.updateMany({
+        where: { tokenHash: hashSessionToken(token), revokedAt: null },
+        data: { revokedAt: new Date() },
+      }); // revoke session
+    } catch (error) {
+      console.error("[session] revoke failed:", error);
+    }
+  }
+  await clearSessionCookie();
 }
