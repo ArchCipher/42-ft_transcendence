@@ -10,6 +10,7 @@ import { renameDocument_api } from "@/app/dashboard/document/document"
 import { DisplayText, TechText } from "@/components/Typography"
 import Button from "@/components/Button"
 import Box from "@/components/Box"
+import { SnapshotHistory } from "@/components/sync/snapshot-history"
 
 import styles from "./navbar.module.css"
 
@@ -220,6 +221,8 @@ export function DocumentNavbar({
           <div className="col-start-2 row-start-2 ml-auto flex min-w-0 items-center justify-end gap-2
                 min-[901px]:col-auto
                 min-[901px]:row-auto">
+          <SnapshotHistory key={docId} docId={docId} />
+
           {!isEditing ? (
             <span
               className="inline-flex min-h-11 items-center
