@@ -10,37 +10,85 @@ datasource db {
 // ==========================================================================
 // ENUMS
 // ==========================================================================
-enum OrgRole {
+enum PlatformRole {
   USER
   ADMIN
 }
 
-enum DocRole {
-  EDITOR
-  VIEWER
+enum GroupRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
 }
 
 // ==========================================================================
 // MODELS
 // ==========================================================================
 model User {
-  id                String    @id @default(cuid())
-  email             String    @unique
-  username          String    @unique
-  passwordHash      String?   // null = OAuth-only account
-  role              OrgRole   @default(USER)  // global role (USER/ADMIN) => TBD : do we want to keep that ?
-  avatarUrl         String?   // null = show default avatar
-  lastSeenAt        DateTime? // for "online status" // RGPD: Inform the user about storing this data
+  id                String       @id @default(cuid())
+  email             String       @unique
+  username          String       @unique
+  passwordHash      String?      // null = OAuth-only account
+  role              PlatformRole @default(USER) // back-office only, no consumer yet
+  avatarUrl         String?      // null = show default avatar
+  lastSeenAt        DateTime?    // for "online status" // RGPD: Inform the user about storing this data
   emailVerifiedAt   DateTime?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
 
   // Relations
   sessions                Session[]                 @relation("UserSession")
   emailVerificationTokens EmailVerificationToken[]  @relation("UserEmailVerification")
   passwordResetTokens     PasswordResetToken[]      @relation("UserPasswordReset")
-  ownedDocuments          Document[]                @relation("DocumentOwner")
-  collabDocuments         DocumentShare[]           @relation("Collaborator")
+  privateGroup            Group?                    @relation("PrivateGroup")
+  memberships             GroupMember[]             @relation("GroupMembership")
+  createdDocuments        Document[]                @relation("DocumentCreator")
+  friendshipsAsA          Friendship[]              @relation("FriendshipA")
+  friendshipsAsB          Friendship[]              @relation("FriendshipB")
+}
+
+// Every document lives in a group. A private group is created at signup:
+// privateForUserId set, exactly one member, no invitations.
+// Groups have no route of their own, they are tabs in the dashboard.
+model Group {
+  id        String   @id @default(cuid())
+  name      String   // "Private" for a private group; never rendered, the UI labels from isPrivate
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // null = shared group. Set = that user's private group. isPrivate derives from this.
+  // The @unique is what guarantees one private group per user; a plain boolean
+  // could not, since the link to the user lives in GroupMember.
+  privateForUserId String? @unique
+  privateForUser   User?   @relation("PrivateGroup", fields: [privateForUserId], references: [id], onDelete: Cascade)
+
+  members   GroupMember[]
+  documents Document[]
+}
+
+model GroupMember {
+  id        String    @id @default(cuid())
+  groupId   String
+  userId    String
+  role      GroupRole @default(MEMBER)
+  joinedAt  DateTime  @default(now())
+  addedById String?   // who let them in; plain scalar, the row dies with the group anyway
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  // Restrict is deliberate: a raw DELETE on User fails while memberships exist,
+  // which forces deletion through deleteUser().
+  user  User  @relation("GroupMembership", fields: [userId], references: [id], onDelete: Restrict)
+
+  grants DocumentGrant[]
+
+  @@unique([groupId, userId])
+  @@index([userId])
 }
 
 model Document {
@@ -50,13 +98,18 @@ model Document {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Owner relation
-  ownerId   String
-  owner     User     @relation("DocumentOwner", fields: [ownerId], references: [id])
+  // Group relation
+  groupId String
+  group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
-  // Collaboration relation
-  collab    DocumentShare[] @relation("Collaborator")
+  // Display only ("created by X"), carries no right. Null once the account is gone.
+  createdById String?
+  createdBy   User?   @relation("DocumentCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  grants    DocumentGrant[]
   snapshots DocumentSnapshot[]
+
+  @@index([groupId, updatedAt])
 }
 
 model DocumentSnapshot {
@@ -70,15 +123,42 @@ model DocumentSnapshot {
   @@index([documentId, createdAt])
 }
 
-model DocumentShare {
-  id          String   @id @default(cuid())
-  docRole     DocRole @default(VIEWER)
-  userId      String
-  documentId  String
-  user        User     @relation("Collaborator", fields: [userId], references: [id], onDelete: Cascade)
-  document    Document @relation("Collaborator",fields: [documentId], references: [id], onDelete: Cascade)
+// One member's editor access to one document. There is no role column: the row
+// exists or it does not, and an editor may also delete the document and change
+// its grants. Every group member is already a viewer of everything (rule 6).
+// Points at the membership, not the user: leaving the group revokes every
+// exception by cascade, and rejoining creates a new id so nothing resurrects.
+model DocumentGrant {
+  membershipId String
+  documentId   String
+  grantedById  String?
+  createdAt    DateTime @default(now())
 
-  @@unique([userId, documentId])
+  membership GroupMember @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  document   Document    @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@id([membershipId, documentId])
+  @@index([documentId])
+}
+
+// One row per pair, userAId < userBId enforced by a CHECK (see the migration).
+// Kills cross duplicates, the "A invites B while B invites A" race, and
+// self-friendship at once. DECLINED rows are kept so only the decliner can
+// revive the pair.
+model Friendship {
+  userAId       String
+  userBId       String
+  requestedById String           // always userAId or userBId (CHECK)
+  status        FriendshipStatus @default(PENDING)
+  createdAt     DateTime         @default(now())
+  respondedAt   DateTime?
+
+  userA User @relation("FriendshipA", fields: [userAId], references: [id], onDelete: Cascade)
+  userB User @relation("FriendshipB", fields: [userBId], references: [id], onDelete: Cascade)
+
+  @@id([userAId, userBId])
+  @@index([userAId, status])
+  @@index([userBId, status])
 }
 
 model Session {
