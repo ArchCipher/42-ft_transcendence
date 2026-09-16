@@ -1,3 +1,9 @@
+// DRAFT/PROPOSAL —> Models for the Major "Organization"
+// Documents live in a space, either your personnal space or a group space.
+// Two invariants live in the migration, not here: 
+// the partial unique index for one OWNER per space (this one is optionnal, as extra-safety check),
+// and the two Friendship CHECKs.
+
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -10,37 +16,88 @@ datasource db {
 // ==========================================================================
 // ENUMS
 // ==========================================================================
-enum OrgRole {
+enum PlatformRole {
   USER
   ADMIN
 }
 
-enum DocRole {
+enum SpaceRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+// Elevations only. No VIEWER: an absent grant already means viewer.
+enum DocGrantRole {
+  MANAGER
   EDITOR
-  VIEWER
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
 }
 
 // ==========================================================================
 // MODELS
 // ==========================================================================
 model User {
-  id                String    @id @default(cuid())
-  email             String    @unique
-  username          String    @unique
-  passwordHash      String?   // null = OAuth-only account
-  role              OrgRole   @default(USER)  // global role (USER/ADMIN) => TBD : do we want to keep that ?
-  avatarUrl         String?   // null = show default avatar
-  lastSeenAt        DateTime? // for "online status" // RGPD: Inform the user about storing this data
+  id                String       @id @default(cuid())
+  email             String       @unique
+  username          String       @unique
+  passwordHash      String?      // null = OAuth-only account
+  role              PlatformRole @default(USER) // back-office only, unused yet
+  avatarUrl         String?      // null = show default avatar
+  lastSeenAt        DateTime?    // for "online status" // RGPD: Inform the user about storing this data
   emailVerifiedAt   DateTime?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
 
   // Relations
   sessions                Session[]                 @relation("UserSession")
   emailVerificationTokens EmailVerificationToken[]  @relation("UserEmailVerification")
   passwordResetTokens     PasswordResetToken[]      @relation("UserPasswordReset")
-  ownedDocuments          Document[]                @relation("DocumentOwner")
-  collabDocuments         DocumentShare[]           @relation("Collaborator")
+  personalSpace           Space?                    @relation("PersonalSpace")
+  memberships             SpaceMember[]             @relation("SpaceMembership")
+  createdDocuments        Document[]                @relation("DocumentCreator")
+  friendshipsAsA          Friendship[]              @relation("FriendshipA")
+  friendshipsAsB          Friendship[]              @relation("FriendshipB")
+}
+
+// Every document lives in a space. A personal space is created at signup:
+// personalForUserId set, exactly one member, no invitations.
+model Space {
+  id        String   @id @default(cuid())
+  name      String   // "Personal" for a personal space; never rendered, the UI labels from isPersonal
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // null = group. Set = that user's personal space. isPersonal derives from this.
+  personalForUserId String? @unique
+  personalForUser   User?   @relation("PersonalSpace", fields: [personalForUserId], references: [id], onDelete: Cascade)
+
+  members   SpaceMember[]
+  documents Document[]
+}
+
+model SpaceMember {
+  id        String    @id @default(cuid())
+  spaceId   String
+  userId    String
+  role      SpaceRole @default(MEMBER)
+  joinedAt  DateTime  @default(now())
+  addedById String?   // who let them in; plain scalar, the row dies with the space anyway
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  // Restrict is deliberate: a raw DELETE on User fails while memberships exist,
+  // which forces deletion through deleteUser().
+  user  User  @relation("SpaceMembership", fields: [userId], references: [id], onDelete: Restrict)
+
+  grants DocumentGrant[]
+
+  @@unique([spaceId, userId])
+  @@index([userId])
 }
 
 model Document {
@@ -50,13 +107,18 @@ model Document {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Owner relation
-  ownerId   String
-  owner     User     @relation("DocumentOwner", fields: [ownerId], references: [id])
+  // Space relation
+  spaceId   String
+  space     Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
 
-  // Collaboration relation
-  collab    DocumentShare[] @relation("Collaborator")
+  // Display only ("created by X"), carries no right. Null once the account is gone.
+  createdById String?
+  createdBy   User?   @relation("DocumentCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  grants    DocumentGrant[]
   snapshots DocumentSnapshot[]
+
+  @@index([spaceId, updatedAt])
 }
 
 model DocumentSnapshot {
@@ -70,15 +132,38 @@ model DocumentSnapshot {
   @@index([documentId, createdAt])
 }
 
-model DocumentShare {
-  id          String   @id @default(cuid())
-  docRole     DocRole @default(VIEWER)
-  userId      String
-  documentId  String
-  user        User     @relation("Collaborator", fields: [userId], references: [id], onDelete: Cascade)
-  document    Document @relation("Collaborator",fields: [documentId], references: [id], onDelete: Cascade)
+// One member's exception on one document => one row. The grant is inherited from the space membership, but can be elevated. 
+// Points at the membership, not the user: leaving the space revokes every exception by cascade.
+model DocumentGrant {
+  membershipId String
+  documentId   String
+  role         DocGrantRole
+  grantedById  String?
+  createdAt    DateTime     @default(now())
 
-  @@unique([userId, documentId])
+  membership SpaceMember @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  document   Document    @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@id([membershipId, documentId])
+  @@index([documentId])
+}
+
+// One row per pair, userAId < userBId enforced by a CHECK. Kills cross
+// duplicates, the simultaneous-invite race, and self-friendship at once.
+model Friendship {
+  userAId       String
+  userBId       String
+  requestedById String           // always userAId or userBId (CHECK)
+  status        FriendshipStatus @default(PENDING)
+  createdAt     DateTime         @default(now())
+  respondedAt   DateTime?
+
+  userA User @relation("FriendshipA", fields: [userAId], references: [id], onDelete: Cascade)
+  userB User @relation("FriendshipB", fields: [userBId], references: [id], onDelete: Cascade)
+
+  @@id([userAId, userBId])
+  @@index([userAId, status])
+  @@index([userBId, status])
 }
 
 model Session {
