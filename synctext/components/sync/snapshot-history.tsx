@@ -1,10 +1,20 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { Dialog } from "@base-ui/react/dialog"
+import { useEffect, useRef, useState } from "react"
 import { History, RefreshCw, X } from "lucide-react"
 
 import { SnapshotPreview } from "@/components/sync/snapshot-preview"
+import { SnapshotRestoreButton } from "@/components/sync/snapshot-restore-button"
+import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import "@/components/sync/snapshot-history.css"
 
 type SnapshotSummary = {
@@ -44,26 +54,39 @@ async function fetchSnapshots(docId: string, signal: AbortSignal): Promise<Snaps
 type SnapshotListProps = {
   snapshots: SnapshotSummary[]
   selectedId: string | null
+  recoverySnapshotId: string | null
+  disabled: boolean
   onSelectSnapshot: (snapshotId: string) => void
 }
 
-function SnapshotList({ snapshots, selectedId, onSelectSnapshot }: SnapshotListProps) {
+function SnapshotList({
+  snapshots,
+  selectedId,
+  recoverySnapshotId,
+  disabled,
+  onSelectSnapshot,
+}: SnapshotListProps) {
   return (
     <aside className="max-h-40 overflow-y-auto border-b border-border p-3 md:max-h-none md:border-r md:border-b-0">
       <ul aria-label="Saved snapshots" className="space-y-2">
         {snapshots.map((snapshot, index) => (
           <li key={snapshot.id}>
-            <button
+            <Button
               type="button"
+              variant="outline"
+              disabled={disabled}
               aria-pressed={snapshot.id === selectedId}
               onClick={() => onSelectSnapshot(snapshot.id)}
-              className="w-full border border-border px-3 py-3 text-left text-sm transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring aria-pressed:border-primary aria-pressed:bg-muted"
+              className="h-auto w-full flex-col items-start gap-1 whitespace-normal px-3 py-3 text-left aria-pressed:border-primary aria-pressed:bg-muted"
             >
               <time dateTime={snapshot.createdAt}>{formatSnapshotTime(snapshot.createdAt)}</time>
-              {index === 0 && (
-                <span className="mt-1 block text-xs text-muted-foreground">Latest saved snapshot</span>
+              {snapshot.id === recoverySnapshotId && (
+                <span className="text-xs text-muted-foreground">Recovery copy before restore</span>
               )}
-            </button>
+              {index === 0 && snapshot.id !== recoverySnapshotId && (
+                <span className="text-xs text-muted-foreground">Latest saved snapshot</span>
+              )}
+            </Button>
           </li>
         ))}
       </ul>
@@ -74,9 +97,10 @@ function SnapshotList({ snapshots, selectedId, onSelectSnapshot }: SnapshotListP
 type SnapshotPreviewPanelProps = {
   docId: string
   snapshot: SnapshotSummary | undefined
+  onPreviewReady: (snapshotId: string) => void
 }
 
-function SnapshotPreviewPanel({ docId, snapshot }: SnapshotPreviewPanelProps) {
+function SnapshotPreviewPanel({ docId, snapshot, onPreviewReady }: SnapshotPreviewPanelProps) {
   if (!snapshot) {
     return null
   }
@@ -95,18 +119,44 @@ function SnapshotPreviewPanel({ docId, snapshot }: SnapshotPreviewPanelProps) {
         tabIndex={0}
         className="snapshot-history-preview min-h-0 flex-1 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
       >
-        <SnapshotPreview docId={docId} snapshotId={snapshot.id} />
+        <SnapshotPreview docId={docId} snapshotId={snapshot.id} onReady={onPreviewReady} />
       </div>
     </section>
   )
 }
 
-function SnapshotHistoryContent({ docId }: { docId: string }) {
+type SnapshotHistoryProps = {
+  docId: string
+  canRestore: boolean
+  isConnected: boolean
+}
+
+type SnapshotHistoryContentProps = SnapshotHistoryProps & {
+  isRestoring: boolean
+  onRestoringChange: (isRestoring: boolean) => void
+}
+
+function SnapshotHistoryContent({
+  docId,
+  canRestore,
+  isConnected,
+  isRestoring,
+  onRestoringChange,
+}: SnapshotHistoryContentProps) {
   const [snapshots, setSnapshots] = useState<SnapshotSummary[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState("")
   const [reloadCount, setReloadCount] = useState(0)
+  const [readySnapshotId, setReadySnapshotId] = useState<string | null>(null)
+  const [recoverySnapshotId, setRecoverySnapshotId] = useState<string | null>(null)
+  const [success, setSuccess] = useState("")
+  const successMessageRef = useRef<HTMLParagraphElement>(null)
+
+  useEffect(() => {
+    // refresh replaces the restore button, so return focus to the result instead
+    if (success && !isLoading) successMessageRef.current?.focus()
+  }, [success, isLoading])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -118,12 +168,11 @@ function SnapshotHistoryContent({ docId }: { docId: string }) {
 
         setSnapshots(loadedSnapshots)
 
-        // select the newest snapshot by default
-        if (loadedSnapshots.length > 0) {
-          setSelectedId(loadedSnapshots[0].id)
-        } else {
-          setSelectedId(null)
-        }
+        // keep the restored snapshot selected if retention has not removed it
+        setSelectedId((currentId) => {
+          if (loadedSnapshots.some((snapshot) => snapshot.id === currentId)) return currentId
+          return loadedSnapshots[0]?.id ?? null
+        })
       } catch (loadError) {
         if (controller.signal.aborted) return
 
@@ -145,15 +194,34 @@ function SnapshotHistoryContent({ docId }: { docId: string }) {
     return () => controller.abort()
   }, [docId, reloadCount])
 
-  function refreshHistory() {
+  function refreshHistory(preferredSnapshotId: string | null = null) {
     setIsLoading(true)
     setError("")
     setSnapshots([])
-    setSelectedId(null)
+    setSelectedId(preferredSnapshotId)
+    setReadySnapshotId(null)
     setReloadCount((count) => count + 1)
   }
 
+  function selectSnapshot(snapshotId: string) {
+    if (snapshotId === selectedId) return
+    setReadySnapshotId(null)
+    setSelectedId(snapshotId)
+  }
+
+  function handleRestored(recoveryId: string) {
+    setRecoverySnapshotId(recoveryId)
+    setSuccess("Snapshot restored. A recovery copy was saved before the restore.")
+    refreshHistory(selectedId)
+  }
+
   const selectedSnapshot = snapshots.find((snapshot) => snapshot.id === selectedId)
+  let restoreHint = "Restoring replaces the document content for everyone."
+  if (!canRestore) {
+    restoreHint = "You can preview snapshots. Restoring requires edit access."
+  } else if (!isConnected) {
+    restoreHint = "Reconnect to the document before restoring."
+  }
 
   function renderHistory() {
     if (isLoading) {
@@ -182,9 +250,15 @@ function SnapshotHistoryContent({ docId }: { docId: string }) {
         <SnapshotList
           snapshots={snapshots}
           selectedId={selectedId}
-          onSelectSnapshot={setSelectedId}
+          recoverySnapshotId={recoverySnapshotId}
+          disabled={isRestoring}
+          onSelectSnapshot={selectSnapshot}
         />
-        <SnapshotPreviewPanel docId={docId} snapshot={selectedSnapshot} />
+        <SnapshotPreviewPanel
+          docId={docId}
+          snapshot={selectedSnapshot}
+          onPreviewReady={setReadySnapshotId}
+        />
       </div>
     )
   }
@@ -193,58 +267,108 @@ function SnapshotHistoryContent({ docId }: { docId: string }) {
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border px-4 py-2">
         <p className="text-xs text-muted-foreground">Times are local.</p>
-        <button
+        <Button
           type="button"
-          onClick={refreshHistory}
-          disabled={isLoading}
-          className="inline-flex min-h-9 items-center gap-2 px-2 text-xs hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:opacity-50"
+          variant="ghost"
+          size="sm"
+          onClick={() => refreshHistory()}
+          disabled={isLoading || isRestoring}
         >
           <RefreshCw aria-hidden="true" size={14} />
           {error ? "Try again" : "Refresh history"}
-        </button>
+        </Button>
       </div>
 
+      {success && (
+        <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-border bg-muted px-4 py-3">
+          <p ref={successMessageRef} role="status" tabIndex={-1} className="text-sm outline-none">
+            {success}
+          </p>
+          <DialogClose disabled={isRestoring} render={<Button variant="outline" size="sm" />}>
+            Back to document
+          </DialogClose>
+        </div>
+      )}
+
       {renderHistory()}
+
+      {!isLoading && !error && selectedSnapshot && (
+        <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-border px-4 py-3">
+          <p className="text-xs text-muted-foreground">{restoreHint}</p>
+          {canRestore && (
+            <SnapshotRestoreButton
+              key={selectedSnapshot.id}
+              docId={docId}
+              snapshotId={selectedSnapshot.id}
+              snapshotTime={formatSnapshotTime(selectedSnapshot.createdAt)}
+              disabled={!isConnected || readySnapshotId !== selectedSnapshot.id}
+              isRestoring={isRestoring}
+              onRestoringChange={onRestoringChange}
+              onRestored={handleRestored}
+            />
+          )}
+        </div>
+      )}
     </div>
   )
 }
 
 // mount content only while open to fetch fresh history and release the preview on close
-export function SnapshotHistory({ docId }: { docId: string }) {
+export function SnapshotHistory({ docId, canRestore, isConnected }: SnapshotHistoryProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const [isRestoring, setIsRestoring] = useState(false)
 
   return (
-    <Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
-      <Dialog.Trigger
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open, details) => {
+        if (isRestoring) {
+          details.cancel()
+          return
+        }
+        setIsOpen(open)
+      }}
+    >
+      <DialogTrigger
         aria-label="Snapshot history"
         title="Snapshot history"
-        className="inline-flex size-10 shrink-0 items-center justify-center border border-white/15 text-xs text-[#f4f2ee] transition-colors hover:border-white/45 hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:w-auto sm:gap-2 sm:px-3"
+        render={<Button variant="ghost" />}
+        className="size-10 border-white/15 text-[#f4f2ee] hover:border-white/45 hover:bg-white/5 hover:text-[#f4f2ee] sm:w-auto sm:px-3"
       >
         <History aria-hidden="true" size={15} />
         <span className="hidden sm:inline">History</span>
-      </Dialog.Trigger>
+      </DialogTrigger>
 
-      <Dialog.Portal>
-        <Dialog.Backdrop className="fixed inset-0 z-50 bg-black/60" />
-        <Dialog.Popup className="fixed top-1/2 left-1/2 z-50 flex h-[calc(100dvh-1rem)] max-h-[52rem] w-[calc(100%-1rem)] max-w-6xl -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden border border-border bg-background text-foreground shadow-2xl outline-none sm:h-[calc(100dvh-3rem)] sm:w-[calc(100%-3rem)]">
-          <div className="flex shrink-0 items-start justify-between gap-4 border-b border-border p-4">
-            <div>
-              <Dialog.Title className="font-mono text-lg">Snapshot history</Dialog.Title>
-              <Dialog.Description className="mt-1 text-sm text-muted-foreground">
-                View the latest five saved snapshots of this document.
-              </Dialog.Description>
-            </div>
-            <Dialog.Close
-              aria-label="Close snapshot history"
-              className="inline-flex size-10 shrink-0 items-center justify-center border border-border hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-            >
-              <X aria-hidden="true" size={18} />
-            </Dialog.Close>
-          </div>
+      <DialogContent
+        showCloseButton={false}
+        className="flex h-[calc(100dvh-1rem)] max-h-[52rem] w-[calc(100%-1rem)] max-w-6xl flex-col gap-0 overflow-hidden p-0 sm:h-[calc(100dvh-3rem)] sm:w-[calc(100%-3rem)] sm:max-w-6xl"
+      >
+        <div className="flex shrink-0 items-start justify-between gap-4 border-b border-border p-4">
+          <DialogHeader>
+            <DialogTitle>Snapshot history</DialogTitle>
+            <DialogDescription>
+              View the latest five saved snapshots of this document.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogClose
+            aria-label="Close snapshot history"
+            disabled={isRestoring}
+            render={<Button variant="ghost" size="icon" />}
+          >
+            <X aria-hidden="true" size={18} />
+          </DialogClose>
+        </div>
 
-          {isOpen && <SnapshotHistoryContent docId={docId} />}
-        </Dialog.Popup>
-      </Dialog.Portal>
-    </Dialog.Root>
+        {isOpen && (
+          <SnapshotHistoryContent
+            docId={docId}
+            canRestore={canRestore}
+            isConnected={isConnected}
+            isRestoring={isRestoring}
+            onRestoringChange={setIsRestoring}
+          />
+        )}
+      </DialogContent>
+    </Dialog>
   )
 }

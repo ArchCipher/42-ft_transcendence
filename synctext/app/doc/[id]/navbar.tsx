@@ -247,7 +247,12 @@ export function DocumentNavbar({
           <div className="col-start-3 row-start-1 ml-auto flex min-w-0 items-center justify-end gap-1
                 min-[901px]:col-auto
                 min-[901px]:row-auto min-[901px]:gap-2">
-          <SnapshotHistory key={docId} docId={docId} />
+          <SnapshotHistory
+            key={docId}
+            docId={docId}
+            canRestore={canRename}
+            isConnected={status === "connected"}
+          />
 
           {!isEditing ? (
             <span
