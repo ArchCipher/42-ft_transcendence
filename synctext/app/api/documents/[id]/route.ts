@@ -4,191 +4,123 @@ import {
   validateSession,
 } from "@/lib/auth/session";
 import {
-  documentEditWhere,
-  documentReadWhere,
-  type DocumentAccess,
-  type DocumentSummary,
+  summarySelect,
+  toDocumentSummary,
 } from "@/lib/documents/documents";
+import { canEdit, resolveRights } from "@/lib/permissions";
+import { badRequest, forbidden, notFound, readJson, unauthorized } from "@/lib/api/responses";
 import { NextResponse } from "next/server";
 
-type SummaryDocument = {
-  id: string;
-  title: string;
-  createdAt: Date;
-  updatedAt: Date;
-  owner: {
-    id: string;
-    username: string;
-  };
-  collab: Array<{
-    docRole: "EDITOR" | "VIEWER";
-  }>;
-};
+const documentNotFound = () => notFound("Document");
 
-function toDocumentSummary(document: SummaryDocument,userId: string,): DocumentSummary {
-  const access: DocumentAccess =
-    document.owner.id === userId ? "OWNER": (document.collab[0]?.docRole ?? "VIEWER");
+/*
+API Response contracts: /api/documents/[id]
 
-  return {
-    id: document.id,
-    title: document.title,
-    createdAt: document.createdAt.toISOString(),
-    updatedAt: document.updatedAt.toISOString(),
-    owner: document.owner,
-    access,
-    canRename: access === "OWNER" || access === "EDITOR",
-    canDelete: access === "OWNER",
-  };
-}
+  GET                                any member of the document's group
+        -> 200 DocumentSummary
+        -> 401 { error }
+        -> 404 { error }             no such document, or caller not in its group
 
-const summarySelect = (userId: string) =>
-  ({
-    id: true,
-    title: true,
-    createdAt: true,
-    updatedAt: true,
-    owner: {
-      select: {
-        id: true,
-        username: true,
-      },
-    },
-    collab: {
-      where: { userId },
-      select: { docRole: true },
-    },
-  }) as const;
+  PATCH { title }                    canEdit: the group's owner, or a grant
+        -> 200 DocumentSummary
+        -> 400 { error }             title empty or over 120 chars
+        -> 401 { error }
+        -> 403 { error }             in the group, but read-only on this document
+        -> 404 { error }
 
-// Get one document the current user owns or can access through a share.
+  DELETE                             canEdit: an editor may also delete
+        -> 204
+        -> 401 { error }
+        -> 403 { error }
+        -> 404 { error }
+
+  403 and 404 differ on purpose: 403 says the document exists and you may not,
+  404 is for anyone outside the group, who must not learn that it exists.
+*/
+
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await validateSession(await getSessionToken());
-
-  if (!session?.user?.id) {
-    return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 401 },
-    );
-  }
+  if (!session?.user?.id) return unauthorized();
 
   const { id } = await params;
-  const document = await db.document.findFirst({
-    where: { id, ...documentReadWhere(session.user.id) },
+  const document = await db.document.findUnique({
+    where: { id },
     select: summarySelect(session.user.id),
   });
+  if (!document) return documentNotFound();
 
-  if (!document) {
-    return NextResponse.json(
-      { error: "Document not found" },
-      { status: 404 },
-    );
-  }
+  // Not a member of the group: the document does not exist for this user.
+  const rights = resolveRights(document);
+  if (!rights) return documentNotFound();
 
-  return NextResponse.json(toDocumentSummary(document, session.user.id));
+  return NextResponse.json(toDocumentSummary(document, rights));
 }
 
-// Rename a document when the current user is its owner or an editor.
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await validateSession(await getSessionToken());
+  if (!session?.user?.id) return unauthorized();
 
-  if (!session?.user?.id) {
-    return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 401 },
-    );
-  }
-
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json(
-      { error: "Invalid JSON body" },
-      { status: 400 },
-    );
-  }
-
+  const body = await readJson(request);
   if (
     typeof body !== "object" ||
     body === null ||
     !("title" in body) ||
     typeof body.title !== "string"
   ) {
-    return NextResponse.json(
-      { error: "Title is required" },
-      { status: 400 },
-    );
+    return badRequest("Title is required");
   }
 
   const title = body.title.trim();
   if (title.length === 0 || title.length > 120) {
-    return NextResponse.json(
-      { error: "Title must be between 1 and 120 characters" },
-      { status: 400 },
-    );
+    return badRequest("Title must be between 1 and 120 characters");
   }
 
   const { id } = await params;
-  const result = await db.document.updateMany({
-    where: { id, ...documentEditWhere(session.user.id) },
-    data: { title },
-  });
-
-  if (result.count === 0) {
-    return NextResponse.json(
-      { error: "Document not found" },
-      { status: 404 },
-    );
-  }
-
   const document = await db.document.findUnique({
     where: { id },
     select: summarySelect(session.user.id),
   });
+  if (!document) return documentNotFound();
 
-  if (!document) {
-    return NextResponse.json(
-      { error: "Document not found" },
-      { status: 404 },
-    );
-  }
+  const rights = resolveRights(document);
+  if (!rights) return documentNotFound();
+  if (!canEdit(rights)) return forbidden();
 
-  return NextResponse.json(toDocumentSummary(document, session.user.id));
+  const updated = await db.document.update({
+    where: { id },
+    data: { title },
+    select: summarySelect(session.user.id),
+  });
+
+  return NextResponse.json(toDocumentSummary(updated, rights));
 }
 
-// Permanently delete a document owned by the current user.
 export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await validateSession(await getSessionToken());
-
-  if (!session?.user?.id) {
-    return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 401 },
-    );
-  }
+  if (!session?.user?.id) return unauthorized();
 
   const { id } = await params;
-  const result = await db.document.deleteMany({
-    where: {
-      id,
-      ownerId: session.user.id,
-    },
+  const document = await db.document.findUnique({
+    where: { id },
+    select: summarySelect(session.user.id),
   });
+  if (!document) return documentNotFound();
 
-  if (result.count === 0) {
-    return NextResponse.json(
-      { error: "Document not found" },
-      { status: 404 },
-    );
-  }
+  const rights = resolveRights(document);
+  if (!rights) return documentNotFound();
+  if (!canEdit(rights)) return forbidden();
+
+  // Cascade: snapshots and grants go with the document.
+  await db.document.delete({ where: { id } });
 
   return new NextResponse(null, { status: 204 });
 }

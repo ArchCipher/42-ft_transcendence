@@ -1,27 +1,64 @@
-import type { Prisma } from "@synctext/db";
-
-export type DocumentAccess = "OWNER" | "EDITOR" | "VIEWER";
+import { Prisma } from "@synctext/db";
+import { canEdit, documentAccessSelect, type Rights } from "@/lib/permissions";
 
 export type DocumentSummary = {
   id: string;
   title: string;
   createdAt: string;
   updatedAt: string;
-  owner: {
+  /** Which tab this document belongs under. */
+  groupId: string;
+  // Display only. Null once the account that created it is gone.
+  createdBy: {
     id: string;
     username: string;
-  };
-  access: DocumentAccess;
+  } | null;
+  // Both are canEdit today: an editor may rename and delete. Kept as two
+  // fields so the dashboard's props do not change.
   canRename: boolean;
   canDelete: boolean;
 };
 
-// Prisma where-fragment: owner or any collaborator (read access).
-export function documentReadWhere(userId: string): Prisma.DocumentWhereInput {
-  return { OR: [{ ownerId: userId }, { collab: { some: { userId } } }] };
-}
+// Everything a summary needs, including the caller's role and grant.
+export const summarySelect = (userId: string) =>
+  ({
+    id: true,
+    title: true,
+    createdAt: true,
+    updatedAt: true,
+    groupId: true,
+    createdBy: {
+      select: {
+        id: true,
+        username: true,
+      },
+    },
+    ...documentAccessSelect(userId),
+  }) satisfies Prisma.DocumentSelect;
 
-// Prisma where-fragment: owner or EDITOR collaborator (write access).
-export function documentEditWhere(userId: string): Prisma.DocumentWhereInput {
-  return { OR: [{ ownerId: userId }, { collab: { some: { userId, docRole: "EDITOR" } } }] };
+type SummaryDocument = {
+  id: string;
+  title: string;
+  createdAt: Date;
+  updatedAt: Date;
+  groupId: string;
+  createdBy: { id: string; username: string } | null;
+};
+
+export function toDocumentSummary(
+  document: SummaryDocument,
+  rights: Rights,
+): DocumentSummary {
+  const editable = canEdit(rights);
+
+  return {
+    id: document.id,
+    title: document.title,
+    createdAt: document.createdAt.toISOString(),
+    updatedAt: document.updatedAt.toISOString(),
+    groupId: document.groupId,
+    createdBy: document.createdBy,
+    canRename: editable,
+    canDelete: editable,
+  };
 }

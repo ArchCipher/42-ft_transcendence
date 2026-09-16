@@ -4,106 +4,93 @@ import {
   validateSession,
 } from "@/lib/auth/session";
 import {
-  documentReadWhere,
-  type DocumentAccess,
+  summarySelect,
+  toDocumentSummary,
   type DocumentSummary,
 } from "@/lib/documents/documents";
+import { documentReadWhere, resolveRights } from "@/lib/permissions";
+import { badRequest, notFound, readJson, unauthorized } from "@/lib/api/responses";
 import { NextResponse } from "next/server";
 
-// List documents the current user owns or can access through a share.
+/*
+API Response contracts: /api/documents
+
+  GET                                every document of every group the caller
+                                     is in, newest first
+        -> 200 DocumentSummary[]
+        -> 401 { error }
+
+  POST  { groupId? }                 defaults to the caller's private group
+        -> 201 DocumentSummary
+        -> 400 { error }             groupId present but not a string
+        -> 401 { error }
+        -> 404 { error }             caller is not a member of that group
+*/
 
 export async function GET() {
   const session = await validateSession(await getSessionToken());
-
-  if (!session?.user?.id) {
-    return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 401 },
-    );
-  }
+  if (!session?.user?.id) return unauthorized();
 
   const documents = await db.document.findMany({
     where: documentReadWhere(session.user.id),
-    select: {
-      id: true,
-      title: true,
-      createdAt: true,
-      updatedAt: true,
-      owner: {
-        select: {
-          id: true,
-          username: true,
-        },
-      },
-      collab: {
-        where: { userId: session.user.id },
-        select: { docRole: true },
-      },
-    },
+    select: summarySelect(session.user.id),
     orderBy: { updatedAt: "desc" },
   });
 
-  const summaries: DocumentSummary[] = documents.map((document) => {
-    const access: DocumentAccess =
-      document.owner.id === session.user.id
-        ? "OWNER"
-        : (document.collab[0]?.docRole ?? "VIEWER");
-
-    return {
-      id: document.id,
-      title: document.title,
-      createdAt: document.createdAt.toISOString(),
-      updatedAt: document.updatedAt.toISOString(),
-      owner: document.owner,
-      access,
-      canRename: access === "OWNER" || access === "EDITOR",
-      canDelete: access === "OWNER",
-    };
+  // documentReadWhere already filtered on membership, so resolveRights never
+  // returns null here; flatMap keeps that from needing an assertion.
+  const summaries: DocumentSummary[] = documents.flatMap((document) => {
+    const rights = resolveRights(document);
+    return rights ? [toDocumentSummary(document, rights)] : [];
   });
 
   return NextResponse.json(summaries);
 }
 
-// Create a document owned by the current user.
-
-export async function POST() {
+// The creator gets a grant on what they create: without it a plain member
+// would be a viewer of the document they just made.
+export async function POST(request: Request) {
   const session = await validateSession(await getSessionToken());
+  if (!session?.user?.id) return unauthorized();
 
-  if (!session?.user?.id) {
-    return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 401 },
-    );
+  const body = await readJson(request);
+  let requestedGroupId: string | undefined;
+  if (typeof body === "object" && body !== null && "groupId" in body) {
+    if (typeof body.groupId !== "string") return badRequest("groupId must be a string");
+    requestedGroupId = body.groupId;
   }
-  const document = await db.document.create({
-    data: {
-      title: "Untitled Document",
-      ownerId: session.user.id,
-    },
-    select: {
-      id: true,
-      title: true,
-      createdAt: true,
-      updatedAt: true,
-      owner: {
-        select: {
-          id: true,
-          username: true,
-        },
+
+  const userId = session.user.id;
+
+  const created = await db.$transaction(async (tx) => {
+    const membership = requestedGroupId
+      ? await tx.groupMember.findUnique({
+          where: { groupId_userId: { groupId: requestedGroupId, userId } },
+          select: { id: true, groupId: true },
+        })
+      : await tx.groupMember.findFirst({
+          where: { userId, group: { privateForUserId: userId } },
+          select: { id: true, groupId: true },
+        });
+
+    if (!membership) return null;
+
+    return tx.document.create({
+      data: {
+        title: "Untitled Document",
+        groupId: membership.groupId,
+        createdById: userId,
+        grants: { create: { membershipId: membership.id, grantedById: userId } },
       },
-    },
+      select: summarySelect(userId),
+    });
   });
 
-  const summary: DocumentSummary = {
-    id: document.id,
-    title: document.title,
-    createdAt: document.createdAt.toISOString(),
-    updatedAt: document.updatedAt.toISOString(),
-    owner: document.owner,
-    access: "OWNER",
-    canRename: true,
-    canDelete: true,
-  };
+  // Not a member of that group, so for this user it does not exist.
+  if (!created) return notFound("Group");
 
-  return NextResponse.json(summary, { status: 201 });
+  const rights = resolveRights(created);
+  if (!rights) return notFound("Group");
+
+  return NextResponse.json(toDocumentSummary(created, rights), { status: 201 });
 }
