@@ -30,15 +30,31 @@ To populate your local db with a few test users and one test document:
      sh -c "npx prisma migrate deploy && npx tsx prisma/seed.ts"
    ```
 
-=> The seed creates a document in db with id = "test-document" (e.g. `GET /api/documents/test-document` or `/doc/test-document`).
+Users (each also gets a private group of their own):
 
-Created users :
+   | Platform role | Name   | Email             | Password    |
+   |---------------|--------|-------------------|-------------|
+   | ADMIN         | zaphod | zaphod@test.local | password123 |
+   | USER          | alice  | alice@test.local  | password123 |
+   | USER          | bob    | bob@test.local    | password123 |
+   | USER          | tim    | tim@test.local    | password123 |
 
-   | Role  | Name   | Email             | Password    | Doc access             |
-   |-------|--------|-------------------|-------------|-------------------------|
-   | ADMIN | zaphod | zaphod@test.local | password123 | —                       |
-   | USER  | alice  | alice@test.local  | password123 | OWNER of "Test Document" |
-   | USER  | bob    | bob@test.local    | password123 | EDITOR on "Test Document" |
-   | USER  | tim    | tim@test.local    | password123 | VIEWER on "Test Document" |
+Shared groups:
+
+   | Group    | alice | bob   | tim    | zaphod |
+   |----------|-------|-------|--------|--------|
+   | synctext | OWNER | ADMIN | MEMBER | —      |
+   | collab   | —     | OWNER | MEMBER | —      |
+
+Documents:
+
+   | id              | Title           | Group    | Created by | Grants     |
+   |-----------------|-----------------|----------|------------|------------|
+   | test-document   | Test Document   | synctext | alice      | alice, tim |
+   | test-document-2 | Test Document 2 | synctext | bob        | bob        |
+   | test-document-3 | Test Document 3 | collab   | bob        | bob        |
+
+   e.g. `GET /api/documents/test-document` or `/doc/test-document`.
+   5 snapshots on `test-document`.
 
 (The seed only inserts (no upsert), so it fails on a non-empty db.)

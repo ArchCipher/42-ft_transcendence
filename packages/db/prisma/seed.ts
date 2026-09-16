@@ -1,6 +1,11 @@
 import argon2 from "argon2";
 import * as Y from "yjs";
-import { prisma, OrgRole, DocRole } from "../src/index.js";
+import {
+  prisma,
+  createPrivateGroup,
+  PlatformRole,
+  GroupRole,
+} from "../src/index.js";
 
 // Keep the Argon2id config aligned with synctext/lib/auth/password.ts
 // so seeded passwords use the same hashing policy as real user passwords.
@@ -33,63 +38,137 @@ function testDocumentYState(text: string): Uint8Array<ArrayBuffer> {
   return Y.encodeStateAsUpdate(ydoc) as Uint8Array<ArrayBuffer>;
 }
 
+// Mirrors what registration must do: a user is unusable without a private
+// group to create documents in.
+async function createUser(data: {
+  email: string;
+  username: string;
+  passwordHash: string;
+  role: PlatformRole;
+  emailVerifiedAt: Date;
+}) {
+  return prisma.$transaction(async (tx) => {
+    const user = await tx.user.create({ data });
+    await createPrivateGroup(tx, user.id);
+    return user;
+  });
+}
+
 async function main() {
   const passwordHash = await hashPassword("password123");
   const emailVerifiedAt = new Date(); // skip the email verification flow for these test accounts
 
-  const [zaphod, alice, bob, tim] = await Promise.all([
-    prisma.user.create({
-      data: {
-        email: "zaphod@test.local",
-        username: "zaphod",
-        passwordHash,
-        role: OrgRole.ADMIN,
-        emailVerifiedAt,
-      },
-    }),
-    prisma.user.create({
-      data: {
-        email: "alice@test.local",
-        username: "alice",
-        passwordHash,
-        role: OrgRole.USER,
-        emailVerifiedAt,
-      },
-    }),
-    prisma.user.create({
-      data: {
-        email: "bob@test.local",
-        username: "bob",
-        passwordHash,
-        role: OrgRole.USER,
-        emailVerifiedAt,
-      },
-    }),
-    prisma.user.create({
-      data: {
-        email: "tim@test.local",
-        username: "tim",
-        passwordHash,
-        role: OrgRole.USER,
-        emailVerifiedAt,
-      },
-    }),
-  ]);
+  const common = { passwordHash, emailVerifiedAt, role: PlatformRole.USER };
 
+  // zaphod is the platform admin and belongs to no shared group: the fixture
+  // for a complete outsider, who must get 404 and never 403.
+  const zaphod = await createUser({
+    email: "zaphod@test.local",
+    username: "zaphod",
+    ...common,
+    role: PlatformRole.ADMIN,
+  });
+  const alice = await createUser({ email: "alice@test.local", username: "alice", ...common });
+  const bob = await createUser({ email: "bob@test.local", username: "bob", ...common });
+  const tim = await createUser({ email: "tim@test.local", username: "tim", ...common });
+
+  // Two shared groups. bob is OWNER of one and ADMIN of the other, which proves
+  // a role belongs to a group and not to a person. alice is in "synctext" only:
+  // she is the fixture for "member here, outsider there".
+  const synctext = await prisma.group.create({
+    data: {
+      name: "synctext",
+      members: {
+        create: [
+          { userId: alice.id, role: GroupRole.OWNER },
+          { userId: bob.id, role: GroupRole.ADMIN, addedById: alice.id },
+          { userId: tim.id, role: GroupRole.MEMBER, addedById: alice.id },
+        ],
+      },
+    },
+    include: { members: true },
+  });
+
+  const collab = await prisma.group.create({
+    data: {
+      name: "collab",
+      members: {
+        create: [
+          { userId: bob.id, role: GroupRole.OWNER },
+          { userId: tim.id, role: GroupRole.MEMBER, addedById: bob.id },
+        ],
+      },
+    },
+    include: { members: true },
+  });
+
+  const membership = (group: typeof synctext, userId: string) => {
+    const found = group.members.find((member) => member.userId === userId);
+    if (!found) throw new Error(`no membership for ${userId}`);
+    return found.id;
+  };
+
+  // The four role-by-grant combinations, spread over two documents in the same
+  // group so the same three people cover all of them:
+  //   doc 1 -> bob is ADMIN without a grant, tim is MEMBER with one
+  //   doc 2 -> bob is ADMIN with a grant,    tim is MEMBER without
   const document = await prisma.document.create({
     data: {
       id: "test-document",
       title: "Test Document",
       ystate: testDocumentYState("This is a test document"),
-      ownerId: alice.id,
-      collab: {
+      groupId: synctext.id,
+      createdById: alice.id,
+      grants: {
         create: [
-          { userId: bob.id, docRole: DocRole.EDITOR },
-          { userId: tim.id, docRole: DocRole.VIEWER },
+          { membershipId: membership(synctext, alice.id), grantedById: alice.id },
+          { membershipId: membership(synctext, tim.id), grantedById: alice.id },
         ],
       },
     },
   });
+
+  await prisma.document.create({
+    data: {
+      id: "test-document-2",
+      title: "Test Document 2",
+      ystate: testDocumentYState("Created by an admin of the group"),
+      groupId: synctext.id,
+      createdById: bob.id,
+      grants: { create: { membershipId: membership(synctext, bob.id), grantedById: bob.id } },
+    },
+  });
+
+  // In the other group, so alice (not a member) must be refused on it.
+  await prisma.document.create({
+    data: {
+      id: "test-document-3",
+      title: "Test Document 3",
+      ystate: testDocumentYState("Lives in the collab group"),
+      groupId: collab.id,
+      createdById: bob.id,
+      grants: { create: { membershipId: membership(collab, bob.id), grantedById: bob.id } },
+    },
+  });
+
+  // Exactly SNAPSHOT_RETENTION_LIMIT snapshots, so the seed sits on the
+  // boundary the state route prunes at.
+  const snapshotDays = ["2026-09-10", "2026-09-11", "2026-09-12", "2026-09-13", "2026-09-14"];
+
+  await prisma.documentSnapshot.createMany({
+    data: snapshotDays.map((day) => ({
+      documentId: document.id,
+      ystate: testDocumentYState(
+        `this is a snapshot from ${day}. you can recover it if you want..`,
+      ),
+      createdAt: new Date(`${day}T12:00:00Z`),
+    })),
+  });
+
+  console.log(
+    `seeded: 4 users (${[zaphod, alice, bob, tim].map((u) => u.username).join(", ")}), ` +
+      `4 private groups, 2 shared groups, 3 documents, ${snapshotDays.length} snapshots`,
+  );
 }
 
 main()
