@@ -2,7 +2,7 @@ import argon2 from "argon2";
 import * as Y from "yjs";
 import {
   prisma,
-  createPrivateGroup,
+  createPrivateSpace,
   PlatformRole,
   GroupRole,
 } from "../src/index.js";
@@ -39,7 +39,7 @@ function testDocumentYState(text: string): Uint8Array<ArrayBuffer> {
 }
 
 // Mirrors what registration must do: a user is unusable without a private
-// group to create documents in.
+// space to create documents in.
 async function createUser(data: {
   email: string;
   username: string;
@@ -49,7 +49,7 @@ async function createUser(data: {
 }) {
   return prisma.$transaction(async (tx) => {
     const user = await tx.user.create({ data });
-    await createPrivateGroup(tx, user.id);
+    await createPrivateSpace(tx, user.id);
     return user;
   });
 }
@@ -81,8 +81,8 @@ async function main() {
       members: {
         create: [
           { userId: alice.id, role: GroupRole.OWNER },
-          { userId: bob.id, role: GroupRole.ADMIN, addedById: alice.id },
-          { userId: tim.id, role: GroupRole.MEMBER, addedById: alice.id },
+          { userId: bob.id, role: GroupRole.ADMIN },
+          { userId: tim.id, role: GroupRole.MEMBER },
         ],
       },
     },
@@ -95,7 +95,7 @@ async function main() {
       members: {
         create: [
           { userId: bob.id, role: GroupRole.OWNER },
-          { userId: tim.id, role: GroupRole.MEMBER, addedById: bob.id },
+          { userId: tim.id, role: GroupRole.MEMBER },
         ],
       },
     },
@@ -121,8 +121,8 @@ async function main() {
       createdById: alice.id,
       grants: {
         create: [
-          { membershipId: membership(synctext, alice.id), grantedById: alice.id },
-          { membershipId: membership(synctext, tim.id), grantedById: alice.id },
+          { membershipId: membership(synctext, alice.id) },
+          { membershipId: membership(synctext, tim.id) },
         ],
       },
     },
@@ -135,7 +135,7 @@ async function main() {
       ystate: testDocumentYState("Created by an admin of the group"),
       groupId: synctext.id,
       createdById: bob.id,
-      grants: { create: { membershipId: membership(synctext, bob.id), grantedById: bob.id } },
+      grants: { create: { membershipId: membership(synctext, bob.id) } },
     },
   });
 
@@ -147,7 +147,7 @@ async function main() {
       ystate: testDocumentYState("Lives in the collab group"),
       groupId: collab.id,
       createdById: bob.id,
-      grants: { create: { membershipId: membership(collab, bob.id), grantedById: bob.id } },
+      grants: { create: { membershipId: membership(collab, bob.id) } },
     },
   });
 
@@ -167,7 +167,7 @@ async function main() {
 
   console.log(
     `seeded: 4 users (${[zaphod, alice, bob, tim].map((u) => u.username).join(", ")}), ` +
-      `4 private groups, 2 shared groups, 3 documents, ${snapshotDays.length} snapshots`,
+      `4 private spaces, 2 shared groups, 3 documents, ${snapshotDays.length} snapshots`,
   );
 }
 

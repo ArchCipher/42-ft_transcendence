@@ -20,7 +20,7 @@ API Response contracts: /api/documents
         -> 200 DocumentSummary[]
         -> 401 { error }
 
-  POST  { groupId? }                 defaults to the caller's private group
+  POST  { groupId? }                 defaults to the caller's private space
         -> 201 DocumentSummary
         -> 400 { error }             groupId present but not a string
         -> 401 { error }
@@ -69,7 +69,11 @@ export async function POST(request: Request) {
           select: { id: true, groupId: true },
         })
       : await tx.groupMember.findFirst({
-          where: { userId, group: { privateForUserId: userId } },
+          where: { userId, group: { isPrivateSpace: true } },
+          // Nothing in the database forbids a second private space, so pick
+          // the oldest rather than an arbitrary one: documents must not
+          // scatter between two of them.
+          orderBy: { group: { createdAt: "asc" } },
           select: { id: true, groupId: true },
         });
 
@@ -80,7 +84,7 @@ export async function POST(request: Request) {
         title: "Untitled Document",
         groupId: membership.groupId,
         createdById: userId,
-        grants: { create: { membershipId: membership.id, grantedById: userId } },
+        grants: { create: { membershipId: membership.id } },
       },
       select: summarySelect(userId),
     });

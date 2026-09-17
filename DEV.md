@@ -30,7 +30,7 @@ To populate your local db with a few test users and one test document:
      sh -c "npx prisma migrate deploy && npx tsx prisma/seed.ts"
    ```
 
-Users (each also gets a private group of their own):
+Users (each also gets a private space of their own):
 
    | Platform role | Name   | Email             | Password    |
    |---------------|--------|-------------------|-------------|

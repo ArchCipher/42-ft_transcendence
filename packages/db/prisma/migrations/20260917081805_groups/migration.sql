@@ -49,7 +49,7 @@ CREATE TABLE "Group" (
     "name" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "privateForUserId" TEXT,
+    "isPrivateSpace" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "Group_pkey" PRIMARY KEY ("id")
 );
@@ -61,7 +61,6 @@ CREATE TABLE "GroupMember" (
     "userId" TEXT NOT NULL,
     "role" "GroupRole" NOT NULL DEFAULT 'MEMBER',
     "joinedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "addedById" TEXT,
 
     CONSTRAINT "GroupMember_pkey" PRIMARY KEY ("id")
 );
@@ -70,7 +69,6 @@ CREATE TABLE "GroupMember" (
 CREATE TABLE "DocumentGrant" (
     "membershipId" TEXT NOT NULL,
     "documentId" TEXT NOT NULL,
-    "grantedById" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "DocumentGrant_pkey" PRIMARY KEY ("membershipId","documentId")
@@ -89,9 +87,6 @@ CREATE TABLE "Friendship" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Group_privateForUserId_key" ON "Group"("privateForUserId");
-
--- CreateIndex
 CREATE INDEX "GroupMember_userId_idx" ON "GroupMember"("userId");
 
 -- CreateIndex
@@ -108,9 +103,6 @@ CREATE INDEX "Friendship_userBId_status_idx" ON "Friendship"("userBId", "status"
 
 -- CreateIndex
 CREATE INDEX "Document_groupId_updatedAt_idx" ON "Document"("groupId", "updatedAt");
-
--- AddForeignKey
-ALTER TABLE "Group" ADD CONSTRAINT "Group_privateForUserId_fkey" FOREIGN KEY ("privateForUserId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "GroupMember" ADD CONSTRAINT "GroupMember_groupId_fkey" FOREIGN KEY ("groupId") REFERENCES "Group"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -138,7 +130,6 @@ ALTER TABLE "Friendship" ADD CONSTRAINT "Friendship_userBId_fkey" FOREIGN KEY ("
 
 -- ---------------------------------------------------------------------------
 -- Hand-written below: invariants Prisma cannot express in schema.prisma.
--- Carry these over if this migration is ever regenerated.
 -- ---------------------------------------------------------------------------
 
 -- At most one OWNER per group. A partial index: rows with any other role are

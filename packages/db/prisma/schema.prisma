@@ -46,27 +46,24 @@ model User {
   sessions                Session[]                 @relation("UserSession")
   emailVerificationTokens EmailVerificationToken[]  @relation("UserEmailVerification")
   passwordResetTokens     PasswordResetToken[]      @relation("UserPasswordReset")
-  privateGroup            Group?                    @relation("PrivateGroup")
   memberships             GroupMember[]             @relation("GroupMembership")
   createdDocuments        Document[]                @relation("DocumentCreator")
   friendshipsAsA          Friendship[]              @relation("FriendshipA")
   friendshipsAsB          Friendship[]              @relation("FriendshipB")
 }
 
-// Every document lives in a group. A private group is created at signup:
-// privateForUserId set, exactly one member, no invitations.
-// Groups have no route of their own, they are tabs in the dashboard.
+// Every document lives in a group. A private space is created at signup:
+// isPrivateSpace set, exactly one member, no invitations.
 model Group {
   id        String   @id @default(cuid())
-  name      String   // "Private" for a private group; never rendered, the UI labels from isPrivate
+  name      String   // a constant for a private space; never rendered, the client labels from isPrivateSpace
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // null = shared group. Set = that user's private group. isPrivate derives from this.
-  // The @unique is what guarantees one private group per user; a plain boolean
-  // could not, since the link to the user lives in GroupMember.
-  privateForUserId String? @unique
-  privateForUser   User?   @relation("PrivateGroup", fields: [privateForUserId], references: [id], onDelete: Cascade)
+  // A group that belongs to one person alone. Its single OWNER is the person
+  // it belongs to. Nothing guarantees one per user: registration is the only
+  // thing that creates them, in the transaction that creates the account.
+  isPrivateSpace Boolean @default(false)
 
   members   GroupMember[]
   documents Document[]
@@ -78,7 +75,6 @@ model GroupMember {
   userId    String
   role      GroupRole @default(MEMBER)
   joinedAt  DateTime  @default(now())
-  addedById String?   // who let them in; plain scalar, the row dies with the group anyway
 
   group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
   // Restrict is deliberate: a raw DELETE on User fails while memberships exist,
@@ -131,7 +127,6 @@ model DocumentSnapshot {
 model DocumentGrant {
   membershipId String
   documentId   String
-  grantedById  String?
   createdAt    DateTime @default(now())
 
   membership GroupMember @relation(fields: [membershipId], references: [id], onDelete: Cascade)

@@ -8,10 +8,10 @@ import { NextResponse } from "next/server";
 API Response contracts: /api/groups
 
   GET   -> 200 GroupSummary[]        every group the caller belongs to,
-                                     the private one first, then by name
+                                     the private space first, then by name
         -> 401 { error }
 
-  Never 404: everyone has at least their private group, so the list is
+  Never 404: everyone has at least their private space, so the list is
   never empty.
 */
 
@@ -29,7 +29,7 @@ export async function GET() {
         select: {
           id: true,
           name: true,
-          privateForUserId: true,
+          isPrivateSpace: true,
           _count: { select: { documents: true } },
         },
       },
@@ -39,16 +39,15 @@ export async function GET() {
   const groups: GroupSummary[] = memberships.map(({ role, group }) => ({
     id: group.id,
     name: group.name,
-    // Derived here: privateForUserId never reaches the client.
-    isPrivate: group.privateForUserId !== null,
+    isPrivateSpace: group.isPrivateSpace,
     myRole: role,
     documentCount: group._count.documents,
   }));
 
   groups.sort((a, b) =>
-    a.isPrivate === b.isPrivate
+    a.isPrivateSpace === b.isPrivateSpace
       ? a.name.localeCompare(b.name)
-      : Number(b.isPrivate) - Number(a.isPrivate),
+      : Number(b.isPrivateSpace) - Number(a.isPrivateSpace),
   );
 
   return NextResponse.json(groups);
