@@ -63,13 +63,13 @@ export default function PasswordResetForm() {
 
   return (
     <form
-      className="PasswordResetBox"
+      className="AuthForm"
       onSubmit={async (e) => {
         e.preventDefault();
         await handlePasswordReset();
       }}
     >
-      <h2 className="PasswordResetTitle">
+      <h2 className="AuthFormTitle">
         <DisplayText>Choose a new password</DisplayText>
       </h2>
 

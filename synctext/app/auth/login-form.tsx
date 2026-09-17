@@ -53,13 +53,13 @@ export default function LoginForm() {
 
   return (
     <form
-      className="LoginBox"
+      className="AuthForm"
       onSubmit={async (e) => {
         e.preventDefault(); // don't reload the page
         await handleLogin(); // handle it with JS
       }}
     >
-      <h2 className="LoginTitle">
+      <h2 className="AuthFormTitle">
         <DisplayText>
           Access the guide
         </DisplayText>
@@ -127,7 +127,7 @@ export default function LoginForm() {
       <Button type="submit" disabled={loading}>
         {loading ? "Accessing..." : "Login"}
       </Button>
-      <div className="LoginLinks">
+      <div className="AuthLinks">
         <Link href="/register">
           <TechText className="text-xs text-[#6fd3ff]">
             Create account

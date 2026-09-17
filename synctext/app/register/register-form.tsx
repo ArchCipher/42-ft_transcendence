@@ -63,13 +63,13 @@ export default function RegisterForm() {
   }
 
   return (
-    <form className="RegisterBox"
+    <form className="AuthForm"
           onSubmit={async (e) => {
           e.preventDefault(); // don't reload the page
           await handleRegister(); // handle it with JS
       }}
     >
-      <h2 className="RegisterTitle">
+      <h2 className="AuthFormTitle">
         <DisplayText>Create your account</DisplayText>
       </h2>
       <label htmlFor="email">

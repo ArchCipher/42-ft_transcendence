@@ -1,41 +1,55 @@
-:root {
-  --text-main: #ffffff;
-  --accent: #6fd3ff;
-}
-
-.RegisterPage {
+.AuthPage {
   display: flex;
+  flex: 1;
   justify-content: center;
-
   padding: 56px 20px 80px;
 }
 
-.RegisterPanel {
+.AuthPanel {
   width: min(440px, 100%);
   padding: 30px;
 }
 
-.RegisterBox {
+.AuthForm {
   display: flex;
   flex-direction: column;
   gap: 14px;
-
-  color: var(--text-main);
+  color: var(--app-text-main);
 }
 
-.RegisterTitle {
+.AuthFormTitle {
   margin: 0 0 14px;
-
   font-size: clamp(1.6rem, 3vw, 2.2rem);
   line-height: 1;
-
   text-align: center;
+}
+
+.AuthNotice {
+  width: 100%;
+  padding: 0 16px;
+  background: var(--app-accent);
+  color: #000;
+}
+
+.AuthLinks {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 15px;
+}
+
+.AuthLinks a {
+  color: var(--app-accent);
+  text-align: center;
+}
+
+.AuthLinks a:hover {
+  text-decoration: underline;
 }
 
 .FieldError,
 .FormError {
   margin: 0;
-
   color: #ff6b6b;
   font-family: monospace;
   font-size: 12px;

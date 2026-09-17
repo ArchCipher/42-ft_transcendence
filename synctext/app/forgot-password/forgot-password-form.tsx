@@ -48,13 +48,13 @@ export default function ForgotPasswordForm() {
 
   return (
     <form
-      className="ForgotPasswordBox"
+      className="AuthForm"
       onSubmit={async (e) => {
         e.preventDefault();
         await handleForgotPassword();
       }}
     >
-      <h2 className="ForgotPasswordTitle">
+      <h2 className="AuthFormTitle">
         <DisplayText>Reset your password</DisplayText>
       </h2>
 
