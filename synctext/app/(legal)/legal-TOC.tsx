@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 
 const tocSections: Record<string, { label: string; sections: { id: string; title: string }[] }> = {
-  "/legal/terms": {
+  "/terms": {
     label: "Terms of Service",
     sections: [
       { id: "acceptance-of-terms", title: "1. Acceptance of terms" },
@@ -21,7 +21,7 @@ const tocSections: Record<string, { label: string; sections: { id: string; title
       { id: "contact", title: "13. Contact" },
     ],
   },
-  "/legal/privacy": {
+  "/privacy": {
     label: "Privacy Policy",
     sections: [
       { id: "who-we-are", title: "1. Who we are" },
@@ -39,7 +39,7 @@ const tocSections: Record<string, { label: string; sections: { id: string; title
       { id: "contact", title: "13. Contact" },
     ],
   },
-  "/legal/cookies": {
+  "/cookies": {
     label: "Cookie Policy",
     sections: [
       { id: "what-are-cookies", title: "What are cookies?" },
@@ -51,7 +51,7 @@ const tocSections: Record<string, { label: string; sections: { id: string; title
       { id: "contact", title: "Contact" },
     ],
   },
-  "/legal/accessibility": {
+  "/accessibility": {
     label: "Accessibility",
     sections: [
       { id: "our-commitment", title: "Our commitment" },

@@ -2,7 +2,7 @@ export default async function CookiesPage() {
   return (
   <>
 	<h1>Cookie Policy</h1>
-      <p><strong>Last updated:</strong> [TODO: date]</p>
+      <p><strong>Last updated:</strong> 2026-09-17</p>
 
       <h2>What are cookies?</h2>
       <p>
