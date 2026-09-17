@@ -7,7 +7,7 @@ import {
   summarySelect,
   toDocumentSummary,
 } from "@/lib/documents/documents";
-import { canEdit, resolveRights } from "@/lib/permissions";
+import { canEdit, requireDocRights, resolveRights } from "@/lib/permissions";
 import { badRequest, forbidden, notFound, readJson, unauthorized } from "@/lib/api/responses";
 import { NextResponse } from "next/server";
 
@@ -108,14 +108,9 @@ export async function DELETE(
   const session = await validateSession(await getSessionToken());
   if (!session?.user?.id) return unauthorized();
 
+  // Only the rights are needed here, so this fetches less than summarySelect.
   const { id } = await params;
-  const document = await db.document.findUnique({
-    where: { id },
-    select: summarySelect(session.user.id),
-  });
-  if (!document) return documentNotFound();
-
-  const rights = resolveRights(document);
+  const rights = await requireDocRights(db, session.user.id, id);
   if (!rights) return documentNotFound();
   if (!canEdit(rights)) return forbidden();
 
