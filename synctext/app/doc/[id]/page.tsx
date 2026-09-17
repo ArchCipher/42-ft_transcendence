@@ -24,7 +24,7 @@ async function ownsExpiredGuestDocument(documentId: string): Promise<boolean> {
   // Cleanup may already have cascaded the expired session/document away. The
   // browser-scoped opaque cookie is enough to show the non-sensitive expired
   // state; it never grants document access after the database deadline.
-  if (!guestSession) return true
+  if (!guestSession) return false
 
   return (
     guestSession.expiresAt.getTime() <= Date.now() &&
