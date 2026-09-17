@@ -1,5 +1,3 @@
-import Link from "next/link";
-import { DisplayText } from "@/components/Typography";
 import MobileMenu from "@/components/MobileMenu";
 
 type NavbarProps = {
@@ -21,39 +19,26 @@ export default function Navbar({ children,
                     px-5 
                     sm:px-[clamp(1.25rem,5vw,5rem)]"
       >
-        <Link
-          href="/"
-          aria-label="SyncText home"
-          className=" leading-none
-                      text-[#f4f2ee]
-                      no-underline
-                      outline-none
-                      focus-visible:ring-2
-                      focus-visible:ring-white"
-        >
-        <DisplayText className="text-[clamp(3rem,4vw,4rem)] leading-none text-[#f4f2ee]">
-          SyncText
-        </DisplayText>  
-        </Link>
+      {children && (
+        <>
+          <div
+            className={
+              mobileMenu
+                ? "hidden min-[901px]:flex items-center gap-2 ml-auto"
+                : "flex items-center gap-2 ml-auto"}>
 
-        {children && (
-          <>
-            <div
-              className={
-                mobileMenu
-                  ? "hidden min-[901px]:flex items-center gap-2"
-                  : "flex items-center gap-2"}>
+            {children}
+          </div>
 
-              {children}
-            </div>
-
-            {mobileMenu ? (
+          {mobileMenu ? (
+            <div className="ml-auto min-[901px]:hidden">
               <MobileMenu>
                 {children}
               </MobileMenu>
-            ) : null}
-          </>
-        )}
+            </div>
+          ) : null}
+        </>
+      )}
       </nav>
     </header>
   );

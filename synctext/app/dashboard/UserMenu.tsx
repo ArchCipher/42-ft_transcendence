@@ -16,14 +16,22 @@ export default function UserMenu({ username }: UserProps) {
         <Menu.Trigger className="UserMenu">
           <User size={25} />
 
-          <TechText className="text-xs">{username}</TechText>
+          <TechText className="text-xs max-w-[90px] truncate">
+            {username}
+          </TechText>
         </Menu.Trigger>
 
         <Menu.Portal>
-          <Menu.Positioner sideOffset={8} align="center">
+          <Menu.Positioner className="UserMenuPositioner">
             <Menu.Popup className="UserDropdown">
-              <Menu.Item className="UserDropdownItem">
-                <TechText className="text-xs">Profile</TechText>
+
+              <Menu.Item
+                className="UserDropdownItem"
+                onClickCapture={() => router.push("/profile")}
+              >
+                <TechText className="text-xs">
+                  Profile
+                </TechText>
               </Menu.Item>
 
               <Menu.Item

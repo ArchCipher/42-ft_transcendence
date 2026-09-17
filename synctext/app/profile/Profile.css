@@ -1,0 +1,78 @@
+:root {
+  --text-main: #ffffff;
+  --accent: #6fd3ff;
+}
+
+.ProfilePage {
+  display: flex;
+  justify-content: center;
+
+  padding: 56px 20px 80px;
+}
+
+.ProfilePanel {
+  width: min(440px, 100%);
+  padding: 30px;
+}
+
+.ProfileBox {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  color: var(--text-main);
+}
+
+.ProfileTitle {
+  margin: 0 0 14px;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  line-height: 1;
+  text-align: center;
+}
+
+.FieldError,
+.FormError {
+  margin: 0;
+
+  color: #ff6b6b;
+  font-family: monospace;
+  font-size: 12px;
+}
+
+.ProfileAvatar {
+  display: flex;
+  justify-content: center;
+}
+
+.ProfileAvatar {
+  display: flex;
+  justify-content: center;
+}
+
+.ProfileAvatarButton {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-main);
+  cursor: pointer;
+}
+
+.ProfileAvatarImage {
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.ProfileDeleteButton {
+  display: flex;
+  justify-content: center;
+}
+
+.ProfileDeleteButton button {
+  background: #e42929;
+  border-color: #ef4444;
+}
+
+.ProfileDeleteButton button:hover {
+  background: #c62525 !important;
+  border-color: #ef4444 !important;
+}

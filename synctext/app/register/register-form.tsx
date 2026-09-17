@@ -100,6 +100,7 @@ export default function RegisterForm() {
         placeholder="Username"
         value={username}
         onChange={(e) => setUsername(e.target.value)}
+        maxLength={20}
         required
         aria-invalid={!!fieldErrors?.username}
         aria-describedby={fieldErrors?.username ? "username-error" : undefined}

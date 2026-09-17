@@ -6,7 +6,6 @@ import "./Dashboard.css";
 import { useRouter } from "next/navigation";
 import AppBackground from "@/components/AppBackground";
 import Navbar from "@/components/Navbar";
-import Button from "@/components/Button";
 import UserMenu from "./UserMenu";
 import BrandHeader from "@/components/BrandHeader";
 import ControlBar from "./ControlBar";
@@ -34,10 +33,8 @@ export default function DashboardClient({ username }: UserProps) {
 
   return (
     <AppBackground>
-      <Navbar>
+      <Navbar mobileMenu={false}>
         <div className="DashboardNavActions">
-          <Button variant="primary">Groups</Button>
-
           <UserMenu username={username} />
         </div>
       </Navbar>

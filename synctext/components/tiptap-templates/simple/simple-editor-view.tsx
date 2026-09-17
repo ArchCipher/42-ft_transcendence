@@ -278,7 +278,7 @@ export function SimpleEditorView({
   showToolbar?: boolean
 }) {
   const isMobile = useIsBreakpoint()
-  const { height } = useWindowSize()
+  /*const { height } = useWindowSize()*/
   const [mobileView, setMobileView] = useState<"main" | "highlighter" | "link">(
     "main"
   )
@@ -286,10 +286,10 @@ export function SimpleEditorView({
   const toolbarRef = useRef<HTMLDivElement>(null)
   const searchAndReplaceButtonRef = useRef<HTMLButtonElement>(null)
 
-  const rect = useCursorVisibility({
+  /*const rect = useCursorVisibility({
     editor,
     overlayHeight: toolbarRef.current?.getBoundingClientRect().height ?? 0,
-  })
+  })*/
 
   useEffect(() => {
     if (!isMobile && mobileView !== "main") {
@@ -349,16 +349,7 @@ export function SimpleEditorView({
   return (
     <div className="simple-editor-wrapper">
       <EditorContext.Provider value={{ editor }}>
-        <Toolbar
-          ref={toolbarRef}
-          style={{
-            ...(isMobile
-              ? {
-                  bottom: `calc(100% - ${height - rect.y}px)`,
-                }
-              : {}),
-          }}
-        >
+        <Toolbar ref={toolbarRef}>
           {toolbarContent}
         </Toolbar>
 
