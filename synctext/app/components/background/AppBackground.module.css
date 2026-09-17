@@ -250,6 +250,39 @@
   top: 5%;
 
   pointer-events: none;
+}
+
+.galaxy::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  background:
+    radial-gradient(
+      ellipse 8% 10% at 50% 50%,
+      rgba(255, 255, 255, 0.82),
+      rgba(240, 190, 255, 0.38) 32%,
+      rgba(180, 70, 255, 0.14) 58%,
+      transparent 76%
+    ),
+    radial-gradient(
+      ellipse 42% 12% at 50% 50%,
+      rgba(216, 124, 255, 0.11),
+      transparent 72%
+    ),
+    radial-gradient(
+      ellipse 12% 39% at 50% 50%,
+      rgba(255, 79, 184, 0.08),
+      transparent 74%
+    );
+
+  filter: blur(5px);
+  transform: rotate(-18deg);
+}
+
+.galaxyParticles {
+  position: absolute;
+  inset: 0;
 
   animation: galaxyBreath 22s ease-in-out infinite alternate;
   transform-origin: center;
@@ -265,29 +298,6 @@
     0 0 7px currentColor;
 
   filter: blur(0.15px);
-}
-
-.galaxyCore {
-  position: absolute;
-
-  width: 13%;
-  height: 12%;
-
-  left: 43.5%;
-  top: 44%;
-
-  border-radius: 50%;
-
-  background:
-    radial-gradient(
-      ellipse,
-      rgba(255,255,255,0.85),
-      rgba(240,190,255,0.4) 30%,
-      rgba(180,70,255,0.15) 55%,
-      transparent 75%
-    );
-
-  filter: blur(7px);
 }
 
 @keyframes galaxyBreath {
