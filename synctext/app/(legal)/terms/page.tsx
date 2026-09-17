@@ -6,7 +6,7 @@ export default async function TermsPage() {
         <strong>Last updated:</strong> 2026-09-17
       </p>
 
-      <h2>1. Acceptance of terms</h2>
+      <h2 id="acceptance-of-terms">1. Acceptance of terms</h2>
       <p>
         These Terms of Service (&ldquo;Terms&rdquo;) govern your use of synctext
         (the &ldquo;Service&rdquo;), a collaborative real-time text editing
@@ -14,21 +14,21 @@ export default async function TermsPage() {
         Terms. If you do not agree, do not use the Service.
       </p>
 
-      <h2>2. The Service</h2>
+      <h2 id="the-service">2. The Service</h2>
       <p>
         synctext lets users create and collaboratively edit documents in real
         time, comment on them, organize work in groups/organizations and connect
         with friends. We may modify or discontinue features at any time.
       </p>
 
-      <h2>3. Eligibility</h2>
+      <h2 id="eligibility">3. Eligibility</h2>
       <p>
         You must be at least <strong>16 years old</strong> to use the Service.
         By using the Service you represent that you meet this age requirement
         and that your use complies with all applicable laws.
       </p>
 
-      <h2>4. Accounts</h2>
+      <h2 id="accounts">4. Accounts</h2>
       <ul>
         <li>
           You must provide accurate information (a valid email and username) and
@@ -49,7 +49,7 @@ export default async function TermsPage() {
         <li>We may suspend or terminate accounts that violate these Terms.</li>
       </ul>
 
-      <h2>5. Acceptable use</h2>
+      <h2 id="acceptable-use">5. Acceptable use</h2>
       <p>
         You agree <strong>not</strong> to use the Service to:
       </p>
@@ -86,7 +86,7 @@ export default async function TermsPage() {
         illegal content, attacks on the infrastructure).
       </p>
 
-      <h2>6. Content and ownership</h2>
+      <h2 id="content-and-ownership">6. Content and ownership</h2>
       <ul>
         <li>
           <strong>You retain ownership</strong> of the content you create (your
@@ -119,7 +119,7 @@ export default async function TermsPage() {
         </li>
       </ul>
 
-      <h2>7. Organizations and sharing</h2>
+      <h2 id="organizations-and-sharing">7. Organizations and sharing</h2>
       <p>
         Organizations and shared documents are governed by the permissions
         chosen by their owners and administrators. Content you post to a shared
@@ -130,7 +130,7 @@ export default async function TermsPage() {
         Respect the permissions others have set on their documents.
       </p>
 
-      <h2>8. Termination and suspension</h2>
+      <h2 id="termination-and-suspension">8. Termination and suspension</h2>
       <ul>
         <li>
           <strong>By you</strong>: you may stop using the Service and delete
@@ -149,7 +149,7 @@ export default async function TermsPage() {
         </li>
       </ul>
 
-      <h2>9. Disclaimer of warranties</h2>
+      <h2 id="disclaimer-of-warranties">9. Disclaimer of warranties</h2>
       <p>
         The Service is provided <strong>&ldquo;as is&rdquo;</strong> and{" "}
         <strong>&ldquo;as available&rdquo;</strong>, without warranties of any
@@ -160,7 +160,7 @@ export default async function TermsPage() {
         <strong>You are responsible for backing up important content.</strong>
       </p>
 
-      <h2>10. Limitation of liability</h2>
+      <h2 id="limitation-of-liability">10. Limitation of liability</h2>
       <p>
         To the maximum extent permitted by law, we are not liable for any
         indirect, incidental, special, consequential, or punitive damages, or
@@ -170,14 +170,16 @@ export default async function TermsPage() {
         12 months before the claim.
       </p>
 
-      <h2>11. Changes to the Service and these Terms</h2>
+      <h2 id="changes-to-the-service-and-these-terms">
+        11. Changes to the Service and these Terms
+      </h2>
       <p>
         We may update the Service and these Terms. We will notify you of
         material changes by updating the date above. Continuing to use the
         Service after changes take effect means you accept the updated Terms.
       </p>
 
-      <h2>12. Governing law</h2>
+      <h2 id="governing-law">12. Governing law</h2>
       <p>
         These Terms are governed by the laws of <strong>Germany</strong>,
         without regard to its conflict-of-law rules. Any disputes shall be
@@ -185,7 +187,7 @@ export default async function TermsPage() {
         <strong>Berlin, Germany</strong>.
       </p>
 
-      <h2>13. Contact</h2>
+      <h2 id="contact">13. Contact</h2>
       <p>Questions about these Terms: [TODO: contact email]</p>
     </>
   );

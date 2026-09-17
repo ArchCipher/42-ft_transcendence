@@ -2,7 +2,10 @@
 
 import { usePathname } from "next/navigation";
 
-const tocSections: Record<string, { label: string; sections: { id: string; title: string }[] }> = {
+const tocSections: Record<
+  string,
+  { label: string; sections: { id: string; title: string }[] }
+> = {
   "/terms": {
     label: "Terms of Service",
     sections: [
@@ -12,8 +15,14 @@ const tocSections: Record<string, { label: string; sections: { id: string; title
       { id: "accounts", title: "4. Accounts" },
       { id: "acceptable-use", title: "5. Acceptable use" },
       { id: "content-and-ownership", title: "6. Content and ownership" },
-      { id: "organizations-and-sharing", title: "7. Organizations and sharing" },
-      { id: "termination-and-suspension", title: "8. Termination and suspension" },
+      {
+        id: "organizations-and-sharing",
+        title: "7. Organizations and sharing",
+      },
+      {
+        id: "termination-and-suspension",
+        title: "8. Termination and suspension",
+      },
       { id: "disclaimer-of-warranties", title: "9. Disclaimer of warranties" },
       { id: "limitation-of-liability", title: "10. Limitation of liability" },
       { id: "changes-to-the-service-and-these-terms", title: "11. Changes" },
@@ -29,7 +38,10 @@ const tocSections: Record<string, { label: string; sections: { id: string; title
       { id: "why-and-how-we-use-your-data", title: "3. Legal bases" },
       { id: "cookies", title: "4. Cookies" },
       { id: "sharing-of-data", title: "5. Sharing of data" },
-      { id: "international-data-transfers", title: "6. International transfers" },
+      {
+        id: "international-data-transfers",
+        title: "6. International transfers",
+      },
       { id: "data-retention-and-deletion", title: "7. Data retention" },
       { id: "security", title: "8. Security" },
       { id: "your-rights", title: "9. Your rights" },
