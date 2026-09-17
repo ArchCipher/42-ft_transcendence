@@ -141,12 +141,23 @@ export const verifyEmailSchema = z
   .strict();
 
 // ---- internal --------------------------------------------------------------
-export const sessionVerifySchema = z
+
+export const internalVerifySchema = z
   .object({
-    tokenHash: z.string().min(16).max(256), // server-internal, collab pre-hashed
+    tokenHash: z.string().min(16).max(256).optional(), // server-internal, collab pre-hashed
+    guestTokenHash: z.string().min(16).max(256).optional(), // public-api
     documentName: z.string().min(1).max(64),
   })
-  .strict();
+  .strict()
+  .superRefine((body, ctx) => {
+    // exactly one credential must be present
+    if (!!body.tokenHash === !!body.guestTokenHash) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Exactly one of tokenHash or guestTokenHash is required",
+      });
+    }
+  });
 
 // ---- types & helpers ------------------------------------------------------
 // z.infer yields the OUTPUT type, i.e. after trim/toLowerCase transforms, so
@@ -157,7 +168,7 @@ export type RegisterInput = z.infer<typeof registerSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type PasswordResetInput = z.infer<typeof passwordResetSchema>;
 export type VerifyEmailInput = z.infer<typeof verifyEmailSchema>;
-export type SessionVerifyInput = z.infer<typeof sessionVerifySchema>;
+export type InternalSessionVerifyInput = z.infer<typeof internalVerifySchema>;
 
 // Stable JSON shape for the client: { error: "Validation failed", ... } per field.
 export function validationError(error: z.ZodError): Record<string, string[]> {

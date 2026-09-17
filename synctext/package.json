@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint --max-warnings=0",
-	"typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.20",
@@ -67,7 +68,8 @@
     "eslint-config-next": "16.3.0",
     "sass": "^1.102.0",
     "tailwindcss": "^4.3.3",
-    "typescript": "^5"
+    "typescript": "^5",
+	"vitest": "^3.2.7"
   },
 
   "optionalDependencies": {

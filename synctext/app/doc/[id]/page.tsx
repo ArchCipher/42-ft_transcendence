@@ -1,6 +1,6 @@
-import { notFound, redirect } from "next/navigation"
-import { prisma as db } from "@synctext/db"
-import { hashGuestSessionToken } from "@synctext/shared"
+import { notFound, redirect } from "next/navigation";
+import { prisma as db } from "@synctext/db";
+import { hashGuestSessionToken } from "@synctext/shared";
 
 import { ExpiredGuestDocument } from "./expired-guest-document"
 import { getGuestSessionToken } from "@/lib/auth/guest-session"
@@ -12,8 +12,8 @@ import UserNavbar from "@/app/components/navigation/UserNavbar";
 import PublicNavbar from "@/app/components/navigation/PublicNavbar";
 
 async function ownsExpiredGuestDocument(documentId: string): Promise<boolean> {
-  const token = await getGuestSessionToken()
-  if (!token) return false
+  const token = await getGuestSessionToken();
+  if (!token) return false;
 
   const guestSession = await db.guestSession.findUnique({
     where: { tokenHash: hashGuestSessionToken(token) },
@@ -21,7 +21,7 @@ async function ownsExpiredGuestDocument(documentId: string): Promise<boolean> {
       expiresAt: true,
       document: { select: { id: true } },
     },
-  })
+  });
 
   // Cleanup may already have cascaded the expired session/document away. The
   // browser-scoped opaque cookie is enough to show the non-sensitive expired
@@ -31,7 +31,7 @@ async function ownsExpiredGuestDocument(documentId: string): Promise<boolean> {
   return (
     guestSession.expiresAt.getTime() <= Date.now() &&
     guestSession.document?.id === documentId
-  )
+  );
 }
 
 // Opens a document the caller reaches through their group, or the guest
@@ -41,16 +41,16 @@ export default async function DocPage({ params }: { params: Promise<{ id: string
   const actor = await getCurrentDocumentActor()
 
   if (!actor) {
-    if (await ownsExpiredGuestDocument(id)) return <ExpiredGuestDocument />
-    redirect("/auth")
+    if (await ownsExpiredGuestDocument(id)) return <ExpiredGuestDocument />;
+    redirect("/auth");
   }
 
   if (actor.kind === "guest") {
     const document = await db.document.findFirst({
       where: { id, guestSessionId: actor.guestSessionId },
       select: { id: true, title: true },
-    })
-    if (!document) notFound()
+    });
+    if (!document) notFound();
 
     return (
       <>

@@ -46,7 +46,9 @@ type AuthCredential =
   | { kind: "user"; tokenHash: string }
   | { kind: "guest"; guestTokenHash: string };
 type VerifiedAccess = {
-  actor: { kind: "user"; userId: string } | { kind: "guest"; guestSessionId: string };
+  actor:
+    | { kind: "user"; userId: string }
+    | { kind: "guest"; guestSessionId: string };
   readOnly: boolean;
   editExpiresAt?: string;
   expiresAt?: string;
@@ -64,16 +66,25 @@ type AuthContext = {
   guestRecheckTimer?: ReturnType<typeof setTimeout>;
 };
 
-async function verifyAccess(data: AuthCredential & {
-  documentName: string;
-}): Promise<VerifiedAccess | null> {
+async function verifyAccess(
+  data: AuthCredential & {
+    documentName: string;
+  },
+): Promise<VerifiedAccess | null> {
+  const credentialBody =
+    data.kind === "user"
+      ? { tokenHash: data.tokenHash }
+      : { guestTokenHash: data.guestTokenHash };
   const response = await fetch(`${webUrl}/api/internal/auth/verify`, {
     method: "POST",
     headers: {
       "content-type": "application/json",
       "x-internal-service-token": internalToken,
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify({
+      ...credentialBody,
+      documentName: data.documentName,
+    }),
   });
   if (!response.ok) return null;
   const body = await response.json();
@@ -95,7 +106,9 @@ function nextAccessCheckAt(verified: VerifiedAccess): number {
   const boundary = verified.readOnly
     ? Date.parse(verified.expiresAt ?? "")
     : Date.parse(verified.editExpiresAt ?? "");
-  return Number.isFinite(boundary) ? Math.min(normalRecheck, boundary) : normalRecheck;
+  return Number.isFinite(boundary)
+    ? Math.min(normalRecheck, boundary)
+    : normalRecheck;
 }
 
 /*
