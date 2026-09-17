@@ -127,6 +127,13 @@ export function DocumentNavbar({
                 <ArrowLeft aria-hidden="true" size={18} />
               </Link>
               <div className="hidden min-[901px]:block">
+                <Link
+                  href="/"
+                  aria-label="SyncText home"
+                  className="mr-5 font-serif text-2xl text-[#f4f2ee] no-underline"
+                >
+                  SyncText
+                </Link>
               <Button href="/dashboard" compact>
                 Dashboard
               </Button>
