@@ -25,17 +25,6 @@ export function documentReadWhere(userId: string): Prisma.DocumentWhereInput {
   return { group: { members: { some: { userId } } } };
 }
 
-// Prisma where-fragment: the group's owner, or anyone holding a grant.
-// Admins are deliberately absent: they manage people, not content.
-export function documentEditWhere(userId: string): Prisma.DocumentWhereInput {
-  return {
-    OR: [
-      { group: { members: { some: { userId, role: GroupRole.OWNER } } } },
-      { grants: { some: { membership: { userId } } } },
-    ],
-  };
-}
-
 // Select-fragment pairing the caller's group role with their grant on the same
 // row, so a listing resolves rights without a query per document.
 export function documentAccessSelect(userId: string) {
