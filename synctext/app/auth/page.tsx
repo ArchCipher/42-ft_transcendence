@@ -1,6 +1,6 @@
 import "./auth.css";
 import LoginForm from "./login-form";
-import AuthPageShell from "@/components/AuthPageShell";
+import AuthPageShell from "@/app/components/auth/AuthPageShell";
 
 // NOTICES displayed in navtab
 const NOTICES: Record<string, string> = {

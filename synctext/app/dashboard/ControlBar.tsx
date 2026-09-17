@@ -1,7 +1,7 @@
 "use client";
 
-import Box from "@/components/Box";
-import { TechText } from "@/components/Typography";
+import Box from "@/app/components/form/Box";
+import { TechText } from "@/app/components/typography/Typography";
 import "./ControlBar.css";
 
 function FilterBox() {

@@ -8,7 +8,7 @@ import { Dialog } from "@base-ui/react/dialog";
 import type { DocumentSummary } from "@/lib/documents/documents";
 import { createDocument_api, deleteDocument_api, listDocuments_api, renameDocument_api } from "./document/document";
 import "./DocumentsDashboard.css";
-import { BodyText, SupportText } from "@/components/Typography";
+import { BodyText, SupportText } from "@/app/components/typography/Typography";
 
 type DashboardProps = {
   search: string;

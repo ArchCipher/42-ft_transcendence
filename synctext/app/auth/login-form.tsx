@@ -4,9 +4,9 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authPost, FALLBACK } from "./api";
-import { DisplayText, TechText } from "@/components/Typography";
-import Button from "@/components/Button";
-import Box from "@/components/Box";
+import { DisplayText, TechText } from "@/app/components/typography/Typography";
+import Button from "@/app/components/ui/Button";
+import Box from "@/app/components/form/Box";
 
 export default function LoginForm() {
   const router = useRouter();

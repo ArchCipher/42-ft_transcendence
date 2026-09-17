@@ -4,13 +4,13 @@ import { useEffect, useState } from "react";
 
 import "./Dashboard.css";
 import { useRouter } from "next/navigation";
-import AppBackground from "@/components/AppBackground";
-import Navbar from "@/components/Navbar";
+import AppBackground from "@/app/components/background/AppBackground";
+import Navbar from "@/app/components/navigation/Navbar";
 import UserMenu from "./UserMenu";
-import BrandHeader from "@/components/BrandHeader";
+import BrandHeader from "@/app/components/header/BrandHeader";
 import ControlBar from "./ControlBar";
-import AppPanel from "@/components/AppPanel";
-import { Footer } from "@/components/Footer";
+import AppPanel from "@/app/components/layout/AppPanel";
+import { Footer } from "@/app/components/footer/Footer";
 import DocumentsDashboard from "./DocumentsDashboard";
 
 export type UserProps = {

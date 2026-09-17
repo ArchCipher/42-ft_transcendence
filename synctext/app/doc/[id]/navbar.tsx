@@ -7,9 +7,9 @@ import { ArrowLeft, Check, Pencil } from "lucide-react"
 import type { HocuspocusProvider } from "@hocuspocus/provider"
 import type { CollabUser, ConnectionStatus } from "@hocuspocus/provider-react"
 import { renameDocument_api } from "@/app/dashboard/document/document"
-import { TechText } from "@/components/Typography"
-import Button from "@/components/Button"
-import Box from "@/components/Box"
+import { TechText } from "@/app/components/typography/Typography"
+import Button from "@/app/components/ui/Button"
+import Box from "@/app/components/form/Box"
 import { SnapshotHistory } from "@/components/sync/snapshot-history"
 
 import styles from "./navbar.module.css"
@@ -106,10 +106,10 @@ export function DocumentNavbar({
     >
       <nav
         aria-label="Document navigation"
-        className="relative grid min-h-14
+        className="relative grid min-h-16
            grid-cols-[auto_minmax(0,1fr)_auto]
            items-center gap-x-1
-           px-2 py-1
+           px-2 py-2
            min-[901px]:min-h-16
            min-[901px]:grid-cols-[auto_minmax(0,1fr)_auto]
            min-[901px]:gap-3

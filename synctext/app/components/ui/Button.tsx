@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { TechText } from "@/components/Typography";
+import { TechText } from "@/app/components/typography/Typography";
 import styles from "./Button.module.css";
 
 type ButtonProps = {

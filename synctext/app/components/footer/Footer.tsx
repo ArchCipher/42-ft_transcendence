@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { TechText, SupportText } from "@/components/Typography";
+import { TechText, SupportText } from "@/app/components/typography/Typography";
 
 const legalLinks = [["Terms", "/legal/terms"], ["Privacy", "/legal/privacy"], ["Cookies", "/legal/cookies"], ["Accessibility", "/legal/accessibility"]] as const;
 

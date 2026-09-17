@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { DisplayText, TechText, SupportText } from "@/components/Typography";
+import { DisplayText, TechText, SupportText } from "@/app/components/typography/Typography";
 
 type BrandHeaderProps = {
   showTagline?: boolean;

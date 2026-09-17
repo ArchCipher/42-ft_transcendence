@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import { Features } from "./main-page/features";
 import { Hero } from "./main-page/hero";
 
-import AppBackground from "@/components/AppBackground";
-import Navbar from "@/components/Navbar";
-import BrandHeader from "@/components/BrandHeader";
-import Button from "@/components/Button";
-import { Footer } from "@/components/Footer";
-import { FinalCTA } from "@/components/FinalCTA";
+import AppBackground from "@/app/components/background/AppBackground";
+import Navbar from "@/app/components/navigation/Navbar";
+import BrandHeader from "@/app/components/header/BrandHeader";
+import Button from "@/app/components/ui/Button";
+import { Footer } from "@/app/components/footer/Footer";
+import { FinalCTA } from "@/app/components/marketing/FinalCTA";
 
 export const metadata: Metadata = { title: "SyncText — Write together, stay in sync", description: "A focused collaborative writing space for real-time editing, contextual comments, and effortless version history." };
 

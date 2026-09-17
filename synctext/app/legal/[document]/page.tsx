@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation";
-import AppBackground from "@/components/AppBackground";
-import AppPanel from "@/components/AppPanel";
-import BrandHeader from "@/components/BrandHeader";
-import { Footer } from "@/components/Footer";
-import Navbar from "@/components/Navbar";
-import { BodyText } from "@/components/Typography";
+import AppBackground from "@/app/components/background/AppBackground";
+import AppPanel from "@/app/components/layout/AppPanel";
+import BrandHeader from "@/app/components/header/BrandHeader";
+import { Footer } from "@/app/components/footer/Footer";
+import Navbar from "@/app/components/navigation/Navbar";
+import { BodyText } from "@/app/components/typography/Typography";
 
 const legalDocuments = {
   terms: "Terms",
