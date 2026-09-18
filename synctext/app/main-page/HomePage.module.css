@@ -22,6 +22,7 @@
 .navigation { position: relative; z-index: 10; }
 
 .navbar {
+  --mobile-nav-height: 4.5rem;
   border-color: oklch(0.75 0.05 270 / 0.22) !important;
   background: oklch(0.09 0.016 285 / 0.28);
 }
@@ -93,7 +94,7 @@
 
 .heroActionRow { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-lg); margin-top: clamp(2.75rem, 7vh, 5.5rem); }
 .heroCopy { max-width: 52ch; margin: 0; font-size: clamp(0.95rem, 1.25vw, 1.12rem); line-height: 1.8; }
-.heroCopyText { color: oklch(0.82 0.055 250) !important; }
+.heroCopyText { color: #f4f2ee !important; }
 
 .heroOrbit { position: absolute; z-index: 1; right: clamp(-19rem, -8vw, -6rem); top: clamp(5rem, 10vw, 9rem); display: grid; width: min(50rem, 72vw); aspect-ratio: 1; place-items: center; border: 1px solid oklch(0.76 0.1 250 / 0.5); border-radius: 50%; box-shadow: 0 0 2rem oklch(0.67 0.14 250 / 0.1), inset 0 0 2.5rem oklch(0.67 0.14 250 / 0.08); transform: rotate(-18deg); pointer-events: none; }
 .heroOrbit::before, .heroOrbit::after { position: absolute; border: 1px solid oklch(0.76 0.1 250 / 0.35); border-radius: 50%; box-shadow: 0 0 1.5rem oklch(0.67 0.14 250 / 0.09); content: ""; }
@@ -118,7 +119,7 @@
 .featureCardContent { display: flex; flex: 1; flex-direction: column; justify-content: end; padding: 0; }
 .featureText { padding: 2.25rem var(--space-lg) 2.5rem; }
 .featureTitle { max-width: 13ch; color: var(--ink); font-size: clamp(2.1rem, 3vw, 3.25rem); font-weight: 400; line-height: 1; }
-.featureDescription { max-width: 37ch; margin: var(--space-md) 0 0; color: oklch(0.84 0.055 250); font-family: var(--font-geist-mono), monospace; font-size: 0.78rem; line-height: 1.85; }
+.featureDescription { max-width: 37ch; margin: var(--space-md) 0 0; color: #f4f2ee; font-family: var(--font-geist-mono), monospace; font-size: 0.78rem; line-height: 1.85; }
 .featureCardFooter { justify-content: space-between; border-top: 1px solid oklch(0.72 0.08 250 / 0.24); border-radius: 0; background: transparent; padding: var(--space-lg); color: oklch(0.69 0.08 250); }
 .featureArrow { width: 1rem; height: 1rem; transition: transform 300ms cubic-bezier(.16, 1, .3, 1), color 300ms ease; }
 .featureCard:hover .featureArrow { color: var(--signal); transform: translateX(0.3rem); }
@@ -140,7 +141,7 @@
 .timePointTwo { top: 51%; left: 50%; }
 .timePointThree { top: 33%; right: 22%; width: 0.8rem; box-shadow: 0 0 1.1rem oklch(0.72 0.16 250); }
 .carouselControls { display: flex; align-items: center; justify-content: space-between; margin-top: var(--space-xl); }
-.carouselHint { color: var(--faint-ink); font-size: 0.61rem; letter-spacing: 0.1em; text-transform: uppercase; }
+.carouselHint { color: #f4f2ee !important; font-size: 0.61rem; letter-spacing: 0.1em; text-transform: uppercase; }
 .carouselButtons { display: flex; gap: var(--space-xs); }
 .carouselButton { position: static; width: 2.75rem; height: 2.75rem; margin: 0; border: 1px solid oklch(0.72 0.05 270 / 0.3); border-radius: 0; background: oklch(0.14 0.018 285 / 0.56); color: var(--ink); transform: none; transition: background-color 180ms ease, border-color 180ms ease; }
 .carouselButton:hover { border-color: var(--signal); background: oklch(0.22 0.04 280 / 0.78); color: var(--ink); }
@@ -149,7 +150,8 @@
 .finalCta::before { position: absolute; width: min(28rem, 50vw); aspect-ratio: 1; right: -9rem; bottom: -17rem; border: 1px solid oklch(0.76 0.08 270 / 0.28); border-radius: 50%; box-shadow: 0 0 0 3rem oklch(0.52 0.08 280 / 0.04); content: ""; pointer-events: none; }
 .finalCtaCopy, .finalCtaAction { position: relative; z-index: 1; }
 .finalCtaTitle { max-width: 9ch; margin: 0 0 var(--space-sm); font-size: clamp(3.1rem, 6.2vw, 6.6rem); font-weight: 400; line-height: 0.89; }
-.finalCtaText { max-width: 36ch; margin: 0; color: var(--muted-ink); font-size: clamp(0.82rem, 1vw, 0.98rem); line-height: 1.75; }
+.finalCtaText { max-width: 36ch; margin: 0; color: #f4f2ee; font-size: clamp(0.82rem, 1vw, 0.98rem); line-height: 1.75; }
+.finalCtaText span { color: #f4f2ee !important; }
 
 @media (min-width: 768px) { .carouselItem { flex-basis: 55%; padding-left: 0.8rem; } .carouselContent { margin-left: -0.8rem; } }
 @media (min-width: 1024px) { .carouselItem { flex-basis: 33.333%; padding-left: 0.8rem; } }
