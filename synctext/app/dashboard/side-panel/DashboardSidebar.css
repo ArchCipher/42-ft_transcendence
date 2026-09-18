@@ -1,0 +1,178 @@
+.DashboardSidebar {
+  width: 100%;
+  min-width: 0;
+  height: 760px;
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  background: var(--app-panel-bg);
+  border: 1px solid var(--app-panel-border);
+  border-radius: 10px;
+
+  overflow: hidden;
+}
+
+.SidebarGroups,
+.SidebarFriends {
+  min-height: 0;
+  padding: 20px 16px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.SidebarGroups {
+  flex: 35;
+}
+
+.SidebarFriends {
+  flex: 65;
+  border-top: 1px solid var(--app-panel-border);
+}
+
+.SidebarSectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.MobileSidebarRail {
+  display: none;
+}
+
+.FriendGroupAction {
+  border: 0;
+  background: transparent;
+  margin-left: auto;
+  font-size: 18px;
+
+  color: var(--app-accent);
+  cursor: pointer;
+}
+
+.SidebarGroup {
+  width: 100%;
+  padding: 8px 10px;
+
+  text-align: left;
+
+  color: var(--app-text-main);
+  background: transparent;
+
+  border: 0;
+  cursor: pointer;
+}
+
+.SidebarGroupList,
+.SidebarFriendList {
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow-y: auto;
+}
+
+.SidebarFriendList {
+  gap: 10px;
+}
+
+.SidebarGroupActive {
+  color: var(--app-accent);
+  background: rgba(111, 211, 255, 0.12);
+}
+
+.SidebarFriend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 6px;
+
+  color: var(--app-text-main);
+}
+
+.SidebarFriendMember {
+  background: rgba(111, 211, 255, 0.08);
+  border-left: 2px solid var(--app-accent);
+}
+
+.FriendStatus {
+  width: 8px;
+  height: 8px;
+
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+
+.FriendOnline {
+  background: #4ade80;
+}
+
+.FriendOffline {
+  background: #6b7280;
+}
+
+.SidebarContent {
+  height: 100%;
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 900px) {
+  .DashboardSidebar {
+    position: relative;
+    overflow: visible;
+  }
+
+  .SidebarContent {
+    display: none;
+  }
+
+  .SidebarContent.MobilePanelOpen {
+    display: flex;
+
+    position: absolute;
+    top: 0;
+    left: 100%;
+
+    width: calc(900% + 18px);
+    height: 100%;
+
+    z-index: 20;
+
+    background: rgb(14, 32, 65);
+    border: 1px solid var(--app-panel-border);
+    border-left: 0;
+    border-radius: 0 10px 10px 0;
+  }
+
+  .MobileSidebarRail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    width: 100%;
+    height: 100%;
+    padding-top: 20px;
+    gap: 20px;
+  }
+
+  .MobileSidebarRail button {
+    width: 80%;
+    max-width: 36px;
+    aspect-ratio: 1;
+
+    border: 0;
+    background: transparent;
+
+    color: var(--app-accent);
+    font-size: 16px;
+    cursor: pointer;
+  }
+}

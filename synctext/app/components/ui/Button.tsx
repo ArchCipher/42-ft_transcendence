@@ -14,6 +14,7 @@ type ButtonProps = {
   compact?: boolean;
   className?: string;
   onClick?: () => void;
+  className?: string;
 };
 
 export default function Button({
@@ -30,6 +31,7 @@ export default function Button({
   const classes = cn(
     styles.button,
     styles[variant],
+    className,
     compact && styles.compact,
     className,
   );

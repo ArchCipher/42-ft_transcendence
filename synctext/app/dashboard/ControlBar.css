@@ -4,14 +4,12 @@
   align-items: center;
   justify-content: space-between;
 
-  margin-bottom: 28px;
   padding: 0 24px;
   gap: 24px;
 }
 
 .FilterBox,
-.OrderBox,
-.GroupFilter {
+.OrderBox {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -19,8 +17,7 @@
 }
 
 .FilterBox select,
-.OrderBox select,
-.GroupFilter select {
+.OrderBox select {
   padding: 10px 16px;
   background-color: var(--app-panel-bg);
   color: var(--app-text-main);
@@ -31,15 +28,13 @@
 }
 
 .FilterBox select:focus,
-.OrderBox select:focus,
-.GroupFilter select:focus {
+.OrderBox select:focus {
   outline: none;
   box-shadow: none;
 }
 
 .FilterBox option,
-.OrderBox option,
-.GroupFilter option {
+.OrderBox option {
   font-family: monospace;
 }
 
@@ -55,8 +50,7 @@
   }
 
   .FilterBox,
-  .OrderBox,
-  .GroupFilter{
+  .OrderBox {
     width: 100%;
     padding: 0;
 
@@ -67,8 +61,7 @@
   }
 
   .FilterBox select,
-  .OrderBox select,
-  .GroupFilter select {
+  .OrderBox select {
     width: 100%;
     min-width: 0;
   }

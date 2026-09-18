@@ -1,29 +1,34 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Dialog } from "@base-ui/react/dialog";
-
+import { useEffect, useRef, useState } from "react";
 import type { DocumentSummary } from "@/lib/documents/documents";
-import { createDocument_api, deleteDocument_api, listDocuments_api, renameDocument_api } from "./document/document";
+import { deleteDocument_api, listDocuments_api, renameDocument_api } from "./document/document";
 import "./DocumentsDashboard.css";
 import { BodyText, SupportText } from "@/app/components/typography/Typography";
+import ConfirmWindow from "@/app/components/feedback/ConfirmWindow";
+import PlusButton from "@/components/PlusButton";
 
 type DashboardProps = {
   search: string;
   order: string;
+  createError: string;
+  onCreateDocument: () => void;
+  isCreatingDocument: boolean;
 };
 
-export default function DocumentsDashboard({ search, order }: DashboardProps) {
+export default function DocumentsDashboard({ search,
+                                              order,
+                                              onCreateDocument,
+                                              isCreatingDocument,
+                                              createError }: DashboardProps) {
 
   const [documents, setDocuments] = useState<DocumentSummary[]>([]);
   const [isLoadingDocuments, setIsLoadingDocuments] = useState(true);
   const [documentsError, setDocumentsError] = useState("");
 
-  const [isCreatingDocument, setIsCreatingDocument] = useState(false);
   const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);// for deleting docs
-  const [createError, setCreateError] = useState("");
 
   const [documentToEdit, setDocumentToEdit] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
@@ -75,242 +80,158 @@ export default function DocumentsDashboard({ search, order }: DashboardProps) {
     }
   }
 
-  async function createDocument() {
-      if (isCreatingDocument) return;
-
-      setCreateError("");
-      setIsCreatingDocument(true);
-      try {
-        const createdDocument = await createDocument_api();
-        router.push(`/doc/${encodeURIComponent(createdDocument.id)}`);
-      } catch {
-        setCreateError("Failed to create the document. Please try again.");
-      } finally {
-        setIsCreatingDocument(false);
-      }
-    }
-
   function openDocument(id: string) {
     router.push(`/doc/${encodeURIComponent(id)}`);
   }
 
-  async function saveRename() {
-    const titleExists = documents.some(
-      (doc) =>
-        doc.id !== documentToEdit &&
-        doc.title.toLowerCase() === editTitle.trim().toLowerCase()
+async function saveRename(): Promise<boolean> {
+  const titleExists = documents.some(
+    (doc) =>
+      doc.id !== documentToEdit &&
+      doc.title.toLowerCase() === editTitle.trim().toLowerCase()
+  );
+
+  if (!editTitle.trim()) {
+    setEditError("Please enter a document title");
+    return false;
+  }
+
+  if (titleExists) {
+    setEditError("A document with this title already exists");
+    return false;
+  }
+
+  if (documentToEdit === null) return false;
+
+  setEditError("");
+
+  try {
+    const renamedDocument = await renameDocument_api(
+      documentToEdit,
+      editTitle.trim(),
     );
 
-    if (!editTitle.trim()) {
-      setEditError("Please enter a document title");
-      return;
-    }
+    setDocuments((currentDocuments) =>
+      currentDocuments.map((doc) =>
+        doc.id === documentToEdit ? renamedDocument : doc
+      )
+    );
 
-    if (titleExists) {
-      setEditError("A document with this title already exists");
-      return;
-    }
+    setDocumentToEdit(null);
+    return true;
 
-    if (documentToEdit === null) return;
-
-    setEditError("");
-
-    try {
-      const renamedDocument = await renameDocument_api(
-        documentToEdit,
-        editTitle,
-      );
-
-      setDocuments((currentDocuments) =>
-        currentDocuments.map((doc) =>
-          doc.id === documentToEdit ? renamedDocument : doc
-        )
-      );
-
-      setDocumentToEdit(null);
-    } catch {
-      setEditError("Failed to rename the document. Please try again.");
-    }
+  } catch {
+    setEditError("Failed to rename the document. Please try again.");
+    return false;
   }
+}
 
   return (
     <>
+
       <main className="Dashboard">
 
-        <AddDoc
-          onAdd={() => void createDocument()}
-          disabled={isCreatingDocument}
-        />
+      <PlusButton
+        size="tile"
+        aria-label={isCreatingDocument ? "Creating document" : "Create document"}
+        disabled={isCreatingDocument}
+        onClick={onCreateDocument}
+      />
 
-        {isLoadingDocuments ? (
-          <p className="DashboardStatus">
-            <SupportText>Loading documents...</SupportText>
-          </p>
-        ) : null}
+      {isLoadingDocuments ? (
+        <p className="DashboardStatus">
+          <SupportText>Loading documents...</SupportText>
+        </p>
+      ) : null}
 
-        {dashboardError ? (
-          <p className="DashboardError" role="alert">
-            <BodyText className="text-[#ff6b6b]">
-              {dashboardError}
-            </BodyText>
-          </p>
-        ) : null}
+      {dashboardError ? (
+        <p className="DashboardError" role="alert">
+          <BodyText className="text-[#ff6b6b]">
+            {dashboardError}
+          </BodyText>
+        </p>
+      ) : null}
 
-        {!isLoadingDocuments && !documentsError && documents.length === 0 ? (
-          <p className="DashboardStatus">
-            <BodyText>You do not have any documents yet.</BodyText>
-          </p>
-        ) : null}
+      {!isLoadingDocuments && !documentsError && documents.length === 0 ? (
+        <p className="DashboardStatus">
+          <BodyText>You do not have any documents yet.</BodyText>
+        </p>
+      ) : null}
 
-        {!isLoadingDocuments && !documentsError ? documents.filter((doc) =>
-            doc.title.toLowerCase().includes(search.toLowerCase()))
-          .sort((a, b) => {
-          if (order == "name")
-            return a.title.localeCompare(b.title);
-          const dateField = order === "modification" ? "updatedAt" : "createdAt";
-          return new Date(b[dateField]).getTime() - new Date(a[dateField]).getTime();
-          })
-          .map((doc) => (
-            <DocumentCard
-              key={doc.id}
-              title={doc.title}
-              onOpen={() => openDocument(doc.id)}
-              onDelete={doc.canDelete
-                ? () => setDocumentToDelete(doc.id)
-                : undefined}
-              onEdit={doc.canRename ? () => {
-                setDocumentToEdit(doc.id);
-                setEditTitle(doc.title);
-                setEditError("");
-              } : undefined}
-            />
-          )) : null}
-
-      </main>
-
-      <Dialog.Root
-        open={documentToEdit !== null}
-        onOpenChange={(open) => {
-          if (!open) {
-            setDocumentToEdit(null);
-            setEditError("");
-          }
-        }}
-      >
-        <Dialog.Portal>
-          <Dialog.Backdrop className="CreateDocOverlay" />
-
-          <Dialog.Popup className="CreateDoc">
-            <Dialog.Title>Edit document</Dialog.Title>
-
-            <input
-              id="edit-document-title"
-              className="CreateDocTitle"
-              type="text"
-              value={editTitle}
-              autoComplete="off"
-              autoFocus
-              onFocus={(e) => e.target.select()}
-              onChange={(e) => setEditTitle(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  saveRename();
-                }
-              }}
-              aria-describedby={editError ? "edit-doc-error" : undefined}
-            />
-
-            {editError && (
-              <p className="CreateDocError" id="edit-doc-error">
-                {editError}
-              </p>
-            )}
-
-            <button
-              className="CreateDocButton"
-              onClick={saveRename}
-            >
-              Save changes
-            </button>
-
-            <div className="LedStrip" aria-hidden="true">
-              <span />
-              <span />
-              <span />
-              <span />
-              <span />
-              <span />
-              <span />
-            </div>
-          </Dialog.Popup>
-        </Dialog.Portal>
-      </Dialog.Root>
-
-      <Dialog.Root
-        open={documentToDelete !== null}
-        onOpenChange={(open) => {
-          if (!open) {
-            setDocumentToDelete(null);
-          }
-        }}
-      >
-        <Dialog.Portal>
-          <Dialog.Backdrop className="DeleteDocOverlay" />
-
-          <Dialog.Popup className="DeleteDocPopup">
-          <Dialog.Title>Are you sure?</Dialog.Title>
-
-          <Dialog.Description className="DeleteDocMessage">
-            Think deep!
-          </Dialog.Description>
-
-          <button
-            className="ConfirmDeleteDoc"
-            autoFocus
-            onClick={() => {
-              if (documentToDelete !== null) {
-                void deleteDocument(documentToDelete);
-              }
+      {!isLoadingDocuments && !documentsError ? documents.filter((doc) =>
+          doc.title.toLowerCase().includes(search.toLowerCase()))
+        .sort((a, b) => {
+        if (order == "name")
+          return a.title.localeCompare(b.title);
+        const dateField = order === "modification" ? "updatedAt" : "createdAt";
+        return new Date(b[dateField]).getTime() - new Date(a[dateField]).getTime();
+        })
+        .map((doc) => (
+          <DocumentCard
+            key={doc.id}
+            title={doc.title}
+            onOpen={() => openDocument(doc.id)}
+            onDelete={doc.canDelete
+              ? () => setDocumentToDelete(doc.id)
+              : undefined}
+            onEdit={doc.canRename ? () => {
+              setDocumentToEdit(doc.id);
+              setEditTitle(doc.title);
+              setEditError("");
+            } : undefined}
+            isEditing={documentToEdit === doc.id}
+            editTitle={editTitle}
+            onEditTitle={setEditTitle}
+            onSave={saveRename}
+            onCancel={() => {
+              setDocumentToEdit(null);
+              setEditError("");
             }}
-          >
-            DELETE
-          </button>
-          </Dialog.Popup>
-        </Dialog.Portal>
-      </Dialog.Root>
-    </>
+            editError={editError}
+          />
+        )) : null}
+
+    </main>
+    {documentToDelete !== null && (
+      <ConfirmWindow
+        title="Delete document?"
+        message="This action cannot be undone."
+        onCancel={() => setDocumentToDelete(null)}
+        onConfirm={() => void deleteDocument(documentToDelete)}
+      />
+    )}
+  </>
   );
 }
-
-
-type AddDocProps = {
-  onAdd: () => void;
-  disabled: boolean;
-};
-
-function AddDoc({ onAdd, disabled }: AddDocProps) {
-  return (
-    <button
-      type="button"
-      className="AddDoc"
-      onClick={onAdd}
-      disabled={disabled}
-      aria-label={disabled ? "Creating document" : "Create document"}
-    >
-      +
-    </button>
-  );
-}
-
 
 type DocumentCardProps = {
   title: string;
   onOpen: () => void;
   onDelete?: () => void;
   onEdit?: () => void;
+
+  isEditing: boolean;
+  editTitle: string;
+  onEditTitle: (title: string) => void;
+  onSave: () => Promise<boolean>;
+  onCancel: () => void;
+  editError: string;
 };
 
-function DocumentCard({ title, onOpen, onDelete, onEdit }: DocumentCardProps) {
+function DocumentCard({ title,
+                        onOpen,
+                        onDelete,
+                        onEdit,
+                        isEditing,
+                        editTitle,
+                        onEditTitle,
+                        onSave,
+                        editError,
+                        onCancel }: DocumentCardProps) {
+
+  const inputRef = useRef<HTMLInputElement>(null);
+  const cancelRef = useRef(false);
+
   return (
     <div className="DocumentCard">
       {onDelete ? (
@@ -332,12 +253,54 @@ function DocumentCard({ title, onOpen, onDelete, onEdit }: DocumentCardProps) {
         />
       </button>
 
-      <span
-        className="DocumentTitle"
-        onDoubleClick={onEdit}
-      >
-        {title}
-      </span>
+      {isEditing ? (
+          <div className="DocumentTitleEdit">
+            <input
+              ref={inputRef}
+              className="DocumentTitleInput"
+              value={editTitle}
+              maxLength={50}
+              autoFocus
+              onChange={(e) => onEditTitle(e.target.value)}
+              onFocus={(e) => e.target.select()}
+              onBlur={async () => {
+                if (cancelRef.current) {
+                  cancelRef.current = false;
+                  return;
+                }
+
+                const saved = await onSave();
+
+                if (!saved) {
+                  inputRef.current?.focus();
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.currentTarget.blur();
+                }
+
+                if (e.key === "Escape") {
+                  cancelRef.current = true;
+                  onCancel();
+                }
+              }}
+            />
+
+            {editError && (
+              <span className="DocumentTitleError">
+                {editError}
+              </span>
+            )}
+          </div>
+        ) : (
+        <span
+          className="DocumentTitle"
+          onClick={onEdit}
+        >
+          {title}
+        </span>
+      )}
     </div>
   );
 }

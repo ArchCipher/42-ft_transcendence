@@ -13,25 +13,9 @@ function FilterBox() {
 
       <select>
         <option>All documents</option>
-        <option>Owned by me</option>
+        <option>I created</option>
         <option>I can edit</option>
         <option>I can only read</option>
-      </select>
-    </div>
-  );
-}
-
-function GroupFilter() {
-  return (
-    <div className="GroupFilter">
-      <TechText className="text-sm text-white/70">
-        Groups
-      </TechText>
-
-      <select>
-        <option>All groups</option>
-        <option>Transcendence</option>
-        <option>Wu tang Clan</option>
       </select>
     </div>
   );
@@ -91,7 +75,6 @@ export default function ControlBar({ search, setSearch, order, setOrder }: Contr
     <div className="ControlBar">
       <FilterBox />
       <OrderBox orderBy={order} setOrderBy={setOrder} />
-      <GroupFilter />
       <SearchBox search={search} setSearch={setSearch} />
     </div>
   );
