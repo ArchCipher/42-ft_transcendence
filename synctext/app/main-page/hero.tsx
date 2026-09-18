@@ -1,46 +1,51 @@
+import Image from "next/image";
 import Button from "@/app/components/ui/Button";
 import { DisplayText, BodyText } from "@/app/components/typography/Typography";
+import styles from "./HomePage.module.css";
 
 export function Hero() {
   return (
     <section
       aria-labelledby="hero-title"
-      className="relative isolate min-h-[min(58rem,100svh)] 
-                max-sm:min-h-[46rem]"
+      className={styles.hero}
     >
-      <div className="flex min-h-[min(58rem,100svh)] 
-                      flex-col justify-center 
-                      gap-[clamp(2rem,5vh,4.75rem)] 
-                      px-[clamp(1.25rem,5vw,5rem)] 
-                      pt-36 pb-24 max-sm:min-h-[46rem] 
-                      max-sm:justify-end max-sm:pb-26">
+      <div aria-hidden="true" className={styles.heroOrbit}>
+        <div className={styles.heroCore}>
+          <Image
+            alt=""
+            className={styles.heroFortyTwo}
+            height={225}
+            priority
+            src="/assets/42-logo-transparent.png"
+            width={225}
+          />
+          <span className={styles.heroPanic}>DON&apos;T PANIC!</span>
+        </div>
+      </div>
+      <div className={styles.heroContent}>
+        <p className={styles.heroEyebrow}>A collaborative writing field guide</p>
         <h1
-          className="max-w-[12ch] text-[clamp(4rem,9.3vw,9.5rem)] 
-                      leading-[.82] font-normal 
-                      max-sm:text-[clamp(3.6rem,17vw,6.5rem)]"
+          className={styles.heroTitle}
           id="hero-title"
         >
           <DisplayText>
             Write together.
             <br />
-            <em className="font-normal text-[#c8c4d8]">
+            <em className={styles.heroEmphasis}>
               Stay in sync.
             </em>
           </DisplayText>
         </h1>
 
-        <div className="flex max-w-lg items-end gap-8 
-                        max-sm:flex-col max-sm:items-start 
-                        max-sm:gap-6">
-          <p className="flex-1 text-[clamp(.78rem,1vw,.9rem)] 
-                        leading-relaxed">
-            <BodyText>
+        <div className={styles.heroActionRow}>
+          <p className={styles.heroCopy}>
+            <BodyText className={styles.heroCopyText}>
               A focused writing space where ideas move freely, edits land instantly,
               and every voice stays in the room.
             </BodyText>
           </p>
 
-          <Button href="/sync">
+          <Button className={styles.homePrimaryButton} href="/sync" withArrow>
             Get writing
           </Button>
         </div>

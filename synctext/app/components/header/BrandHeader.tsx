@@ -3,17 +3,19 @@ import { DisplayText, TechText, SupportText } from "@/app/components/typography/
 
 type BrandHeaderProps = {
   showTagline?: boolean;
+  className?: string;
 };
 
 export default function BrandHeader({
   showTagline = true,
+  className = "",
 }: BrandHeaderProps) {
   return (
     <section
-      className="relative px-5
+      className={`relative px-5
                  pt-1 pb-2 -mt-18
                  sm:px-[clamp(1.25rem,5vw,5rem)]
-                 z-[60] pointer-events-none"
+                 z-[60] pointer-events-none ${className}`}
     >
       <Link
         href="/"
