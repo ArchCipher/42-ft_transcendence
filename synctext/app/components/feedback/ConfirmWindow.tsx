@@ -1,5 +1,7 @@
 "use client";
 
+import "./ConfirmWindow.css";
+
 type ConfirmWindowProps = {
   title: string;
   message: string;
