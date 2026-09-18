@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authPost, FALLBACK } from "../auth/api";
 
@@ -63,10 +64,11 @@ export default function RegisterForm() {
   }
 
   return (
-    <form className="AuthForm"
-          onSubmit={async (e) => {
-          e.preventDefault(); // don't reload the page
-          await handleRegister(); // handle it with JS
+    <form
+      className="AuthForm"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        await handleRegister();
       }}
     >
       <h2 className="AuthFormTitle">
@@ -78,7 +80,6 @@ export default function RegisterForm() {
       <Box
         id="email"
         type="email"
-        placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
@@ -97,7 +98,6 @@ export default function RegisterForm() {
       </label>
       <Box
         id="username"
-        placeholder="Username"
         value={username}
         onChange={(e) => setUsername(e.target.value)}
         maxLength={20}
@@ -118,7 +118,6 @@ export default function RegisterForm() {
       <Box
         id="password"
         type={showPassword ? "text" : "password"}
-        placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
@@ -138,7 +137,6 @@ export default function RegisterForm() {
       <Box
         id="confirm-password"
         type={showPassword ? "text" : "password"}
-        placeholder="Confirm Password"
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
         required
@@ -160,9 +158,12 @@ export default function RegisterForm() {
         </p>
       )}
 
-      <Button type="submit" disabled={loading}>
+      <Button className="AuthSubmitButton" type="submit" disabled={loading}>
         {loading ? "Registering..." : "Register"}
       </Button>
-      </form>
+      <div className="AuthLinks AuthSingleLink">
+        <Link href="/auth"><TechText className="text-xs">Already have an account? Log in</TechText></Link>
+      </div>
+    </form>
   );
 }

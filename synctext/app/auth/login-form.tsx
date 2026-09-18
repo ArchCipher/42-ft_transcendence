@@ -61,7 +61,7 @@ export default function LoginForm() {
     >
       <h2 className="AuthFormTitle">
         <DisplayText>
-          Access the guide
+          Pick up where you left off.
         </DisplayText>
       </h2>
 
@@ -73,7 +73,6 @@ export default function LoginForm() {
       <Box
         id="email"
         type="email"
-        placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
@@ -95,7 +94,6 @@ export default function LoginForm() {
       <Box
         id="password"
         type={showPassword ? "text" : "password"}
-        placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
@@ -124,7 +122,7 @@ export default function LoginForm() {
         </p>
       )}
 
-      <Button type="submit" disabled={loading}>
+      <Button className="AuthSubmitButton" type="submit" disabled={loading}>
         {loading ? "Accessing..." : "Login"}
       </Button>
       <div className="AuthLinks">
