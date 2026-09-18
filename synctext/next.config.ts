@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 import path from "node:path";
 
+
 /*
 Every response gets the Content-Security-Policy header, telling the browser
 "only load code / styles / connections from these origins". This is the safety
@@ -53,7 +54,7 @@ const nextConfig: NextConfig = {
   output: "standalone",
   // the workspace root is one level up from synctext/, so file tracing
   // for the standalone build can see packages/db
-  outputFileTracingRoot: path.join(__dirname, ".."),
+  outputFileTracingRoot: path.join(process.cwd(), ".."),
   serverExternalPackages: ["@prisma/client", "@prisma/adapter-pg", "pg"],
 
   // Headers: securityHeaders, otherHeaders
