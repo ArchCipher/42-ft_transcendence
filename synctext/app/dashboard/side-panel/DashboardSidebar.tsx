@@ -1,10 +1,9 @@
 "use client";
 
 import "./DashboardSidebar.css";
-import Box from "@/components/Box";
 import { TechText } from "@/components/Typography";
 import PlusButton from "@/components/PlusButton";
-import { useState } from "react";
+import InputBox from "@/components/InputBox";
 
 type DashboardSidebarProps = {
   selectedGroup: {
@@ -15,6 +14,9 @@ type DashboardSidebarProps = {
   onSelectGroup: (
     group: { id: string; name: string } | null
   ) => void;
+
+  isOpen: boolean;
+  onClose: () => void;
 };
 
 const groups = [
@@ -39,9 +41,9 @@ const groupMembers: Record<string, string[]> = {
 export default function DashboardSidebar({
   selectedGroup,
   onSelectGroup,
+  isOpen,
+  onClose,
 }: DashboardSidebarProps) {
-
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const selectedMembers = selectedGroup
   ? groupMembers[selectedGroup.id] ?? []
@@ -55,22 +57,12 @@ export default function DashboardSidebar({
   });
 
   return (
-    <aside className="DashboardSidebar">
+    <aside className={`DashboardSidebar ${ isOpen ? "DashboardSidebarOpen" : ""}`}>
 
-      <div className="MobileSidebarRail">
-        <button
-          type="button"
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-        >
-          ☰
-        </button>
-      </div>
-
-      <div
-        className={sidebarOpen ? "SidebarContent MobilePanelOpen" : "SidebarContent"}>
+      <div className="SidebarContent">
         <section className="SidebarGroups">
           <div className="SidebarSectionHeader">
-          <TechText className="text-base text-white/80">
+          <TechText className="SidebarSectionTitle text-white/80">
             Groups
           </TechText>
 
@@ -80,7 +72,7 @@ export default function DashboardSidebar({
           />
         </div>
 
-        <Box
+        <InputBox
           type="search"
           placeholder="Search groups..."
           aria-label="Search groups"
@@ -94,7 +86,10 @@ export default function DashboardSidebar({
               className={`SidebarGroup ${
                 selectedGroup?.id === group.id ? "SidebarGroupActive" : ""
               }`}
-              onClick={() => { setSidebarOpen(false); onSelectGroup(group); }}
+              onClick={() => {
+                onSelectGroup(group);
+                onClose();
+              }}
             >
               {group.name}
             </button>
@@ -104,7 +99,7 @@ export default function DashboardSidebar({
 
         <section className="SidebarFriends">
           <div className="SidebarSectionHeader">
-          <TechText className="text-base text-white/80">
+          <TechText className="SidebarSectionTitle text-white/80">
             Friends
           </TechText>
 
@@ -114,7 +109,7 @@ export default function DashboardSidebar({
           />
         </div>
 
-        <Box
+        <InputBox
           type="search"
           placeholder="Search friends..."
           aria-label="Search friends"

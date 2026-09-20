@@ -5,7 +5,7 @@
   padding: 16px;
 
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   justify-items: center;
   row-gap: 32px;
   align-content: start;
@@ -26,27 +26,27 @@
 }
 
 .DocumentCard {
-  width: 140px;
-  height: 140px;
+  width: min(150px, 100%);
+  height: 150px;
   position: relative;
 
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
 
   gap: 8px;
 }
 
 .DocumentIcon {
-  width: 90px;
-  height: 90px;
+  width: 100px;
+  height: 100px;
   object-fit: contain;
 }
 
 .DocumentOpen {
-  width: 90px;
-  height: 90px;
+  width: 100px;
+  height: 100px;
   padding: 0;
   background: transparent;
   border: 0;
@@ -54,17 +54,19 @@
 }
 
 .DocumentTitle {
-  width: 140px;
+  width: 150px;
+
+  display: block;
+  padding: 4px 0 0;
+
   text-align: center;
-
-  padding: 8px 0;
   cursor: text;
-
   color: white;
-  font-size: 14px;
 
-  white-space: normal;
-  overflow-wrap: break-word;
+  font-size: var(--dashboard-titledoc-size);
+  line-height: 22px;
+
+  white-space: nowrap;
 }
 
 .DeleteDoc {
@@ -82,10 +84,13 @@
   border-radius: 4px;
 
   text-align: center;
-  font-size: 14px;
+  font-size: var(--dashboard-titledoc-size);
 }
 
 .DocumentTitleEdit {
+  width: 140px;
+  height: 42px;
+
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -99,29 +104,27 @@
 }
 
 @media (max-width: 900px) {
-
   .Dashboard {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     justify-items: center;
-    column-gap: 8px;
-    row-gap: 24px;
+
+    column-gap: 12px;
+    row-gap: 32px;
     padding: 12px;
   }
 
   .DocumentCard {
-    width: 100%;
-    max-width: 90px;
-    height: 110px;
+    width: 140px;
+    height: 140px;
   }
 
   .DocumentOpen,
   .DocumentIcon {
-    width: 60px;
-    height: 60px;
+    width: 90px;
+    height: 90px;
   }
 
   .DocumentTitle {
-    width: 100%;
-    font-size: 12px;
+    width: 140px;
   }
 }

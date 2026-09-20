@@ -1,5 +1,8 @@
 .DashboardPage {
   padding: 48px 32px 60px;
+  --dashboard-text-size: 14px;
+  --dashboard-titledoc-size: 16px;
+  --dashboard-title-size: 18px;
 }
 
 .DashboardFixedBar {
@@ -43,7 +46,7 @@
 }
 
 .DashboardControls {
-  grid-column: 2;
+  grid-column: 1 / -1;
 }
 
 .DashboardSidebar {
@@ -66,58 +69,62 @@
   align-items: center;
 }
 
-.DashboardHomeButton {
-  grid-column: 1;
-  width: 36px;
-  height: 36px;
-  padding: 0;
-}
-
 .DashboardViewTitle {
   grid-column: 2;
   justify-self: center;
 
   color: var(--app-accent);
-  font-size: 17px;
+  font-size: var(--dashboard-title-size);
 
   text-shadow:
     0 0 6px rgba(111, 211, 255, 0.8),
     0 0 14px rgba(111, 211, 255, 0.4);
 }
 
-.DashboardHomeButton {
-  width: 36px;
-  height: 36px;
-  padding: 0;
+.DashboardControlsPanel {
+  padding: 10px 16px;
+}
 
-  color: var(--app-accent);
-  border-color: var(--app-accent);
+.DashboardFixedBarInner .DashboardSidebarToggle {
+  display: none;
+}
 
-  text-shadow:
-    0 0 6px rgba(111, 211, 255, 0.8),
-    0 0 14px rgba(111, 211, 255, 0.4);
-
-  box-shadow:
-    0 0 6px rgba(111, 211, 255, 0.35);
+.DashboardSidebarBackdrop {
+  display: none;
 }
 
 @media (max-width: 900px) {
   .DashboardLayout {
-    grid-template-columns: 10% minmax(0, 90%);
+    position: relative;
+
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
     column-gap: 0;
   }
 
   .DashboardControls {
-    grid-column: 1 / -1;
+    grid-column: 1;
+    grid-row: 1;
   }
 
-  .DashboardSidebar {
+  .DashboardPanel {
     grid-column: 1;
     grid-row: 2;
   }
 
-  .DashboardPanel {
-    grid-column: 2;
-    grid-row: 2;
+  .DashboardFixedBarInner .DashboardSidebarToggle {
+    display: flex;
+    grid-column: 3;
+    justify-self: end;
+  }
+
+  .DashboardSidebarBackdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+
+    z-index: 20;
+    border: 0;
+    background: rgba(0, 0, 0, 0.25);
   }
 }

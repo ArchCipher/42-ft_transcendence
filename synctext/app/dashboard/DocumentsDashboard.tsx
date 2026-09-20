@@ -10,6 +10,12 @@ import { BodyText, SupportText } from "@/app/components/typography/Typography";
 import ConfirmWindow from "@/app/components/feedback/ConfirmWindow";
 import PlusButton from "@/components/PlusButton";
 
+function truncateTitle(title: string, limit = 18) {
+  return title.length > limit
+    ? `${title.slice(0, limit)}...`
+    : title;
+}
+
 type DashboardProps = {
   search: string;
   order: string;
@@ -297,8 +303,9 @@ function DocumentCard({ title,
         <span
           className="DocumentTitle"
           onClick={onEdit}
+          title={title}
         >
-          {title}
+          {truncateTitle(title)}
         </span>
       )}
     </div>

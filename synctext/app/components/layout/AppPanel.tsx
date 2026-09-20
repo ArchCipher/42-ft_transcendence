@@ -15,7 +15,6 @@ export default function AppPanel({
         border border-[var(--app-panel-border)]
         bg-[var(--app-panel-bg)]
         backdrop-blur-md
-        rounded-[10px]
         ${className}
       `}
     >

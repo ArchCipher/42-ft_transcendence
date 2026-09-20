@@ -7,7 +7,7 @@ import { authPost, FALLBACK } from "../auth/api";
 
 import { DisplayText, TechText } from "@/app/components/typography/Typography";
 import Button from "@/app/components/ui/Button";
-import Box from "@/app/components/form/Box";
+import InputBox from "@/components/InputBox";
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -77,7 +77,7 @@ export default function RegisterForm() {
       <label htmlFor="email">
         <TechText className="text-xs">Email</TechText>
       </label>
-      <Box
+      <InputBox
         id="email"
         type="email"
         value={email}
@@ -96,7 +96,7 @@ export default function RegisterForm() {
       <label htmlFor="username">
         <TechText className="text-xs">Username</TechText>
       </label>
-      <Box
+      <InputBox
         id="username"
         value={username}
         onChange={(e) => setUsername(e.target.value)}
@@ -115,7 +115,7 @@ export default function RegisterForm() {
       <label htmlFor="password">
         <TechText className="text-xs">Password</TechText>
       </label>
-      <Box
+      <InputBox
         id="password"
         type={showPassword ? "text" : "password"}
         value={password}
@@ -134,7 +134,7 @@ export default function RegisterForm() {
       <label htmlFor="confirm-password">
         <TechText className="text-xs">Confirm password</TechText>
       </label>
-      <Box
+      <InputBox
         id="confirm-password"
         type={showPassword ? "text" : "password"}
         value={confirmPassword}

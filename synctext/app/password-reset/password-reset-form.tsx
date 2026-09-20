@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { authPost, FALLBACK } from "../auth/api";
-import Box from "@/app/components/form/Box";
+import InputBox from "@/components/InputBox";
 import Button from "@/app/components/ui/Button";
 import { DisplayText, TechText } from "@/app/components/typography/Typography";
 
@@ -78,7 +78,7 @@ export default function PasswordResetForm() {
         <TechText className="text-xs">Password</TechText>
       </label>
 
-      <Box
+      <InputBox
         id="password"
         type="password"
         value={password}
@@ -99,7 +99,7 @@ export default function PasswordResetForm() {
         <TechText className="text-xs">Confirm password</TechText>
       </label>
 
-      <Box
+      <InputBox
         id="confirm-password"
         type="password"
         value={confirmPassword}
