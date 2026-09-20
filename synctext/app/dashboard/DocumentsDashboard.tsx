@@ -16,6 +16,12 @@ function truncateTitle(title: string, limit = 18) {
     : title;
 }
 
+function truncateTitle(title: string, limit = 18) {
+  return title.length > limit
+    ? `${title.slice(0, limit)}...`
+    : title;
+}
+
 type DashboardProps = {
   search: string;
   order: string;
