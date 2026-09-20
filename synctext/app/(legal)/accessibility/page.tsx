@@ -76,13 +76,6 @@ export default async function AccessibilityPage() {
           fully conform to WCAG 2.1 AA.
         </li>
       </ul>
-
-      <h2 id="feedback">Feedback</h2>
-      <p>
-        We welcome your feedback on the accessibility of synctext. If you
-        encounter accessibility barriers or have suggestions for improvement,
-        please contact us at [TODO: privacy contact email].
-      </p>
     </>
   );
 }

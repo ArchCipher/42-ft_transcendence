@@ -27,7 +27,6 @@ const tocSections: Record<
       { id: "limitation-of-liability", title: "10. Limitation of liability" },
       { id: "changes-to-the-service-and-these-terms", title: "11. Changes" },
       { id: "governing-law", title: "12. Governing law" },
-      { id: "contact", title: "13. Contact" },
     ],
   },
   "/privacy": {
@@ -48,7 +47,6 @@ const tocSections: Record<
       { id: "children", title: "10. Children" },
       { id: "data-minimisation", title: "11. Data minimisation" },
       { id: "changes-to-this-policy", title: "12. Changes to this policy" },
-      { id: "contact", title: "13. Contact" },
     ],
   },
   "/cookies": {
@@ -60,7 +58,6 @@ const tocSections: Record<
       { id: "other-tokens", title: "Other tokens (not cookies)" },
       { id: "your-choices", title: "Your choices" },
       { id: "changes-to-this-policy", title: "Changes to this policy" },
-      { id: "contact", title: "Contact" },
     ],
   },
   "/accessibility": {
@@ -69,7 +66,6 @@ const tocSections: Record<
       { id: "our-commitment", title: "Our commitment" },
       { id: "what-we-have-done", title: "What we have done" },
       { id: "known-limitations", title: "Known limitations" },
-      { id: "feedback", title: "Feedback" },
     ],
   },
 };

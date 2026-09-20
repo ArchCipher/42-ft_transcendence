@@ -186,9 +186,6 @@ export default async function TermsPage() {
         subject to the exclusive jurisdiction of the competent courts of{" "}
         <strong>Berlin, Germany</strong>.
       </p>
-
-      <h2 id="contact">13. Contact</h2>
-      <p>Questions about these Terms: [TODO: contact email]</p>
     </>
   );
 }

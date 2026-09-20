@@ -113,9 +113,6 @@ export default async function CookiesPage() {
         We may update this policy from time to time. Changes will be reflected
         by updating the date at the top of this page.
       </p>
-
-      <h2 id="contact">Contact</h2>
-      <p>Questions about our cookie use: [TODO: privacy contact email]</p>
     </>
   );
 }

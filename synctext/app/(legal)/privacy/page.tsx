@@ -13,7 +13,6 @@ export default function PrivacyPage() {
         personal information we collect, why we collect it, and how you can
         control it.
       </p>
-      <p>Contact for privacy matters: [TODO: privacy contact email]</p>
 
       <h2 id="information-we-collect">2. Information we collect</h2>
       <p>
@@ -285,11 +284,7 @@ export default function PrivacyPage() {
         </li>
       </ul>
       <p>
-        To exercise any of these, contact [TODO: privacy contact email] or
-        delete your account from the app. We respond within 30 days. You also
-        have the right to lodge a complaint with your local data protection
-        authority (in Germany: Berliner Beauftragte f&uuml;r Datenschutz und
-        Informationsfreiheit &mdash; www.datenschutz-berlin.de).
+        To exercise any of these delete your account from the app.
       </p>
 
       <h2 id="children">10. Children</h2>
@@ -313,9 +308,6 @@ export default function PrivacyPage() {
         material changes by updating the date at the top of this page. Continued
         use after changes means you accept the updated policy.
       </p>
-
-      <h2 id="contact">13. Contact</h2>
-      <p>Questions about this policy: [TODO: privacy contact email]</p>
     </>
   );
 }
