@@ -1,7 +1,7 @@
 import "./legal.css";
 import LegalTOC from "./legal-TOC";
-import BrandHeader from "@/components/BrandHeader";
-import { Footer } from "@/components/Footer";
+import BrandHeader from "@/app/components/header/BrandHeader";
+import { Footer } from "@/app/components/footer/Footer";
 
 export default function LegalLayout({
   children,

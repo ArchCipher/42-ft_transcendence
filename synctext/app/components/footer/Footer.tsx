@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { TechText, SupportText } from "@/app/components/typography/Typography";
 
-const legalLinks = [["Terms", "/legal/terms"], ["Privacy", "/legal/privacy"], ["Cookies", "/legal/cookies"], ["Accessibility", "/legal/accessibility"]] as const;
+const legalLinks = [["Terms", "/terms"], ["Privacy", "/privacy"], ["Cookies", "/cookies"], ["Accessibility", "/accessibility"]] as const;
 
 export function Footer() {
   return (
