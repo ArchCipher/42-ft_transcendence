@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import Link from "next/link"
 import { useEffect, useState } from "react"
@@ -12,35 +12,39 @@ import Button from "@/app/components/ui/Button"
 import InputBox from "@/app/components/form/InputBox";
 import { SnapshotHistory } from "@/components/sync/snapshot-history"
 
-import styles from "./navbar.module.css"
+import styles from "./navbar.module.css";
 
-type SyncUser = { name: string; color: string }
+type SyncUser = { name: string; color: string };
 
 type DocumentNavbarProps = {
-  docId: string
-  initialTitle: string
-  canRename: boolean
-  provider: HocuspocusProvider | null
-  status: ConnectionStatus
-  users: CollabUser[]
-}
+  docId: string;
+  initialTitle: string;
+  canRename: boolean;
+  provider: HocuspocusProvider | null;
+  status: ConnectionStatus;
+  users: CollabUser[];
+};
 
 const STATUS_COLOR = {
   connected: "bg-emerald-400",
   connecting: "bg-amber-300",
   disconnected: "bg-zinc-500",
-} as const
+} as const;
 
 function collaboratorIdentity({ user }: CollabUser): SyncUser {
-  const identity = (user && typeof user === "object" ? user : {}) as Record<string, unknown>
+  const identity = (user && typeof user === "object" ? user : {}) as Record<
+    string,
+    unknown
+  >;
   return {
-    name: typeof identity.name === "string" && identity.name ? identity.name : "?",
+    name:
+      typeof identity.name === "string" && identity.name ? identity.name : "?",
     color: typeof identity.color === "string" ? identity.color : "#94a3b8",
-  }
+  };
 }
 
 function truncateTitle(title: string, limit: number) {
-  return title.length > limit ? `${title.slice(0, limit)}...` : title
+  return title.length > limit ? `${title.slice(0, limit)}...` : title;
 }
 
 export function DocumentNavbar({
@@ -51,52 +55,54 @@ export function DocumentNavbar({
   status,
   users,
 }: DocumentNavbarProps) {
-  const [title, setTitle] = useState(initialTitle)
-  const [draftTitle, setDraftTitle] = useState(initialTitle)
-  const [isEditing, setIsEditing] = useState(false)
-  const [isRenaming, setIsRenaming] = useState(false)
-  const [renameError, setRenameError] = useState("")
+  const [title, setTitle] = useState(initialTitle);
+  const [draftTitle, setDraftTitle] = useState(initialTitle);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [renameError, setRenameError] = useState("");
 
   // Broadcast only: the map is observed but never read at mount, because
   // Postgres is the source of truth and a rename from the dashboard never
   // touches Yjs — a title stored here can be older than the database.
   useEffect(() => {
-    if (!provider) return
-    const meta = provider.document.getMap<string>("meta")
+    if (!provider) return;
+    const meta = provider.document.getMap<string>("meta");
     const onMetaChange = () => {
-      const nextTitle = meta.get("title")
-      if (nextTitle) setTitle(nextTitle)
-    }
-    meta.observe(onMetaChange)
-    return () => meta.unobserve(onMetaChange)
-  }, [provider])
+      const nextTitle = meta.get("title");
+      if (nextTitle) setTitle(nextTitle);
+    };
+    meta.observe(onMetaChange);
+    return () => meta.unobserve(onMetaChange);
+  }, [provider]);
 
   function cancelEditing() {
-    setDraftTitle(title)
-    setRenameError("")
-    setIsEditing(false)
+    setDraftTitle(title);
+    setRenameError("");
+    setIsEditing(false);
   }
 
   async function saveTitle() {
-    const nextTitle = draftTitle.trim()
+    const nextTitle = draftTitle.trim();
     if (!nextTitle || nextTitle === title) {
-      setDraftTitle(title)
-      setIsEditing(false)
-      return
+      setDraftTitle(title);
+      setIsEditing(false);
+      return;
     }
 
-    setIsRenaming(true)
-    setRenameError("")
+    setIsRenaming(true);
+    setRenameError("");
     try {
-      const renamedDocument = await renameDocument_api(docId, nextTitle)
-      setTitle(renamedDocument.title)
-      setDraftTitle(renamedDocument.title)
-      setIsEditing(false)
-      provider?.document.getMap<string>("meta").set("title", renamedDocument.title)
+      const renamedDocument = await renameDocument_api(docId, nextTitle);
+      setTitle(renamedDocument.title);
+      setDraftTitle(renamedDocument.title);
+      setIsEditing(false);
+      provider?.document
+        .getMap<string>("meta")
+        .set("title", renamedDocument.title);
     } catch {
-      setRenameError("Could not rename document")
+      setRenameError("Could not rename document");
     } finally {
-      setIsRenaming(false)
+      setIsRenaming(false);
     }
   }
 
@@ -146,17 +152,18 @@ export function DocumentNavbar({
                 min-[901px]:col-span-1
                 min-[901px]:static min-[901px]:w-auto min-[901px]:translate-x-0
                 min-[901px]:row-auto
-                min-[901px]:px-3">
+                min-[901px]:px-3"
+        >
           {isEditing ? (
             <form
               className="mx-auto flex max-w-xl items-center gap-2"
               onSubmit={(event) => {
-                event.preventDefault()
-                void saveTitle()
+                event.preventDefault();
+                void saveTitle();
               }}
               onBlur={(event) => {
                 if (!event.currentTarget.contains(event.relatedTarget)) {
-                  cancelEditing()
+                  cancelEditing();
                 }
               }}
             >
@@ -167,12 +174,14 @@ export function DocumentNavbar({
                   maxLength={50}
                   disabled={isRenaming}
                   aria-label="Document title"
-                  aria-describedby={renameError ? "document-rename-error" : undefined}
+                  aria-describedby={
+                    renameError ? "document-rename-error" : undefined
+                  }
                   onChange={(event) => setDraftTitle(event.target.value)}
                   onFocus={(event) => event.currentTarget.select()}
                   onKeyDown={(event) => {
                     if (event.key === "Escape") {
-                      cancelEditing()
+                      cancelEditing();
                     }
                   }}
                 />
@@ -191,8 +200,8 @@ export function DocumentNavbar({
               type="button"
               disabled={!canRename}
               onClick={() => {
-                setDraftTitle(title)
-                setIsEditing(true)
+                setDraftTitle(title);
+                setIsEditing(true);
               }}
               className="mx-auto flex min-h-10 max-w-xl items-center gap-2
               px-3 text-left text-sm tracking-tight text-white
@@ -215,11 +224,21 @@ export function DocumentNavbar({
                   {truncateTitle(title, 50)}
                 </span>
               </span>
-              {canRename ? <Pencil aria-hidden="true" className="shrink-0 text-white/45" size={14} /> : null}
+              {canRename ? (
+                <Pencil
+                  aria-hidden="true"
+                  className="shrink-0 text-white/45"
+                  size={14}
+                />
+              ) : null}
             </button>
           )}
           {renameError ? (
-            <p id="document-rename-error" role="alert" className="mt-1 text-center text-[11px] text-red-300">
+            <p
+              id="document-rename-error"
+              role="alert"
+              className="mt-1 text-center text-[11px] text-red-300"
+            >
               {renameError}
             </p>
           ) : null}
@@ -240,9 +259,13 @@ export function DocumentNavbar({
                         max-[900px]:bg-transparent
                         max-[900px]:p-0"
               aria-label={`Connection status: ${status}`}
+              aria-live="polite"
               title={status}
             >
-              <span className={`size-2 rounded-full ${STATUS_COLOR[status]}`} aria-hidden="true" />
+              <span
+                className={`size-2 rounded-full ${STATUS_COLOR[status]}`}
+                aria-hidden="true"
+              />
               <TechText className="text-sm normal-case max-[900px]:hidden">
                 {status}
               </TechText>
@@ -254,7 +277,7 @@ export function DocumentNavbar({
             aria-label={`${users.length} other${users.length === 1 ? "" : "s"} online`}
           >
             {users.slice(0, 4).map((onlineUser) => {
-              const identity = collaboratorIdentity(onlineUser)
+              const identity = collaboratorIdentity(onlineUser);
               return (
                 <span
                   key={onlineUser.clientId}
@@ -266,7 +289,7 @@ export function DocumentNavbar({
                 >
                   {identity.name[0]?.toUpperCase()}
                 </span>
-              )
+              );
             })}
             {users.length > 4 ? (
               <span
@@ -277,9 +300,8 @@ export function DocumentNavbar({
               </span>
             ) : null}
           </div>
-
         </div>
       </nav>
     </header>
-  )
+  );
 }

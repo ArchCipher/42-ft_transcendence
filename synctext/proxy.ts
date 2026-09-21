@@ -19,6 +19,10 @@ const PUBLIC_PREFIXES = [
   // temporary document at /doc/:id. Both routes enforce access server-side.
   "/sync",
   "/doc",
+  "/terms",
+  "/privacy",
+  "/cookies",
+  "/accessibility",
 ];
 
 export function proxy(request: NextRequest) {
