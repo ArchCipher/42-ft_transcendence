@@ -125,7 +125,8 @@ export default function PrivacyPage() {
           <strong>Session cookie</strong> (essential): <code>HttpOnly</code>,{" "}
           <code>SameSite=Strict</code>, <code>Secure</code> in production.
           Stores an opaque token (only its hash is stored server-side) to keep
-          you signed in. Expires after 7 days of inactivity.
+          you signed in. Lifetime 7 days from creation and invalidated after 2
+          hours of inactivity.
         </li>
         <li>
           <strong>Email verification / password-reset tokens</strong> are not
@@ -283,9 +284,7 @@ export default function PrivacyPage() {
           <strong>Withdraw consent</strong> where consent is the legal basis.
         </li>
       </ul>
-      <p>
-        To exercise any of these delete your account from the app.
-      </p>
+      <p>To exercise any of these delete your account from the app.</p>
 
       <h2 id="children">10. Children</h2>
       <p>

@@ -55,7 +55,10 @@ export default async function CookiesPage() {
             <td>
               <strong>Duration</strong>
             </td>
-            <td>Expires after 7 days of inactivity</td>
+            <td>
+              Lifetime 7 days from creation. Additionally, sessions are
+              invalidated server-side after 2 hours without activity.
+            </td>
           </tr>
           <tr>
             <td>
