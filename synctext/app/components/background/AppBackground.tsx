@@ -3,6 +3,17 @@
 import { useEffect, useState } from "react";
 import styles from "./AppBackground.module.css";
 
+type GalaxyParticlesComponent =
+  (typeof import("./GalaxyParticles"))["default"];
+
+type IdleCallbackWindow = Window & {
+  requestIdleCallback?: (
+    callback: IdleRequestCallback,
+    options?: IdleRequestOptions,
+  ) => number;
+  cancelIdleCallback?: (handle: number) => void;
+};
+
 function deterministicRandom(seed: number) {
   let x = seed | 0;
 
@@ -112,98 +123,62 @@ function Sparkles() {
   );
 }
 
-const GALAXY_COLORS = [
-  "#ffffff",
-  "#f5eaff",
-  "#d87cff",
-  "#ff4fb8",
-  "#ff6470",
-  "#9f6cff",
-];
-
 function Galaxy() {
-  const particles = Array.from({ length: 350 }, (_, i) => {
-    const t = deterministicRandom(i * 11 + 1);
+  const [GalaxyParticles, setGalaxyParticles] =
+    useState<GalaxyParticlesComponent | null>(null);
 
-    // più particelle concentrate verso il centro
-    const radius = Math.pow(t, 1.7) * 40;
-
-    // 3 bracci principali
-    const arm = i % 3;
-
-    const angle =
-    arm * ((Math.PI * 2) / 3) +
-    t * Math.PI * 5 +
-    (deterministicRandom(i * 11 + 2) - 0.5) * 0.2;
-
-    const spread =
-      (deterministicRandom(i * 11 + 3) - 0.5) *
-      (3 + radius * 0.15);
-
-    const rawX =
-      50 +
-      Math.cos(angle) * radius * 1.25 +
-      spread;
-
-    const rawY =
-      50 +
-      Math.sin(angle) * radius * 0.62 +
-      spread * 0.4;
-
-    const x = Number(rawX.toFixed(3));
-    const y = Number(rawY.toFixed(3));
-
-    const centerStrength = 1 - radius / 48;
-
-    const size = Number(
-      (
-        0.5 +
-        deterministicRandom(i * 11 + 4) * 1.8 +
-        centerStrength * 0.8
-      ).toFixed(3)
+  useEffect(() => {
+    const idleWindow = window as IdleCallbackWindow;
+    const mediaQuery = window.matchMedia(
+      "(min-width: 1024px) and (prefers-reduced-motion: no-preference)",
     );
+    let cancelled = false;
+    let idleCallbackId: number | undefined;
+    let timeoutId: number | undefined;
 
-    const opacity = Number(
-      (
-        0.25 +
-        deterministicRandom(i * 11 + 5) * 0.55 +
-        centerStrength * 0.2
-      ).toFixed(3)
-    );
-
-    return {
-      id: i,
-      x,
-      y,
-      size,
-      opacity,
-      color:
-        GALAXY_COLORS[
-          Math.floor(
-            deterministicRandom(i * 11 + 6) *
-              GALAXY_COLORS.length
-          )
-        ],
+    const loadParticles = () => {
+      void import("./GalaxyParticles").then(({ default: component }) => {
+        if (!cancelled && mediaQuery.matches) {
+          setGalaxyParticles(() => component);
+        }
+      });
     };
-  });
+
+    const updateGalaxy = () => {
+      if (!mediaQuery.matches) {
+        setGalaxyParticles(null);
+        return;
+      }
+
+      if (idleWindow.requestIdleCallback) {
+        idleCallbackId = idleWindow.requestIdleCallback(loadParticles, {
+          timeout: 1500,
+        });
+      } else {
+        timeoutId = window.setTimeout(loadParticles, 1500);
+      }
+    };
+
+    updateGalaxy();
+    mediaQuery.addEventListener("change", updateGalaxy);
+
+    return () => {
+      cancelled = true;
+      mediaQuery.removeEventListener("change", updateGalaxy);
+
+      if (idleCallbackId !== undefined) {
+        idleWindow.cancelIdleCallback?.(idleCallbackId);
+      }
+
+      if (timeoutId !== undefined) {
+        window.clearTimeout(timeoutId);
+      }
+    };
+  }, []);
 
   return (
     <div className={styles.galaxy} aria-hidden="true">
-      {particles.map((particle) => (
-        <span
-          key={particle.id}
-          className={styles.galaxyParticle}
-          style={{
-            left: `${particle.x}%`,
-            top: `${particle.y}%`,
-            width: particle.size,
-            height: particle.size,
-            opacity: particle.opacity,
-            backgroundColor: particle.color,
-          }}
-        />
-      ))}
-      <div className={styles.galaxyCore} />
+      {GalaxyParticles && <GalaxyParticles />}
     </div>
   );
 }
