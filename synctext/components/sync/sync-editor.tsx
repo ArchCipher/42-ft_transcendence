@@ -8,29 +8,21 @@ import {
   useHocuspocusConnectionStatus,
   useHocuspocusProvider,
 } from "@hocuspocus/provider-react"
-import { SessionGuard } from "@/hooks/use-session-guard"
 import { AnyExtension, useEditor } from "@tiptap/react"
-import { useEffect, useState } from "react"
+import { SessionGuard } from "@/hooks/use-session-guard"
 
 import Collaboration from "@tiptap/extension-collaboration"
 import CollaborationCaret from "@tiptap/extension-collaboration-caret"
 
 import { SimpleEditorView, simpleEditorConfig, baseTiptapExtensions } from "@/components/tiptap-templates/simple/simple-editor-view"
 import { DocumentNavbar } from "@/app/doc/[id]/navbar"
-import { GuestDocumentNavbar } from "@/app/doc/[id]/guest-navbar"
 import { getLocalUser } from "@/lib/sync/sync-user"
 import { Footer } from "@/components/Footer"
 
 type SyncUser = { name: string; color: string }
 
-export type GuestEditorState = {
-  editExpiresAt: string
-  expiresAt: string
-}
-
-// nginx proxies /collab to Hocuspocus on the same host, kept same-origin so it
-// works behind the app's CSP and TLS setup. Guarded for SSR: real value only
-// matters once the provider actually connects, in the browser.
+// nginx proxies /collab to Hocuspocus on the same origin, so this works behind
+// the app's CSP and TLS. Only ever read in the browser, when the provider connects.
 function getCollabUrl() {
   if (typeof window === "undefined") return ""
   const protocol = window.location.protocol === "https:" ? "wss" : "ws"
@@ -43,115 +35,57 @@ type SyncEditorSessionProps = {
   docId: string
   title: string
   user: SyncUser
-  canRename: boolean
-  readOnly: boolean
-  guestState?: GuestEditorState
+  canEdit: boolean
 }
 
-function SyncEditorSession({ docId, title, user, canRename, readOnly, guestState }: SyncEditorSessionProps) {
+function SyncEditorSession({ docId, title, user, canEdit }: SyncEditorSessionProps) {
   const provider = useHocuspocusProvider()
   const status = useHocuspocusConnectionStatus()
   const users = useHocuspocusAwareness()
-  const others = users.filter((onlineUser) => onlineUser.clientId !== provider.awareness?.clientID)
-  const [guestReadOnly, setGuestReadOnly] = useState(() =>
-    guestState ? Date.now() >= new Date(guestState.editExpiresAt).getTime() : false,
-  )
-  const effectiveReadOnly = readOnly || guestReadOnly
-
-  useEffect(() => {
-    if (!guestState) return
-    const delay = new Date(guestState.editExpiresAt).getTime() - Date.now()
-    // The state initializer already covers an initially locked document.
-    if (delay <= 0) return
-    const timer = window.setTimeout(() => setGuestReadOnly(true), delay)
-    return () => window.clearTimeout(timer)
-  }, [guestState])
-
-  useEffect(() => {
-    if (!guestState) return
-    const delay = new Date(guestState.expiresAt).getTime() - Date.now()
-    if (delay <= 0) {
-      window.location.reload()
-      return
-    }
-    const timer = window.setTimeout(() => window.location.reload(), delay)
-    return () => window.clearTimeout(timer)
-  }, [guestState])
+  // Everyone but us — a fresh Awareness already registers the local client.
+  const others = users.filter((user) => user.clientId !== provider.awareness?.clientID)
 
   const editor = useEditor({
     ...simpleEditorConfig,
+    editable: canEdit,
     // undoRedo off: Collaboration manages history itself, through Yjs.
     extensions: [
       ...baseTiptapExtensions({ undoRedo: false }),
       Collaboration.configure({ document: provider.document }),
       CollaborationCaret.configure({ provider, user }),
     ] as AnyExtension[],
-    editable: !effectiveReadOnly,
   })
 
-  useEffect(() => {
-    editor?.setEditable(!effectiveReadOnly)
-  }, [editor, effectiveReadOnly])
-
-  const editorContents = (
-    <>
-      {guestState ? (
-        <GuestDocumentNavbar
-          docId={docId}
-          initialTitle={title}
-          editExpiresAt={guestState.editExpiresAt}
-          canRename={canRename && !effectiveReadOnly}
-        />
-      ) : (
+  return (
+    <SessionGuard>
       <DocumentNavbar
         docId={docId}
         initialTitle={title}
-        canRename={canRename && !effectiveReadOnly}
+        canRename={canEdit}
         provider={provider}
         status={status}
         users={others}
       />
-      )}
-      <SimpleEditorView editor={editor} showToolbar={!effectiveReadOnly} />
+      <SimpleEditorView editor={editor} showToolbar={canEdit} />
       <Footer />
-    </>
+    </SessionGuard>
   )
-
-  // Guest editors have no authenticated session, so SessionGuard would send
-  // them to the login page before their temporary editing period ends.
-  return guestState ? editorContents : <SessionGuard>{editorContents}</SessionGuard>
 }
 
 // What the server paints, title included. Its markup must stay identical to
 // SyncEditorSession's first render — same empty user list, same "connecting" —
 // or React discards the served HTML instead of hydrating it.
-function StaticEditorShell({
-  docId,
-  title,
-  canRename,
-  readOnly,
-  guestState,
-}: Omit<SyncEditorSessionProps, "user">) {
-  const canEdit = canRename && !readOnly
+function StaticEditorShell({ docId, title, canEdit }: { docId: string; title: string; canEdit: boolean }) {
   return (
     <>
-      {guestState ? (
-        <GuestDocumentNavbar
-          docId={docId}
-          initialTitle={title}
-          editExpiresAt={guestState.editExpiresAt}
-          canRename={canEdit}
-        />
-      ) : (
-        <DocumentNavbar
-          docId={docId}
-          initialTitle={title}
-          canRename={canEdit}
-          provider={null}
-          status="connecting"
-          users={[]}
-        />
-      )}
+      <DocumentNavbar
+        docId={docId}
+        initialTitle={title}
+        canRename={canEdit}
+        provider={null}
+        status="connecting"
+        users={[]}
+      />
       <SimpleEditorView editor={null} showToolbar={canEdit} />
     </>
   )
@@ -161,31 +95,19 @@ type SyncEditorPageProps = {
   docId?: string
   title?: string
   user?: SyncUser
-  canRename?: boolean
-  readOnly?: boolean
-  guestState?: GuestEditorState
+  canEdit?: boolean
 }
 
 export function SyncEditorPage({
   docId = "example-document",
   title = "Untitled Document",
   user,
-  canRename = true,
-  readOnly = false,
-  guestState,
+  canEdit = true,
 }: SyncEditorPageProps) {
   // HocuspocusProviderWebsocket's constructor starts a timer and opens a socket
   // during render, so it must never run on the server: one leak per request.
   if (typeof window === "undefined") {
-    return (
-      <StaticEditorShell
-        docId={docId}
-        title={title}
-        canRename={canRename}
-        readOnly={readOnly}
-        guestState={guestState}
-      />
-    )
+    return <StaticEditorShell docId={docId} title={title} canEdit={canEdit} />
   }
 
   const localUser = user ?? getLocalUser()
@@ -197,9 +119,7 @@ export function SyncEditorPage({
           docId={docId}
           title={title}
           user={localUser}
-          canRename={canRename}
-          readOnly={readOnly}
-          guestState={guestState}
+          canEdit={canEdit}
         />
       </HocuspocusRoom>
     </HocuspocusProviderWebsocketComponent>

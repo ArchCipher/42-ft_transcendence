@@ -48,17 +48,6 @@ export const REGISTER_LIMIT: RateLimitConfig = {
   lockoutMs: ONE_HOUR,
 };
 
-/*
-Guest document creation quota. These requests allocate database rows without
-an authenticated identity, so they need their own small per-network budget.
-Like registration, successful creations are counted against this quota.
-*/
-export const GUEST_DOCUMENT_LIMIT: RateLimitConfig = {
-  windowMs: ONE_HOUR,
-  maxFailures: 10,
-  lockoutMs: ONE_HOUR,
-};
-
 interface Bucket {
   failures: number[]; // timestamps of failed attempts in current window
   lockedUntil: number; // ms the key is blocked (0 = allowed)
@@ -143,7 +132,6 @@ export class MemoryRateLimiter {
 export const ipLimiter = new MemoryRateLimiter(IP_LIMIT);
 export const accountLimiter = new MemoryRateLimiter(ACCOUNT_LIMIT);
 export const registerLimiter = new MemoryRateLimiter(REGISTER_LIMIT);
-export const guestDocumentLimiter = new MemoryRateLimiter(GUEST_DOCUMENT_LIMIT);
 
 /*
 Keys must be namespaced: IPs and accounts share the limiter instance space

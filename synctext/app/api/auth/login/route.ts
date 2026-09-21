@@ -13,15 +13,10 @@ import {
   sessionExpiresAt,
   setSessionCookie,
 } from "@/lib/auth/session";
-import {
-  clearGuestSessionCookie,
-  getGuestSessionToken,
-} from "@/lib/auth/guest-session";
 
 import { prisma as db } from "@synctext/db";
 import { hashForLog } from "@/lib/auth/log";
 import { parseRequest } from "@/lib/auth/parse-request";
-import { claimGuestDocumentForUser } from "@/lib/auth/guest-claim";
 import { hashSessionToken } from "@synctext/shared";
 
 /*
@@ -120,20 +115,7 @@ export async function POST(request: Request) {
         data: { revokedAt: new Date() },
       }); // keep MAX_SESSIONS and revoke other old sessions
   });
-
-  const guestToken = await getGuestSessionToken();
-  const guestClaim = await claimGuestDocumentForUser(guestToken, user.id);
-  if (guestToken) await clearGuestSessionCookie();
   await setSessionCookie(token);
 
-  return Response.json(
-    {
-      ok: true,
-      redirectTo:
-        guestClaim.status === "claimed"
-          ? `/doc/${encodeURIComponent(guestClaim.documentId)}`
-          : "/dashboard",
-    },
-    { status: 200 },
-  );
+  return Response.json({ ok: true }, { status: 200 });
 }

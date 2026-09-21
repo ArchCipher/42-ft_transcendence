@@ -1,14 +1,8 @@
 import { Server } from "@hocuspocus/server";
 import { Database } from "@hocuspocus/extension-database";
 import { CloseEvent } from "@hocuspocus/common";
-import {
-  GUEST_SESSION_COOKIE_NAME,
-  hashGuestSessionToken,
-  hashSessionToken,
-  SESSION_COOKIE_NAME,
-} from "@synctext/shared";
+import { hashSessionToken, SESSION_COOKIE_NAME } from "@synctext/shared";
 import type {
-  Connection,
   onAuthenticatePayload,
   beforeHandleMessagePayload,
   onAwarenessUpdatePayload,
@@ -37,31 +31,19 @@ const WRITE_REVOKED: CloseEvent = {
 };
 
 type RecheckResult = "ok" | "session-revoked" | "write-revoked";
-type AuthCredential =
-  | { kind: "user"; tokenHash: string }
-  | { kind: "guest"; guestTokenHash: string };
-type VerifiedAccess = {
-  actor: { kind: "user"; userId: string } | { kind: "guest"; guestSessionId: string };
-  readOnly: boolean;
-  editExpiresAt?: string;
-  expiresAt?: string;
-};
 
 // context attached to every connection once authenticated
 type AuthContext = {
-  credential: AuthCredential;
-  actor: VerifiedAccess["actor"];
+  tokenHash: string;
+  userId: string;
   connectionReadOnly: boolean;
   lastSessionCheck: number; // ms timestamp
-  // For guest connections this is also the exact edit-lock / expiry boundary,
-  // preventing the normal 30-second cache from extending write access.
-  nextAccessCheckAt: number;
-  guestRecheckTimer?: ReturnType<typeof setTimeout>;
 };
 
-async function verifyAccess(data: AuthCredential & {
+async function verifySession(data: {
+  tokenHash: string;
   documentName: string;
-}): Promise<VerifiedAccess | null> {
+}) {
   const response = await fetch(`${webUrl}/api/internal/auth/verify`, {
     method: "POST",
     headers: {
@@ -73,24 +55,7 @@ async function verifyAccess(data: AuthCredential & {
   if (!response.ok) return null;
   const body = await response.json();
   if (!body.valid) return null;
-  if (
-    !body.actor ||
-    (body.actor.kind !== "user" && body.actor.kind !== "guest") ||
-    typeof body.readOnly !== "boolean"
-  ) {
-    return null;
-  }
-  return body as VerifiedAccess;
-}
-
-function nextAccessCheckAt(verified: VerifiedAccess): number {
-  const normalRecheck = Date.now() + SESSION_RECHECK_MS;
-  if (verified.actor.kind !== "guest") return normalRecheck;
-
-  const boundary = verified.readOnly
-    ? Date.parse(verified.expiresAt ?? "")
-    : Date.parse(verified.editExpiresAt ?? "");
-  return Number.isFinite(boundary) ? Math.min(normalRecheck, boundary) : normalRecheck;
+  return body as { userId: string; readOnly: boolean };
 }
 
 /*
@@ -100,8 +65,8 @@ async function recheckAccess(
   ctx: AuthContext,
   documentName: string,
 ): Promise<RecheckResult> {
-  const verified = await verifyAccess({
-    ...ctx.credential,
+  const verified = await verifySession({
+    tokenHash: ctx.tokenHash,
     documentName,
   });
   if (!verified) return "session-revoked";
@@ -109,38 +74,7 @@ async function recheckAccess(
   const wasWritable = !ctx.connectionReadOnly;
   ctx.connectionReadOnly = verified.readOnly;
   ctx.lastSessionCheck = Date.now();
-  ctx.nextAccessCheckAt = nextAccessCheckAt(verified);
   return wasWritable && verified.readOnly ? "write-revoked" : "ok";
-}
-
-function scheduleGuestRecheck(
-  connection: Connection<AuthContext>,
-  ctx: AuthContext,
-  documentName: string,
-) {
-  if (ctx.credential.kind !== "guest") return;
-  if (ctx.guestRecheckTimer) clearTimeout(ctx.guestRecheckTimer);
-
-  const delay = Math.max(0, ctx.nextAccessCheckAt - Date.now());
-  ctx.guestRecheckTimer = setTimeout(async () => {
-    try {
-      const result = await recheckAccess(ctx, documentName);
-      if (result === "session-revoked") {
-        connection.close(SESSION_REVOKED);
-        return;
-      }
-      if (result === "write-revoked") {
-        // Reconnect so Hocuspocus sends the read-only auth state to the client.
-        connection.close(WRITE_REVOKED);
-        return;
-      }
-      scheduleGuestRecheck(connection, ctx, documentName);
-    } catch {
-      // Internal verification is security-critical: fail closed if it cannot
-      // be reached rather than letting a temporary document stay writable.
-      connection.close(SESSION_REVOKED);
-    }
-  }, delay);
 }
 
 const server = new Server({
@@ -150,32 +84,20 @@ const server = new Server({
   /*
 Runs once, when HTTP connection is upgraded to Websocket and the client sends
 its auth message.
-The session and guest cookies are carried in the upgrade request headers,
-so we parse them there. Hocuspocus's own 'token' is not used.
+The session cookie is carried in the upgrade request headers,
+so we parse it from there. Hocuspocus's own 'token' is not used, we only
+authenticate via the session cookie.
 */
   async onAuthenticate(data: onAuthenticatePayload) {
     const { documentName, requestHeaders, connectionConfig } = data;
 
-    const cookieHeader = requestHeaders.get("cookie");
-    const sessionToken = parseCookie(cookieHeader, SESSION_COOKIE_NAME);
-    const guestToken = parseCookie(cookieHeader, GUEST_SESSION_COOKIE_NAME);
+    // parse session cookie from upgrade request headers
+    const cookieHeader = requestHeaders.get("cookie"); // "session=abc123"
+    const token = parseSessionCookie(cookieHeader);
+    if (!token) throw UNAUTHENTICATED;
 
-    // A signed-in account takes precedence only when it is authorized for this
-    // document. If it is not, the browser's still-valid guest document can be
-    // used until the normal login claim flow transfers it.
-    let credential: AuthCredential | null = null;
-    let verified: VerifiedAccess | null = null;
-    if (sessionToken) {
-      credential = { kind: "user", tokenHash: hashSessionToken(sessionToken) };
-      verified = await verifyAccess({ ...credential, documentName });
-    }
-    if (!verified && guestToken) {
-      credential = {
-        kind: "guest",
-        guestTokenHash: hashGuestSessionToken(guestToken),
-      };
-      verified = await verifyAccess({ ...credential, documentName });
-    }
+    const tokenHash = hashSessionToken(token);
+    const verified = await verifySession({ tokenHash, documentName });
     if (!verified) throw UNAUTHENTICATED;
 
     // enforce readOnly at connection level
@@ -183,11 +105,10 @@ so we parse them there. Hocuspocus's own 'token' is not used.
     connectionConfig.isAuthenticated = true;
 
     return {
-      credential: credential!,
-      actor: verified.actor,
+      tokenHash,
+      userId: verified.userId,
       connectionReadOnly: verified.readOnly,
       lastSessionCheck: Date.now(),
-      nextAccessCheckAt: nextAccessCheckAt(verified),
     } satisfies AuthContext;
   },
 
@@ -196,7 +117,8 @@ so we parse them there. Hocuspocus's own 'token' is not used.
     const ctx = data.context as AuthContext | undefined;
     if (!ctx) throw UNAUTHENTICATED;
 
-    if (Date.now() < ctx.nextAccessCheckAt) return;
+    // skip the 30s cache window
+    if (Date.now() - ctx.lastSessionCheck < SESSION_RECHECK_MS) return;
 
     // revalidate session against the DB (revocation / expiry)
     const result = await recheckAccess(ctx, data.documentName);
@@ -214,7 +136,7 @@ so we parse them there. Hocuspocus's own 'token' is not used.
   async onAwarenessUpdate(data: onAwarenessUpdatePayload) {
     const ctx = data.connection?.context as AuthContext | undefined;
     if (!ctx) return; // connection triggered on non-connection source
-    if (Date.now() < ctx.nextAccessCheckAt) return;
+    if (Date.now() - ctx.lastSessionCheck < SESSION_RECHECK_MS) return;
 
     const result = await recheckAccess(ctx, data.documentName);
     const closeEvent =
@@ -224,19 +146,6 @@ so we parse them there. Hocuspocus's own 'token' is not used.
           ? WRITE_REVOKED
           : null;
     if (closeEvent) data.connection?.close(closeEvent);
-  },
-
-  // Guest documents need an actual timer as well as the request-time checks:
-  // otherwise an idle WebSocket could remain connected past a lifecycle
-  // boundary and receive stale awareness/content until its next message.
-  async connected(data) {
-    const ctx = data.context as AuthContext | undefined;
-    if (ctx) scheduleGuestRecheck(data.connection, ctx, data.documentName);
-  },
-
-  async onDisconnect(data) {
-    const ctx = data.context as AuthContext | undefined;
-    if (ctx?.guestRecheckTimer) clearTimeout(ctx.guestRecheckTimer);
   },
 
   // db extension connects hocuspocus's in memory Yjs docs to our persistent Document.ystate storage
@@ -293,14 +202,10 @@ so we parse them there. Hocuspocus's own 'token' is not used.
 
 server.listen();
 
-function parseCookie(cookie: string | null, name: string): string | null {
+function parseSessionCookie(cookie: string | null): string | null {
   if (!cookie) return null;
   const match = cookie.match(
-    new RegExp(`(?:^|;\\s*)${escapeRegExp(name)}=([^;]*)`),
+    new RegExp(`(?:^|;\\s*)${SESSION_COOKIE_NAME}=([^;]*)`),
   );
   return match?.[1] ?? null;
-}
-
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

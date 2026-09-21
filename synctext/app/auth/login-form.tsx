@@ -27,7 +27,7 @@ export default function LoginForm() {
     setLoading(true);
 
     try {
-      const { ok, fields, error, redirectTo } = await authPost("/api/auth/login", {
+      const { ok, fields, error } = await authPost("/api/auth/login", {
         email,
         password,
       });
@@ -42,7 +42,8 @@ export default function LoginForm() {
         return;
       }
 
-      router.push(redirectTo ?? "/dashboard");
+      // Success - redirect to dashboard
+      router.push("/dashboard");
     } catch {
       setError(FALLBACK);
     } finally {

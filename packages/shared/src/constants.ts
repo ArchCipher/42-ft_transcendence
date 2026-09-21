@@ -1,20 +1,9 @@
 // Cookie name must match across both synctext and collab
 export const SESSION_COOKIE_NAME = "session";
 
-// Guest sessions are browser-scoped, temporary, and intentionally separate
-// from authenticated sessions so their cookie can be cleared independently.
-export const GUEST_SESSION_COOKIE_NAME = "guest_session";
-
 // Session lifetime in seconds
 // cookie `maxAge` and DB `expiresAt` both should use this
 export const SESSION_TTL_SECONDS = 7 * 24 * 60 * 60; // 7 days
-
-// A guest may edit for thirty minutes, then has a five-minute read-only window
-// to sign in and claim the document.
-export const GUEST_EDIT_TTL_MS = 30 * 60 * 1000;
-export const GUEST_CLAIM_GRACE_MS = 5 * 60 * 1000;
-export const GUEST_SESSION_TTL_MS = GUEST_EDIT_TTL_MS + GUEST_CLAIM_GRACE_MS;
-export const GUEST_SESSION_TTL_SECONDS = GUEST_SESSION_TTL_MS / 1000;
 
 // Sesssion idle timeout/logout: 2hrs of no activity
 export const IDLE_TIMEOUT_MS = 2 * 60 * 60 * 1000; // 2hr
