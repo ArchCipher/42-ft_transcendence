@@ -1,0 +1,9 @@
+.navbar {
+  --mobile-nav-height: 4.5rem;
+  border-color: oklch(0.75 0.05 270 / 0.22) !important;
+  background: oklch(0.09 0.016 285 / 0.28);
+}
+
+.navbar nav { min-height: 4.5rem; }
+
+.navbarLogo { --logo-size: 1.6rem; }

@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { authPost, FALLBACK } from "../auth/api";
-import InputBox from "@/app/components/form/InputBox";
+import Field from "@/app/components/form/Field";
 import Button from "@/app/components/ui/Button";
 import { DisplayText, TechText } from "@/app/components/typography/Typography";
 
@@ -74,33 +74,20 @@ export default function PasswordResetForm() {
         <DisplayText>Choose a new password</DisplayText>
       </h2>
 
-      <label htmlFor="password">
-        <TechText className="text-xs">Password</TechText>
-      </label>
-
-      <InputBox
+      <Field
         id="password"
+        label="Password"
         type="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
-        aria-invalid={!!fieldErrors?.password}
-        aria-describedby={fieldErrors?.password ? "password-error" : undefined}
+        error={fieldErrors?.password}
         autoComplete="new-password"
       />
 
-      {fieldErrors?.password && (
-        <p id="password-error" className="FieldError">
-          {fieldErrors.password}
-        </p>
-      )}
-
-      <label htmlFor="confirm-password">
-        <TechText className="text-xs">Confirm password</TechText>
-      </label>
-
-      <InputBox
+      <Field
         id="confirm-password"
+        label="Confirm password"
         type="password"
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
@@ -114,11 +101,17 @@ export default function PasswordResetForm() {
         </p>
       )}
 
-      <Button className="AuthSubmitButton" type="submit" disabled={loading || !token}>
+      <Button
+        className="AuthSubmitButton"
+        type="submit"
+        disabled={loading || !token}
+      >
         {loading ? "Resetting..." : "Reset password"}
       </Button>
       <div className="AuthLinks">
-        <Link href="/auth"><TechText className="text-xs">Back to log in</TechText></Link>
+        <Link href="/auth">
+          <TechText className="text-xs">Back to log in</TechText>
+        </Link>
       </div>
     </form>
   );

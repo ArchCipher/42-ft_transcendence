@@ -7,7 +7,7 @@ import { authPost, FALLBACK } from "../auth/api";
 
 import { DisplayText, TechText } from "@/app/components/typography/Typography";
 import Button from "@/app/components/ui/Button";
-import InputBox from "@/app/components/form/InputBox";
+import Field from "@/app/components/form/Field";
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -74,68 +74,42 @@ export default function RegisterForm() {
       <h2 className="AuthFormTitle">
         <DisplayText>Create your account</DisplayText>
       </h2>
-      <label htmlFor="email">
-        <TechText className="text-xs">Email</TechText>
-      </label>
-      <InputBox
+      <Field
         id="email"
+		label="Email"
         type="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
-        aria-invalid={!!fieldErrors?.email}
-        aria-describedby={fieldErrors?.email ? "email-error" : undefined}
+		error={fieldErrors?.email}
         autoComplete="email"
       />
-      {fieldErrors?.email && (
-        <p id="email-error" className="FieldError">
-          <TechText className="text-xs">{fieldErrors.email}</TechText>
-        </p>
-      )}
 
-      <label htmlFor="username">
-        <TechText className="text-xs">Username</TechText>
-      </label>
-      <InputBox
+      <Field
         id="username"
+		label="Username"
         value={username}
         onChange={(e) => setUsername(e.target.value)}
         maxLength={32}
         required
-        aria-invalid={!!fieldErrors?.username}
-        aria-describedby={fieldErrors?.username ? "username-error" : undefined}
+		error={fieldErrors?.username}
         autoComplete="username"
       />
-      {fieldErrors?.username && (
-        <p id="username-error" className="FieldError">
-          <TechText className="text-xs">{fieldErrors.username}</TechText>
-        </p>
-      )}
 
-      <label htmlFor="password">
-        <TechText className="text-xs">Password</TechText>
-      </label>
-      <InputBox
+      <Field
         id="password"
+		label="Password"
         type={showPassword ? "text" : "password"}
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
-        aria-invalid={!!fieldErrors?.password}
-        aria-describedby={fieldErrors?.password ? "password-error" : undefined}
+		error={fieldErrors?.password}
         autoComplete="new-password"
       />
-      {fieldErrors?.password && (
-        <p id="password-error" className="FieldError">
-          <TechText className="text-xs">{fieldErrors.password}</TechText>
-        </p>
-      )}
 
-      <label htmlFor="confirm-password">
-        <TechText className="text-xs">Confirm password</TechText>
-      </label>
-      <InputBox
+      <Field
         id="confirm-password"
+		label="Confirm password"
         type={showPassword ? "text" : "password"}
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}

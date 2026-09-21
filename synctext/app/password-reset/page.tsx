@@ -5,7 +5,7 @@ import AuthPageShell from "@/app/components/auth/AuthPageShell";
 
 export default function PasswordReset() {
   return (
-    <AuthPageShell>
+    <AuthPageShell >
       <Suspense fallback={null}>
         <PasswordResetForm />
       </Suspense>

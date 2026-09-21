@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authPost, FALLBACK } from "../auth/api";
 import Button from "@/app/components/ui/Button";
-import InputBox from "@/app/components/form/InputBox";
+import Field from "@/app/components/form/Field";
 import { DisplayText, TechText } from "@/app/components/typography/Typography";
 
 export default function ForgotPasswordForm() {
@@ -59,26 +59,16 @@ export default function ForgotPasswordForm() {
         <DisplayText>Reset your password</DisplayText>
       </h2>
 
-      <label htmlFor="email">
-        <TechText className="text-xs">Email</TechText>
-      </label>
-
-      <InputBox
+      <Field
         id="email"
+        label="Email"
         type="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
-        aria-invalid={!!fieldErrors?.email}
-        aria-describedby={fieldErrors?.email ? "email-error" : undefined}
+        error={fieldErrors?.email}
         autoComplete="email"
       />
-
-      {fieldErrors?.email && (
-        <p id="email-error" className="FieldError">
-          {fieldErrors.email}
-        </p>
-      )}
 
       {error && (
         <p className="FormError" role="alert">
@@ -90,7 +80,9 @@ export default function ForgotPasswordForm() {
         {loading ? "Sending..." : "Send password reset email"}
       </Button>
       <div className="AuthLinks AuthSingleLink">
-        <Link href="/auth"><TechText className="text-xs">Back to log in</TechText></Link>
+        <Link href="/auth">
+          <TechText className="text-xs">Back to log in</TechText>
+        </Link>
       </div>
     </form>
   );

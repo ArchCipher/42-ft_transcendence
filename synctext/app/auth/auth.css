@@ -9,7 +9,7 @@
   color: var(--auth-ink);
 }
 
-.AuthNavbar {
+/*.AuthNavbar {
   border-color: oklch(0.75 0.05 270 / 0.22) !important;
   background: oklch(0.09 0.016 285 / 0.28);
 }
@@ -27,7 +27,7 @@
   border-color: var(--auth-signal) !important;
   background: oklch(0.28 0.07 250 / 0.78) !important;
   box-shadow: 0 0 1rem oklch(0.64 0.15 250 / 0.2) !important;
-}
+}*/
 
 .AuthPage {
   display: flex;
@@ -106,8 +106,7 @@
   text-decoration: underline;
 }
 
-.AuthLinks a:focus-visible,
-.AuthNavLink:focus-visible {
+.AuthLinks a:focus-visible {
   outline: 2px solid oklch(0.9 0.1 245);
   outline-offset: 3px;
 }
@@ -168,12 +167,11 @@
 }
 
 @media (max-width: 700px) {
-  .AuthNavbarLogo { --logo-size: 1.35rem; }
   .AuthPage { align-items: flex-start; padding-top: 3.5rem; }
   .AuthPanel { padding: 1.5rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .AuthNavLink, .AuthLinks a, .AuthSubmitButton { transition: none; }
+  .AuthLinks a, .AuthSubmitButton { transition: none; }
   .AuthSubmitButton:hover:not(:disabled) { transform: none; }
 }

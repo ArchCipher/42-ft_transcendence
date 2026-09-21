@@ -276,7 +276,6 @@ export function SimpleEditorView({
   showToolbar?: boolean
 }) {
   const isMobile = useIsBreakpoint()
-
   const [mobileView, setMobileView] = useState<"main" | "highlighter" | "link">(
     "main"
   )

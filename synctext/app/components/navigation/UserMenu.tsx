@@ -6,9 +6,8 @@ import { TechText } from "@/app/components/typography/Typography";
 import "./UserMenu.css";
 import { useRouter } from "next/navigation";
 import { LOGGED_OUT_URL, logoutClient } from "@/lib/auth/session-state";
-import { type UserProps } from "./dashboard-client";
 
-export default function UserMenu({ username }: UserProps) {
+export default function UserMenu({ username }: {username:string}) {
   const router = useRouter();
   return (
     <div className="UserMenuContainer">

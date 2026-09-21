@@ -24,7 +24,7 @@ export default function Button({
   disabled = false,
   withArrow = false,
   compact = false,
-  className,
+  className = "",
   onClick,
 }: ButtonProps) {
   const classes = cn(
