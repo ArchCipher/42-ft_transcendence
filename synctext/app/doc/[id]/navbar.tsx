@@ -194,7 +194,7 @@ export function DocumentNavbar({
                           max-[900px]:w-full
                           max-[900px]:max-w-none
                           max-[900px]:justify-center
-                          max-[900px]:px-0"
+                          max-[900px]:px-1"
               title={canRename ? "Rename document" : "You have view-only access"}
             >
               <span className="min-[901px]:hidden">
