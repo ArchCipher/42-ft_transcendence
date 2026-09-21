@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { DisplayText, TechText } from "@/app/components/typography/Typography";
 
 type Status = "verifying" | "success" | "error";
 
@@ -42,10 +44,27 @@ export default function VerifyEmailForm({ token }: { token: string }) {
   }, [token]);
 
   return (
-    <main>
-      {status === "verifying" && <p>Confirming your email...</p>}
-      {status === "success" && <p role="status">Your email has been verified.</p>}
-      {status === "error" && <p className="FormError" role="alert">{error}</p>}
-    </main>
+    <section className="AuthForm" aria-live="polite">
+      <h1 className="AuthFormTitle">
+        <DisplayText>
+          {status === "success" ? "You’re verified." : "Confirm your email."}
+        </DisplayText>
+      </h1>
+      {status === "verifying" && (
+        <p className="AuthStatus">Confirming your email…</p>
+      )}
+      {status === "success" && (
+        <>
+          <p className="AuthStatus" role="status">Your email is confirmed.</p>
+          <div className="AuthLinks"><Link href="/auth"><TechText className="text-xs">Continue to log in</TechText></Link></div>
+        </>
+      )}
+      {status === "error" && (
+        <>
+          <p className="FormError" role="alert">{error}</p>
+          <div className="AuthLinks"><Link href="/auth"><TechText className="text-xs">Back to log in</TechText></Link></div>
+        </>
+      )}
+    </section>
   );
 }

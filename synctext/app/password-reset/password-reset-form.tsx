@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { authPost, FALLBACK } from "../auth/api";
 import Box from "@/app/components/form/Box";
@@ -80,7 +81,6 @@ export default function PasswordResetForm() {
       <Box
         id="password"
         type="password"
-        placeholder="New Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
@@ -102,7 +102,6 @@ export default function PasswordResetForm() {
       <Box
         id="confirm-password"
         type="password"
-        placeholder="Confirm Password"
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
         required
@@ -115,9 +114,12 @@ export default function PasswordResetForm() {
         </p>
       )}
 
-      <Button type="submit" disabled={loading || !token}>
+      <Button className="AuthSubmitButton" type="submit" disabled={loading || !token}>
         {loading ? "Resetting..." : "Reset password"}
       </Button>
+      <div className="AuthLinks">
+        <Link href="/auth"><TechText className="text-xs">Back to log in</TechText></Link>
+      </div>
     </form>
   );
 }

@@ -1,63 +1,179 @@
+.AuthExperience {
+  --auth-ink: oklch(0.94 0.012 285);
+  --auth-muted: oklch(0.76 0.025 285);
+  --auth-signal: oklch(0.8 0.1 250);
+  --auth-surface: oklch(0.14 0.022 285 / 0.9);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  color: var(--auth-ink);
+}
+
+.AuthNavbar {
+  border-color: oklch(0.75 0.05 270 / 0.22) !important;
+  background: oklch(0.09 0.016 285 / 0.28);
+}
+
+.AuthNavbar nav { min-height: 4.5rem; }
+.AuthNavbarLogo { --logo-size: 1.6rem; }
+
+.AuthNavLink {
+  border-color: oklch(0.7 0.1 250 / 0.62) !important;
+  background: oklch(0.2 0.04 250 / 0.58) !important;
+  color: oklch(0.87 0.06 250) !important;
+}
+
+.AuthNavLink:hover:not(:disabled) {
+  border-color: var(--auth-signal) !important;
+  background: oklch(0.28 0.07 250 / 0.78) !important;
+  box-shadow: 0 0 1rem oklch(0.64 0.15 250 / 0.2) !important;
+}
+
 .AuthPage {
   display: flex;
   flex: 1;
   justify-content: center;
-  padding: 56px 20px 80px;
+  align-items: center;
+  padding: clamp(3rem, 8vw, 6rem) 20px clamp(4rem, 9vw, 7rem);
 }
 
 .AuthPanel {
-  width: min(440px, 100%);
-  padding: 30px;
+  width: min(29rem, 100%);
+  padding: clamp(1.5rem, 5vw, 2.5rem);
+  border-color: oklch(0.72 0.08 250 / 0.34) !important;
+  border-radius: 0 !important;
+  background: var(--auth-surface) !important;
+  box-shadow: 0 1.5rem 4rem oklch(0.03 0.02 285 / 0.32);
+  clip-path: polygon(0 0, calc(100% - 1.25rem) 0, 100% 1.25rem, 100% 100%, 0 100%);
 }
 
 .AuthForm {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  color: var(--app-text-main);
+  gap: 0.875rem;
+  color: var(--auth-ink);
 }
 
 .AuthFormTitle {
-  margin: 0 0 14px;
-  font-size: clamp(1.6rem, 3vw, 2.2rem);
-  line-height: 1;
-  text-align: center;
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 2.75rem);
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+}
+
+.AuthForm label:not(.ShowPassword) {
+  margin-top: 0.375rem;
+  color: var(--auth-ink);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .AuthNotice {
-  width: 100%;
-  padding: 0 16px;
-  background: var(--app-accent);
-  color: #000;
+  width: min(29rem, calc(100% - 2.5rem));
+  margin: 1.25rem auto -1.75rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid oklch(0.8 0.1 250 / 0.72);
+  background: oklch(0.22 0.055 250 / 0.8);
+  color: oklch(0.94 0.035 250);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.75rem;
+  line-height: 1.45;
 }
 
 .AuthLinks {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 15px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding-top: 0.25rem;
+  font-size: 0.82rem;
 }
 
+.AuthSingleLink { justify-content: center; }
+
 .AuthLinks a {
-  color: var(--app-accent);
-  text-align: center;
+  color: var(--auth-signal);
+  text-underline-offset: 0.22em;
+  transition: color 180ms ease;
 }
 
 .AuthLinks a:hover {
+  color: oklch(0.92 0.07 250);
   text-decoration: underline;
+}
+
+.AuthLinks a:focus-visible,
+.AuthNavLink:focus-visible {
+  outline: 2px solid oklch(0.9 0.1 245);
+  outline-offset: 3px;
 }
 
 .FieldError,
 .FormError {
   margin: 0;
-  color: #ff6b6b;
-  font-family: monospace;
-  font-size: 12px;
+  color: oklch(0.78 0.16 25);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.AuthStatus {
+  margin: 0;
+  color: var(--auth-ink);
+  font-size: 0.9rem;
+  line-height: 1.65;
 }
 
 .ShowPassword {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 6px;
+  width: fit-content;
+  min-height: 2.75rem;
+  margin-top: 0.25rem;
+  color: var(--auth-muted);
+  cursor: pointer;
+}
+
+.ShowPassword input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--auth-signal);
+}
+
+.AuthSubmitButton {
+  width: 100%;
+  align-self: stretch;
+  margin-top: 0.5rem;
+  border-color: oklch(0.84 0.12 250);
+  background: oklch(0.8 0.1 250);
+  box-shadow: 0 0 0 1px oklch(0.88 0.08 250 / 0.16), 0 0 1.1rem oklch(0.64 0.15 250 / 0.2);
+  color: oklch(0.15 0.025 250);
+}
+
+.AuthSubmitButton:hover:not(:disabled) {
+  border-color: oklch(0.94 0.07 245);
+  background: oklch(0.88 0.1 245);
+  box-shadow: 0 0 0 2px oklch(0.9 0.08 250 / 0.28), 0 0 1.6rem oklch(0.68 0.16 250 / 0.45);
+  transform: translateY(-2px);
+}
+
+.AuthSubmitButton:focus-visible {
+  outline: 2px solid oklch(0.9 0.1 245);
+  outline-offset: 3px;
+}
+
+@media (max-width: 700px) {
+  .AuthNavbarLogo { --logo-size: 1.35rem; }
+  .AuthPage { align-items: flex-start; padding-top: 3.5rem; }
+  .AuthPanel { padding: 1.5rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .AuthNavLink, .AuthLinks a, .AuthSubmitButton { transition: none; }
+  .AuthSubmitButton:hover:not(:disabled) { transform: none; }
 }

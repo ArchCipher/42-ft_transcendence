@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authPost, FALLBACK } from "../auth/api";
 import Button from "@/app/components/ui/Button";
@@ -65,7 +66,6 @@ export default function ForgotPasswordForm() {
       <Box
         id="email"
         type="email"
-        placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
@@ -86,9 +86,12 @@ export default function ForgotPasswordForm() {
         </p>
       )}
 
-      <Button type="submit" disabled={loading}>
+      <Button className="AuthSubmitButton" type="submit" disabled={loading}>
         {loading ? "Sending..." : "Send password reset email"}
       </Button>
+      <div className="AuthLinks AuthSingleLink">
+        <Link href="/auth"><TechText className="text-xs">Back to log in</TechText></Link>
+      </div>
     </form>
   );
 }
