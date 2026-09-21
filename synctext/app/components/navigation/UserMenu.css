@@ -1,0 +1,69 @@
+.UserMenu {
+  background-color: var(--app-panel-bg);
+  border: 1px solid var(--app-panel-border);
+  border-radius: 10px;
+
+  min-width: 100px;
+  align-items: center;
+
+  text-align: center;
+  padding: 10px 16px;
+
+  color: var(--app-text-main);
+  cursor: pointer;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.UserMenu svg {
+  width: 25px;
+  height: 25px;
+}
+
+.UserMenuContainer {
+  position: relative;
+}
+
+.UserDropdown {
+  position: absolute;
+
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+
+  width: 150px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  background: var(--app-panel-bg);
+  border: 1px solid var(--app-panel-border);
+  border-radius: 10px;
+  backdrop-filter: blur(6px);
+
+  z-index: 10;
+}
+
+.UserDropdownItem {
+  padding: 8px 12px;
+
+  color: var(--app-text-main);
+  background: transparent;
+  border-radius: 6px;
+
+  text-align: center;
+  cursor: pointer;
+}
+
+.UserDropdownItem:hover,
+.UserDropdownItem[data-highlighted] {
+  background: rgba(111, 211, 255, 0.12);
+}
+
+.UserMenuPositioner {
+  z-index: 9999;
+}
