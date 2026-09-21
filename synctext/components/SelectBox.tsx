@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
 
 import Box from "./Box";
@@ -22,12 +22,31 @@ export default function SelectBox({
 }: SelectBoxProps) {
   const [open, setOpen] = useState(false);
 
+  const selectRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        selectRef.current &&
+        !selectRef.current.contains(event.target as Node)
+      ) {
+        setOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   const selected = options.find(
     (option) => option.value === value
   );
 
   return (
-    <div className={styles.select}>
+    <div ref={selectRef} className={styles.select}>
       <Box>
         <button
           type="button"
