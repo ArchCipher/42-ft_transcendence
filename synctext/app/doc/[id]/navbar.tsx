@@ -204,17 +204,11 @@ export function DocumentNavbar({
               </span>
 
               <span className="hidden min-[901px]:inline">
-                <TechText className="text-base normal-case">
+                <span className="font-mono text-base tracking-tight text-white">
                   {truncateTitle(title, 50)}
-                </TechText>
+                </span>
               </span>
-              {canRename ? (
-                <Pencil
-                  aria-hidden="true"
-                  className="shrink-0 text-white/45"
-                  size={14}
-                />
-              ) : null}
+              {canRename ? <Pencil aria-hidden="true" className="shrink-0 text-white/45" size={14} /> : null}
             </button>
           )}
           {renameError ? (
@@ -224,9 +218,9 @@ export function DocumentNavbar({
           ) : null}
         </div>
 
-          <div className="col-start-2 row-start-2 ml-auto flex min-w-0 items-center justify-end gap-2
+          <div className="col-start-3 row-start-1 ml-auto flex min-w-0 items-center justify-end gap-1
                 min-[901px]:col-auto
-                min-[901px]:row-auto">
+                min-[901px]:row-auto min-[901px]:gap-2">
           <SnapshotHistory key={docId} docId={docId} />
 
           {!isEditing ? (
