@@ -150,6 +150,7 @@ function StaticEditorShell({
       />
       )}
       <SimpleEditorView editor={null} showToolbar={canEdit} />
+	  <Footer />
     </>
   )
 }

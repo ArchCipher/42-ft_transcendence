@@ -132,11 +132,6 @@ export function DocumentNavbar({
               >
                 <ArrowLeft aria-hidden="true" size={18} />
               </Link>
-              <div className="hidden min-[901px]:block">
-              <Button href="/dashboard" compact>
-                Dashboard
-              </Button>
-              </div>
             </>
           ) : null}
         </div>

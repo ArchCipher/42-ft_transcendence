@@ -1,26 +1,29 @@
 .UserMenu {
-  background-color: var(--app-panel-bg);
-  border: 1px solid var(--app-panel-border);
-  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  aspect-ratio: 1;
+  flex-shrink: 0;
+  padding: 0;
 
-  min-width: 100px;
-  align-items: center;
-
-  text-align: center;
-  padding: 5px 16px;
-
-  color: var(--app-text-main);
   cursor: pointer;
 
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
+  background-color: var(--app-panel-bg);
+  border: 1px solid rgba(0, 243, 255, 0.45);
+  background: radial-gradient(circle at 50% 30%, rgba(0, 243, 255, 0.18), transparent 62%),
+  #0a1128;
+
+  box-shadow: 0 0 1.2rem rgba(0, 243, 255, 0.22);
+
+  clip-path: polygon(0 0, calc(100% - 0.5rem) 0, 100% 0.5rem, 100% 100%, 0 100%);
 }
 
-.UserMenu svg {
-  width: 25px;
-  height: 25px;
+.UserAvatarInitial{
+	font-family: var(--font-geist-mono), monospace;
+	font-size: 1.1rem;
+	font-weight: 700;
+	color: #00f3ff;
+	text-shadow: 0 0 0.6rem rgba(0, 243, 255, 0.8);
 }
 
 .UserMenuContainer {
@@ -42,7 +45,6 @@
 
   background: var(--app-panel-bg);
   border: 1px solid var(--app-panel-border);
-  border-radius: 10px;
   backdrop-filter: blur(6px);
 
   z-index: 10;
@@ -53,7 +55,6 @@
 
   color: var(--app-text-main);
   background: transparent;
-  border-radius: 6px;
 
   text-align: center;
   cursor: pointer;

@@ -1,6 +1,5 @@
 "use client";
 
-import { User } from "lucide-react";
 import { Menu } from "@base-ui/react/menu";
 import { TechText } from "@/app/components/typography/Typography";
 import "./UserMenu.css";
@@ -12,12 +11,10 @@ export default function UserMenu({ username }: {username:string}) {
   return (
     <div className="UserMenuContainer">
       <Menu.Root modal={false}>
-        <Menu.Trigger className="UserMenu">
-          <User size={25} />
-
-          <TechText className="text-xs max-w-[90px] truncate">
-            {username}
-          </TechText>
+        <Menu.Trigger className="UserMenu" aria-label="Account menu">
+		  <span className="UserAvatarInitial" aria-hidden="true">
+			{(username.trim().charAt(0) || "?").toUpperCase()}
+		  </span>
         </Menu.Trigger>
 
         <Menu.Portal>
