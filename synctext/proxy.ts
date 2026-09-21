@@ -15,6 +15,10 @@ const PUBLIC_PREFIXES = [
   "/verify-email",
   "/forgot-password",
   "/password-reset",
+  // A guest enters through /sync, then continues to their browser-scoped
+  // temporary document at /doc/:id. Both routes enforce access server-side.
+  "/sync",
+  "/doc",
 ];
 
 export function proxy(request: NextRequest) {
