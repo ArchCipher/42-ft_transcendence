@@ -1,5 +1,5 @@
-import Button from "@/components/Button";
-import { DisplayText, BodyText } from "@/components/Typography";
+import Button from "@/app/components/ui/Button";
+import { DisplayText, BodyText } from "@/app/components/typography/Typography";
 
 export function Hero() {
   return (

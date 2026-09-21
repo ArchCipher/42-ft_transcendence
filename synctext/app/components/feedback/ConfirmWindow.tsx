@@ -1,7 +1,7 @@
 "use client";
 import "./ConfirmWindow.css";
 
-import { DisplayText, TechText } from "@/components/Typography";
+import { DisplayText, TechText } from "@/app/components/typography/Typography";
 
 type ConfirmWindowProps = {
   title: string;

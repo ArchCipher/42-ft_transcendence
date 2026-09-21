@@ -2,7 +2,7 @@
 
 import { User } from "lucide-react";
 import { Menu } from "@base-ui/react/menu";
-import { TechText } from "@/components/Typography";
+import { TechText } from "@/app/components/typography/Typography";
 import "./UserMenu.css";
 import { useRouter } from "next/navigation";
 import { LOGGED_OUT_URL, logoutClient } from "@/lib/auth/session-state";

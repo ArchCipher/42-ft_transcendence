@@ -4,9 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authPost, FALLBACK } from "../auth/api";
 
-import { DisplayText, TechText } from "@/components/Typography";
-import Button from "@/components/Button";
-import Box from "@/components/Box";
+import { DisplayText, TechText } from "@/app/components/typography/Typography";
+import Button from "@/app/components/ui/Button";
+import Box from "@/app/components/form/Box";
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -63,13 +63,13 @@ export default function RegisterForm() {
   }
 
   return (
-    <form className="RegisterBox"
+    <form className="AuthForm"
           onSubmit={async (e) => {
           e.preventDefault(); // don't reload the page
           await handleRegister(); // handle it with JS
       }}
     >
-      <h2 className="RegisterTitle">
+      <h2 className="AuthFormTitle">
         <DisplayText>Create your account</DisplayText>
       </h2>
       <label htmlFor="email">

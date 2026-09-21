@@ -3,7 +3,7 @@
 import { ArrowRight, Check, Clock3, MessageSquareText, MousePointer2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { DisplayText, TechText, BodyText, SupportText } from "@/components/Typography";
+import { DisplayText, TechText, BodyText, SupportText } from "@/app/components/typography/Typography";
 
 const features = [
   { number: "01", title: "Write in the same moment", description: "See every keystroke as it happens. No refreshing, no conflicts—just a shared page that keeps pace with the room.", detail: "Live collaboration", icon: MousePointer2 },

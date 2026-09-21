@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { User } from "lucide-react";
 
-import { DisplayText, TechText } from "@/components/Typography";
-import Button from "@/components/Button";
-import Box from "@/components/Box";
+import { DisplayText, TechText } from "@/app/components/typography/Typography";
+import Button from "@/app/components/ui/Button";
+import Box from "@/app/components/form/Box";
 import Image from "next/image";
 import { useRef, useState } from "react";
-import ConfirmWindow from "@/components/ConfirmWindow";
+import ConfirmWindow from "@/app/components/feedback/ConfirmWindow";
 
 export default function ProfileForm() {
   const [username, setUsername] = useState("username");

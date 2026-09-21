@@ -17,7 +17,7 @@ import CollaborationCaret from "@tiptap/extension-collaboration-caret"
 import { SimpleEditorView, simpleEditorConfig, baseTiptapExtensions } from "@/components/tiptap-templates/simple/simple-editor-view"
 import { DocumentNavbar } from "@/app/doc/[id]/navbar"
 import { getLocalUser } from "@/lib/sync/sync-user"
-import { Footer } from "@/components/Footer"
+import { Footer } from "@/app/components/footer/Footer"
 
 type SyncUser = { name: string; color: string }
 

@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { authPost, FALLBACK } from "../auth/api";
-import Box from "@/components/Box";
-import Button from "@/components/Button";
-import { DisplayText, TechText } from "@/components/Typography";
+import Box from "@/app/components/form/Box";
+import Button from "@/app/components/ui/Button";
+import { DisplayText, TechText } from "@/app/components/typography/Typography";
 
 export default function PasswordResetForm() {
   const router = useRouter();
@@ -63,13 +63,13 @@ export default function PasswordResetForm() {
 
   return (
     <form
-      className="PasswordResetBox"
+      className="AuthForm"
       onSubmit={async (e) => {
         e.preventDefault();
         await handlePasswordReset();
       }}
     >
-      <h2 className="PasswordResetTitle">
+      <h2 className="AuthFormTitle">
         <DisplayText>Choose a new password</DisplayText>
       </h2>
 

@@ -1,4 +1,4 @@
-import MobileMenu from "@/components/MobileMenu";
+import MobileMenu from "@/app/components/navigation/MobileMenu";
 
 type NavbarProps = {
   children?: React.ReactNode;

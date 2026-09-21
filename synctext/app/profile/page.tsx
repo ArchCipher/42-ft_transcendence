@@ -1,11 +1,11 @@
 import "./Profile.css";
 import ProfileForm from "./profile-form";
 
-import AppBackground from "@/components/AppBackground";
-import Navbar from "@/components/Navbar";
-import BrandHeader from "@/components/BrandHeader";
-import AppPanel from "@/components/AppPanel";
-import { Footer } from "@/components/Footer";
+import AppBackground from "@/app/components/background/AppBackground";
+import Navbar from "@/app/components/navigation/Navbar";
+import BrandHeader from "@/app/components/header/BrandHeader";
+import AppPanel from "@/app/components/layout/AppPanel";
+import { Footer } from "@/app/components/footer/Footer";
 
 export default async function Profile() {
   return (

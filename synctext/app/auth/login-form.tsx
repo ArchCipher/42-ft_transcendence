@@ -4,9 +4,9 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authPost, FALLBACK } from "./api";
-import { DisplayText, TechText } from "@/components/Typography";
-import Button from "@/components/Button";
-import Box from "@/components/Box";
+import { DisplayText, TechText } from "@/app/components/typography/Typography";
+import Button from "@/app/components/ui/Button";
+import Box from "@/app/components/form/Box";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -53,13 +53,13 @@ export default function LoginForm() {
 
   return (
     <form
-      className="LoginBox"
+      className="AuthForm"
       onSubmit={async (e) => {
         e.preventDefault(); // don't reload the page
         await handleLogin(); // handle it with JS
       }}
     >
-      <h2 className="LoginTitle">
+      <h2 className="AuthFormTitle">
         <DisplayText>
           Access the guide
         </DisplayText>
@@ -127,7 +127,7 @@ export default function LoginForm() {
       <Button type="submit" disabled={loading}>
         {loading ? "Accessing..." : "Login"}
       </Button>
-      <div className="LoginLinks">
+      <div className="AuthLinks">
         <Link href="/register">
           <TechText className="text-xs text-[#6fd3ff]">
             Create account
