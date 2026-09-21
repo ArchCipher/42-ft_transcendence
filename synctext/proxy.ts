@@ -15,10 +15,6 @@ const PUBLIC_PREFIXES = [
   "/verify-email",
   "/forgot-password",
   "/password-reset",
-  "/terms",
-  "/privacy",
-  "/cookies",
-  "/accessibility",
 ];
 
 export function proxy(request: NextRequest) {
