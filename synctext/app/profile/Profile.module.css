@@ -1,0 +1,404 @@
+/* Shell panel (AppPanel) override: glass layer, sharp edges, cut corner */
+:global(.AuthPage) .panel {
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --ink: #f4f2ee;
+  --faint-ink: oklch(0.66 0.02 285);
+  --signal: #00f3ff;
+  --signal-rgb: 0, 243, 255;
+  --base: #05070a;
+  --deep: #0a1128;
+
+  position: relative;
+
+  width: min(32rem, 100%);
+  padding: clamp(1.5rem, 4vw, 2.25rem);
+
+  border-color: rgba(var(--signal-rgb), 0.3);
+  border-radius: 0;
+
+  background:
+    linear-gradient(160deg, rgba(10, 17, 40, 0.9), rgba(5, 7, 10, 0.74));
+
+  backdrop-filter: blur(14px) saturate(140%);
+
+  box-shadow:
+    0 0 3rem rgba(var(--signal-rgb), 0.1),
+    inset 0 1px 0 rgba(var(--signal-rgb), 0.12);
+
+  clip-path: polygon(
+    0 0,
+    calc(100% - 1.6rem) 0,
+    100% 1.6rem,
+    100% 100%,
+    0 100%
+  );
+}
+
+.profileBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+
+  color: var(--ink);
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+}
+
+.headerCopy {
+  flex: 1;
+  min-width: 0;
+}
+
+.kicker {
+  margin: 0 0 var(--space-xs);
+  color: var(--signal);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(2.2rem, 6vw, 3rem);
+  font-weight: 400;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+}
+
+.avatarWrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.avatar {
+  position: relative;
+  display: grid;
+  flex-shrink: 0;
+  width: 4.5rem;
+  aspect-ratio: 1;
+  place-items: center;
+
+  padding: 0;
+  cursor: pointer;
+
+  border: 1px solid rgba(var(--signal-rgb), 0.45);
+  background:
+    radial-gradient(circle at 50% 30%, rgba(var(--signal-rgb), 0.18), transparent 62%),
+    var(--deep);
+
+  box-shadow: 0 0 1.2rem rgba(var(--signal-rgb), 0.22);
+
+  clip-path: polygon(
+    0 0,
+    calc(100% - 0.7rem) 0,
+    100% 0.7rem,
+    100% 100%,
+    0 100%
+  );
+}
+
+.avatar:hover:not(:disabled) .avatarOverlay,
+.avatar:focus-visible .avatarOverlay {
+  opacity: 1;
+}
+
+.avatar:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.avatarOverlay {
+  position: absolute;
+  inset: 0;
+
+  display: grid;
+  place-items: center;
+
+  background: rgba(5, 7, 10, 0.66);
+
+  color: var(--signal);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+
+.avatarMenuBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+}
+
+.avatarMenu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  z-index: 30;
+
+  display: flex;
+  flex-direction: column;
+  min-width: 11.5rem;
+
+  border: 1px solid rgba(var(--signal-rgb), 0.3);
+  background: rgba(10, 17, 40, 0.96);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0.8rem 2rem rgba(0, 0, 0, 0.45);
+}
+
+.avatarMenuItem {
+  padding: 0.6rem 0.9rem;
+
+  border: 0;
+  border-bottom: 1px solid rgba(var(--signal-rgb), 0.15);
+  background: transparent;
+
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.avatarMenuItem:last-child {
+  border-bottom: 0;
+}
+
+.avatarMenuItem:hover {
+  background: rgba(var(--signal-rgb), 0.08);
+  color: var(--signal);
+}
+
+.fileInput {
+  display: none;
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarInitial {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--signal);
+  text-shadow: 0 0 0.6rem rgba(var(--signal-rgb), 0.8);
+}
+
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+/* two badges split the row evenly: badge + badge + gap = one field width */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex: 1 1 0;
+  min-width: 0;
+
+  box-sizing: border-box;
+  padding: 0.3rem 0.6rem;
+
+  border: 1px solid rgba(var(--signal-rgb), 0.34);
+  background: rgba(var(--signal-rgb), 0.07);
+
+  color: var(--faint-ink);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.badge::before {
+  width: 0.45rem;
+  height: 0.45rem;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: oklch(0.7 0.16 145);
+  box-shadow: 0 0 0.5rem oklch(0.7 0.16 145 / 0.7);
+  content: "";
+}
+
+.badgeUnverified::before {
+  background: #ff6b6b;
+  box-shadow: 0 0 0.5rem rgba(255, 107, 107, 0.7);
+}
+
+@media (max-width: 480px) {
+  .metaRow{
+	flex-direction: column;
+	align-items: stretch;
+  }
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.label {
+  margin: 0;
+  color: oklch(0.78 0.06 250);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.fieldError {
+  margin: 0;
+  color: #ff6b6b;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.7rem;
+}
+
+.actionsRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+
+  margin-top: var(--space-xs);
+}
+
+.saveButton {
+  background: var(--signal) !important;
+  border-color: rgba(var(--signal-rgb), 0.9) !important;
+  color: var(--base) !important;
+  box-shadow:
+    0 0 1.1rem rgba(var(--signal-rgb), 0.35),
+    0 0 0 1px rgba(var(--signal-rgb), 0.18) !important;
+}
+
+.saveButton:hover:not(:disabled) {
+  background: oklch(0.94 0.1 197) !important;
+  border-color: oklch(0.94 0.1 197) !important;
+  box-shadow:
+    0 0 1.6rem rgba(var(--signal-rgb), 0.55),
+    0 0 0 2px rgba(var(--signal-rgb), 0.28) !important;
+}
+
+.linkRow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.passwordRow a {
+  color: var(--signal);
+}
+
+.passwordRow a:hover{
+	text-decoration: underline;
+}
+
+.passwordRow {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.passLink {
+  margin-top: var(--space-md);
+  padding: 0;
+  border: 0;
+  background: none;
+
+  color: var(--signal);
+  text-decoration: none;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+}
+
+.passLink:hover {
+  text-decoration: underline;
+}
+
+.passwordForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.divider {
+  height: 1px;
+  border: 0;
+  background: oklch(0.78 0.05 270 / 0.22);
+  margin: var(--space-sm) 0 0;
+}
+
+.zoneRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+}
+
+.dangerButton {
+  box-shadow: 0 0 0.8rem rgba(255, 80, 80, 0.25) !important;
+}
+
+.statusNotice {
+  margin: 0;
+  padding: 0.8rem 1rem;
+
+  border: 1px solid oklch(0.8 0.1 250 / 0.72);
+  background: oklch(0.22 0.055 250 / 0.8);
+
+  color: oklch(0.94 0.035 250);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.statusNoticeError {
+  border-color: oklch(0.72 0.18 20 / 0.72);
+  background: oklch(0.26 0.09 20 / 0.85);
+  color: oklch(0.95 0.06 20);
+}
+
+@media (max-width: 560px) {
+  .actionsRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .actionsRow > * {
+    width: 100%;
+  }
+
+  .zoneRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .saveButton,
+  .saveButton:hover:not(:disabled) {
+    transition: none;
+    transform: none;
+  }
+}
