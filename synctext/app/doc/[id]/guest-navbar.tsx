@@ -2,6 +2,15 @@
 
 import Link from "next/link"
 import { useEffect, useState } from "react"
+import { Check, Clock3, Pencil } from "lucide-react"
+
+import Box from "@/app/components/form/Box"
+import Logo from "@/app/components/header/Logo"
+import { TechText } from "@/app/components/typography/Typography"
+import Button from "@/app/components/ui/Button"
+
+import sharedStyles from "./navbar.module.css"
+import styles from "./guest-navbar.module.css"
 
 type GuestDocumentNavbarProps = {
   docId: string
@@ -15,8 +24,8 @@ function formatTime(seconds: number) {
   return `${minutes}:${String(seconds % 60).padStart(2, "0")}`
 }
 
-// Guest documents intentionally use a pared-back header: editable title,
-// thirty-minute writing timer, and the path to save the document by logging in.
+// The guest header shares the document navbar's visual shell, but replaces
+// account controls with the temporary-session countdown.
 export function GuestDocumentNavbar({
   docId,
   initialTitle,
@@ -25,78 +34,132 @@ export function GuestDocumentNavbar({
 }: GuestDocumentNavbarProps) {
   const [title, setTitle] = useState(initialTitle)
   const [draftTitle, setDraftTitle] = useState(initialTitle)
+  const [isEditing, setIsEditing] = useState(false)
+  const [isRenaming, setIsRenaming] = useState(false)
+  const [renameError, setRenameError] = useState("")
   const [now, setNow] = useState(() => Date.now())
+
+  const editDeadline = new Date(editExpiresAt).getTime()
+  const remainingSeconds = Math.max(0, Math.ceil((editDeadline - now) / 1000))
+  const progress = Math.min(100, Math.max(0, (remainingSeconds / (30 * 60)) * 100))
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 1000)
     return () => window.clearInterval(timer)
   }, [])
 
-  const remainingSeconds = Math.max(
-    0,
-    Math.ceil((new Date(editExpiresAt).getTime() - now) / 1000),
-  )
+  function cancelEditing() {
+    setDraftTitle(title)
+    setRenameError("")
+    setIsEditing(false)
+  }
 
   async function saveTitle() {
     const nextTitle = draftTitle.trim()
-    if (!nextTitle || nextTitle === title || !canRename) {
-      setDraftTitle(title)
+    if (!nextTitle || nextTitle === title) {
+      cancelEditing()
       return
     }
 
-    const response = await fetch(`/api/documents/${encodeURIComponent(docId)}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: nextTitle }),
-    })
-    if (!response.ok) {
-      setDraftTitle(title)
-      return
-    }
+    setIsRenaming(true)
+    setRenameError("")
+    try {
+      const response = await fetch(`/api/documents/${encodeURIComponent(docId)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: nextTitle }),
+      })
+      if (!response.ok) throw new Error("Could not rename document")
 
-    const document = (await response.json()) as { title: string }
-    setTitle(document.title)
-    setDraftTitle(document.title)
+      const document = (await response.json()) as { title: string }
+      setTitle(document.title)
+      setDraftTitle(document.title)
+      setIsEditing(false)
+    } catch {
+      setRenameError("Could not rename document")
+    } finally {
+      setIsRenaming(false)
+    }
   }
 
   return (
-    <header className="relative z-20 border-b border-white/15 bg-[oklch(0.12_0.006_285)] font-mono text-[#f4f2ee]">
-      <nav
-        aria-label="Guest document navigation"
-        className="grid min-h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-3 py-2 sm:px-6"
-      >
-        <time
-          dateTime={`PT${remainingSeconds}S`}
-          aria-label={`${formatTime(remainingSeconds)} left to edit`}
-          className="whitespace-nowrap text-sm tabular-nums text-white/75"
-        >
-          {formatTime(remainingSeconds)}
-        </time>
+    <header className={`${sharedStyles.editorNavbar} ${styles.guestNavbar}`}>
+      <nav aria-label="Temporary document navigation" className={styles.navigation}>
+        <div className={styles.brand}>
+          <Logo className={styles.logo} href="/" />
+        </div>
 
-        <form
-          className="min-w-0"
-          onSubmit={(event) => {
-            event.preventDefault()
-            void saveTitle()
-          }}
-        >
-          <input
-            value={draftTitle}
-            onChange={(event) => setDraftTitle(event.target.value)}
-            onBlur={() => void saveTitle()}
-            disabled={!canRename}
-            maxLength={120}
-            aria-label="Document title"
-            className="min-h-10 w-full bg-transparent px-3 text-center text-sm text-white outline-none placeholder:text-white/35 focus:bg-white/5 disabled:cursor-default"
-          />
-        </form>
+        <div className={styles.titleArea}>
+          {isEditing ? (
+            <form
+              className={styles.renameForm}
+              onSubmit={(event) => {
+                event.preventDefault()
+                void saveTitle()
+              }}
+              onBlur={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget)) cancelEditing()
+              }}
+            >
+              <Box
+                autoFocus
+                value={draftTitle}
+                maxLength={120}
+                disabled={isRenaming}
+                aria-label="Document title"
+                aria-describedby={renameError ? "guest-document-rename-error" : undefined}
+                onChange={(event) => setDraftTitle(event.target.value)}
+                onFocus={(event) => event.currentTarget.select()}
+                onKeyDown={(event) => {
+                  if (event.key === "Escape") cancelEditing()
+                }}
+              />
+              <Button type="submit" compact disabled={isRenaming || !draftTitle.trim()}>
+                <Check aria-hidden="true" size={16} />
+              </Button>
+            </form>
+          ) : (
+            <button
+              type="button"
+              disabled={!canRename}
+              onClick={() => {
+                setDraftTitle(title)
+                setIsEditing(true)
+              }}
+              className={styles.titleButton}
+              title={canRename ? "Rename document" : "Temporary document is read-only"}
+            >
+              <span>{title}</span>
+              {canRename ? <Pencil aria-hidden="true" size={14} /> : null}
+            </button>
+          )}
+          {renameError ? (
+            <p id="guest-document-rename-error" role="alert" className={styles.renameError}>
+              {renameError}
+            </p>
+          ) : null}
+        </div>
 
-        <Link
-          href="/auth"
-          className="border border-white/25 px-3 py-2 text-xs transition-colors hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-        >
-          Log in
-        </Link>
+        <div className={styles.actions}>
+          <div className={styles.countdown} aria-label={`${formatTime(remainingSeconds)} left to edit`}>
+            <div className={styles.countdownMeta}>
+              <Clock3 aria-hidden="true" size={14} />
+              <TechText className={styles.countdownLabel}>
+                {remainingSeconds > 0 ? "Writing window" : "Read only"}
+              </TechText>
+            </div>
+            <time dateTime={`PT${remainingSeconds}S`} className={styles.countdownTime}>
+              {formatTime(remainingSeconds)}
+            </time>
+            <span className={styles.progressTrack} aria-hidden="true">
+              <span className={styles.progressValue} style={{ width: `${progress}%` }} />
+            </span>
+          </div>
+
+          <Link href="/auth" className={styles.loginLink}>
+            <TechText className="text-xs">Log in to save</TechText>
+          </Link>
+        </div>
       </nav>
     </header>
   )
