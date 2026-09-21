@@ -50,9 +50,12 @@ model Document {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Owner relation
-  ownerId   String
-  owner     User     @relation("DocumentOwner", fields: [ownerId], references: [id])
+  // A document belongs either to a registered user or to a temporary guest
+  // session. The database migration enforces that exactly one is present.
+  ownerId        String?
+  owner          User?         @relation("DocumentOwner", fields: [ownerId], references: [id])
+  guestSessionId String?       @unique
+  guestSession   GuestSession? @relation(fields: [guestSessionId], references: [id], onDelete: Cascade)
 
   // Collaboration relation
   collab    DocumentShare[] @relation("Collaborator")
@@ -68,6 +71,19 @@ model DocumentSnapshot {
   document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
   @@index([documentId, createdAt])
+}
+
+model GuestSession {
+  id            String    @id @default(cuid())
+  tokenHash     String    @unique
+  editExpiresAt DateTime
+  expiresAt     DateTime
+  createdAt     DateTime  @default(now())
+
+  document      Document?
+
+  @@index([expiresAt])
+  @@index([editExpiresAt])
 }
 
 model DocumentShare {

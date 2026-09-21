@@ -44,3 +44,10 @@ export function identityFromUser(user: { id: string; username: string }): { name
   const hash = [...user.id].reduce((acc, ch) => acc + ch.charCodeAt(0), 0)
   return { name: user.username, color: COLORS[hash % COLORS.length] }
 }
+
+// Guests do not have user profiles. Keep their collaboration cursor color
+// stable for the temporary session without exposing any token-derived value.
+export function identityFromGuestSession(session: { id: string }): { name: string; color: string } {
+  const hash = [...session.id].reduce((acc, ch) => acc + ch.charCodeAt(0), 0)
+  return { name: "Guest", color: COLORS[hash % COLORS.length] }
+}
