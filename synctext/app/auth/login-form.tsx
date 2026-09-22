@@ -4,9 +4,9 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authPost, FALLBACK } from "./api";
-import { DisplayText, TechText } from "@/components/Typography";
-import Button from "@/components/Button";
-import Box from "@/components/Box";
+import { DisplayText, TechText } from "@/app/components/typography/Typography";
+import Button from "@/app/components/ui/Button";
+import InputBox from "@/app/components/form/InputBox";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -27,7 +27,7 @@ export default function LoginForm() {
     setLoading(true);
 
     try {
-      const { ok, fields, error } = await authPost("/api/auth/login", {
+      const { ok, fields, error, redirectTo } = await authPost("/api/auth/login", {
         email,
         password,
       });
@@ -42,8 +42,7 @@ export default function LoginForm() {
         return;
       }
 
-      // Success - redirect to dashboard
-      router.push("/dashboard");
+      router.push(redirectTo ?? "/dashboard");
     } catch {
       setError(FALLBACK);
     } finally {
@@ -53,15 +52,15 @@ export default function LoginForm() {
 
   return (
     <form
-      className="LoginBox"
+      className="AuthForm"
       onSubmit={async (e) => {
         e.preventDefault(); // don't reload the page
         await handleLogin(); // handle it with JS
       }}
     >
-      <h2 className="LoginTitle">
+      <h2 className="AuthFormTitle">
         <DisplayText>
-          Access the Guide
+          Pick up where you left off.
         </DisplayText>
       </h2>
 
@@ -70,10 +69,9 @@ export default function LoginForm() {
           Email
         </TechText>
       </label>
-      <Box
+      <InputBox
         id="email"
         type="email"
-        placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
@@ -92,10 +90,9 @@ export default function LoginForm() {
           Password
         </TechText>
       </label>
-      <Box
+      <InputBox
         id="password"
         type={showPassword ? "text" : "password"}
-        placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
@@ -124,10 +121,10 @@ export default function LoginForm() {
         </p>
       )}
 
-      <Button type="submit" disabled={loading}>
-        {loading ? "Accessing..." : "Access the Guide"}
+      <Button className="AuthSubmitButton" type="submit" disabled={loading}>
+        {loading ? "Accessing..." : "Login"}
       </Button>
-      <div className="LoginLinks">
+      <div className="AuthLinks">
         <Link href="/register">
           <TechText className="text-xs text-[#6fd3ff]">
             Create account

@@ -7,7 +7,7 @@
   align-items: center;
 
   text-align: center;
-  padding: 10px 16px;
+  padding: 5px 16px;
 
   color: var(--app-text-main);
   cursor: pointer;
@@ -62,4 +62,8 @@
 .UserDropdownItem:hover,
 .UserDropdownItem[data-highlighted] {
   background: rgba(111, 211, 255, 0.12);
+}
+
+.UserMenuPositioner {
+  z-index: 9999;
 }

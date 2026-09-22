@@ -9,6 +9,8 @@ import { Prisma, GroupRole, type PrismaClient } from "@synctext/db";
  */
 
 export type Rights = {
+  /** The group the document is in. Resolving rights at all proves it has one. */
+  groupId: string;
   groupRole: GroupRole;
   /** A DocumentGrant row exists for this member on this document. The row has
    *  no role: its existence means editor. */
@@ -29,23 +31,30 @@ export function documentReadWhere(userId: string): Prisma.DocumentWhereInput {
 // row, so a listing resolves rights without a query per document.
 export function documentAccessSelect(userId: string) {
   return {
-    group: { select: { members: { where: { userId }, select: { role: true } } } },
+    group: {
+      select: { id: true, members: { where: { userId }, select: { role: true } } },
+    },
     grants: { where: { membership: { userId } }, select: { membershipId: true } },
   } satisfies Prisma.DocumentSelect;
 }
 
 type AccessRow = {
-  group: { members: Array<{ role: GroupRole }> };
+  // Null for a guest document, which belongs to a session, not to a group.
+  group: { id: string; members: Array<{ role: GroupRole }> } | null;
   grants: Array<unknown>;
 };
 
 // Pure: reads a row already fetched with documentAccessSelect. Null when the
-// caller is not a member of the group, which callers answer with 404.
+// caller is not a member of the group, which callers answer with 404. A guest
+// document has no group, so it resolves to no rights for every user.
 export function resolveRights(row: AccessRow): Rights | null {
-  const groupRole = row.group.members[0]?.role;
+  const group = row.group;
+  if (!group) return null;
+
+  const groupRole = group.members[0]?.role;
   if (!groupRole) return null;
 
-  return { groupRole, hasGrant: row.grants.length > 0 };
+  return { groupId: group.id, groupRole, hasGrant: row.grants.length > 0 };
 }
 
 // Load the caller's role in one group. Null when they are not a member.

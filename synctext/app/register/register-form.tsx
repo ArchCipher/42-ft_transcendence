@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authPost, FALLBACK } from "../auth/api";
 
-import { DisplayText, TechText } from "@/components/Typography";
-import Button from "@/components/Button";
-import Box from "@/components/Box";
+import { DisplayText, TechText } from "@/app/components/typography/Typography";
+import Button from "@/app/components/ui/Button";
+import InputBox from "@/app/components/form/InputBox";
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -63,22 +64,22 @@ export default function RegisterForm() {
   }
 
   return (
-    <form className="RegisterBox"
-          onSubmit={async (e) => {
-          e.preventDefault(); // don't reload the page
-          await handleRegister(); // handle it with JS
+    <form
+      className="AuthForm"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        await handleRegister();
       }}
     >
-      <h2 className="RegisterTitle">
+      <h2 className="AuthFormTitle">
         <DisplayText>Create your account</DisplayText>
       </h2>
       <label htmlFor="email">
         <TechText className="text-xs">Email</TechText>
       </label>
-      <Box
+      <InputBox
         id="email"
         type="email"
-        placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
@@ -95,11 +96,11 @@ export default function RegisterForm() {
       <label htmlFor="username">
         <TechText className="text-xs">Username</TechText>
       </label>
-      <Box
+      <InputBox
         id="username"
-        placeholder="Username"
         value={username}
         onChange={(e) => setUsername(e.target.value)}
+        maxLength={32}
         required
         aria-invalid={!!fieldErrors?.username}
         aria-describedby={fieldErrors?.username ? "username-error" : undefined}
@@ -114,10 +115,9 @@ export default function RegisterForm() {
       <label htmlFor="password">
         <TechText className="text-xs">Password</TechText>
       </label>
-      <Box
+      <InputBox
         id="password"
         type={showPassword ? "text" : "password"}
-        placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
@@ -134,10 +134,9 @@ export default function RegisterForm() {
       <label htmlFor="confirm-password">
         <TechText className="text-xs">Confirm password</TechText>
       </label>
-      <Box
+      <InputBox
         id="confirm-password"
         type={showPassword ? "text" : "password"}
-        placeholder="Confirm Password"
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
         required
@@ -159,9 +158,12 @@ export default function RegisterForm() {
         </p>
       )}
 
-      <Button type="submit" disabled={loading}>
+      <Button className="AuthSubmitButton" type="submit" disabled={loading}>
         {loading ? "Registering..." : "Register"}
       </Button>
-      </form>
+      <div className="AuthLinks AuthSingleLink">
+        <Link href="/auth"><TechText className="text-xs">Already have an account? Log in</TechText></Link>
+      </div>
+    </form>
   );
 }

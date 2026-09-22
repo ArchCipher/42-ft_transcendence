@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { authPost, FALLBACK } from "../auth/api";
-import Box from "@/components/Box";
-import Button from "@/components/Button";
-import { DisplayText, TechText } from "@/components/Typography";
+import InputBox from "@/app/components/form/InputBox";
+import Button from "@/app/components/ui/Button";
+import { DisplayText, TechText } from "@/app/components/typography/Typography";
 
 export default function PasswordResetForm() {
   const router = useRouter();
@@ -63,13 +64,13 @@ export default function PasswordResetForm() {
 
   return (
     <form
-      className="PasswordResetBox"
+      className="AuthForm"
       onSubmit={async (e) => {
         e.preventDefault();
         await handlePasswordReset();
       }}
     >
-      <h2 className="PasswordResetTitle">
+      <h2 className="AuthFormTitle">
         <DisplayText>Choose a new password</DisplayText>
       </h2>
 
@@ -77,10 +78,9 @@ export default function PasswordResetForm() {
         <TechText className="text-xs">Password</TechText>
       </label>
 
-      <Box
+      <InputBox
         id="password"
         type="password"
-        placeholder="New Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
@@ -99,10 +99,9 @@ export default function PasswordResetForm() {
         <TechText className="text-xs">Confirm password</TechText>
       </label>
 
-      <Box
+      <InputBox
         id="confirm-password"
         type="password"
-        placeholder="Confirm Password"
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
         required
@@ -115,9 +114,12 @@ export default function PasswordResetForm() {
         </p>
       )}
 
-      <Button type="submit" disabled={loading || !token}>
+      <Button className="AuthSubmitButton" type="submit" disabled={loading || !token}>
         {loading ? "Resetting..." : "Reset password"}
       </Button>
+      <div className="AuthLinks">
+        <Link href="/auth"><TechText className="text-xs">Back to log in</TechText></Link>
+      </div>
     </form>
   );
 }

@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authPost, FALLBACK } from "../auth/api";
-import Button from "@/components/Button";
-import Box from "@/components/Box";
-import { DisplayText, TechText } from "@/components/Typography";
+import Button from "@/app/components/ui/Button";
+import InputBox from "@/app/components/form/InputBox";
+import { DisplayText, TechText } from "@/app/components/typography/Typography";
 
 export default function ForgotPasswordForm() {
   const router = useRouter();
@@ -48,13 +49,13 @@ export default function ForgotPasswordForm() {
 
   return (
     <form
-      className="ForgotPasswordBox"
+      className="AuthForm"
       onSubmit={async (e) => {
         e.preventDefault();
         await handleForgotPassword();
       }}
     >
-      <h2 className="ForgotPasswordTitle">
+      <h2 className="AuthFormTitle">
         <DisplayText>Reset your password</DisplayText>
       </h2>
 
@@ -62,10 +63,9 @@ export default function ForgotPasswordForm() {
         <TechText className="text-xs">Email</TechText>
       </label>
 
-      <Box
+      <InputBox
         id="email"
         type="email"
-        placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
@@ -86,9 +86,12 @@ export default function ForgotPasswordForm() {
         </p>
       )}
 
-      <Button type="submit" disabled={loading}>
+      <Button className="AuthSubmitButton" type="submit" disabled={loading}>
         {loading ? "Sending..." : "Send password reset email"}
       </Button>
+      <div className="AuthLinks AuthSingleLink">
+        <Link href="/auth"><TechText className="text-xs">Back to log in</TechText></Link>
+      </div>
     </form>
   );
 }

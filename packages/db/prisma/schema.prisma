@@ -52,8 +52,9 @@ model User {
   friendshipsAsB          Friendship[]              @relation("FriendshipB")
 }
 
-// Every document lives in a group. A private space is created at signup:
-// isPrivateSpace set, exactly one member, no invitations.
+// Every document lives in a group, except an unclaimed guest document. A
+// private space is created at signup: isPrivateSpace set, exactly one member,
+// no invitations.
 model Group {
   id        String   @id @default(cuid())
   name      String   // a constant for a private space; never rendered, the client labels from isPrivateSpace
@@ -94,9 +95,14 @@ model Document {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Group relation
-  groupId String
-  group   Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  // A document belongs either to a group or, while it is still unclaimed, to
+  // a temporary guest session. The database migration enforces that exactly
+  // one is present.
+  groupId String?
+  group   Group?  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  guestSessionId String?       @unique
+  guestSession   GuestSession? @relation(fields: [guestSessionId], references: [id], onDelete: Cascade)
 
   // Display only ("created by X"), carries no right. Null once the account is gone.
   createdById String?
@@ -117,6 +123,21 @@ model DocumentSnapshot {
   document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
   @@index([documentId, createdAt])
+}
+
+// A temporary guest session owns exactly one unclaimed document. Signing in
+// claims that document into the user's private space, which detaches it here.
+model GuestSession {
+  id            String    @id @default(cuid())
+  tokenHash     String    @unique
+  editExpiresAt DateTime
+  expiresAt     DateTime
+  createdAt     DateTime  @default(now())
+
+  document      Document?
+
+  @@index([expiresAt])
+  @@index([editExpiresAt])
 }
 
 // One member's editor access to one document. There is no role column: the row

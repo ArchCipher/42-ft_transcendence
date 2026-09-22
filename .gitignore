@@ -1,6 +1,7 @@
 # Local project material and secrets
 
 en.subject.pdf
+.agents/
 .env
 .env.*
 !.env.example

@@ -1,46 +1,50 @@
-"use client"
+"use client";
 
 import Link from "next/link"
 import { useEffect, useState } from "react"
-import { Check, Pencil } from "lucide-react"
+import { ArrowLeft, Check, Pencil } from "lucide-react"
 
 import type { HocuspocusProvider } from "@hocuspocus/provider"
 import type { CollabUser, ConnectionStatus } from "@hocuspocus/provider-react"
 import { renameDocument_api } from "@/app/dashboard/document/document"
-import { DisplayText, TechText } from "@/components/Typography"
-import Button from "@/components/Button"
-import Box from "@/components/Box"
+import { TechText } from "@/app/components/typography/Typography"
+import Button from "@/app/components/ui/Button"
+import InputBox from "@/app/components/form/InputBox";
 import { SnapshotHistory } from "@/components/sync/snapshot-history"
 
-import styles from "./navbar.module.css"
+import styles from "./navbar.module.css";
 
-type SyncUser = { name: string; color: string }
+type SyncUser = { name: string; color: string };
 
 type DocumentNavbarProps = {
-  docId: string
-  initialTitle: string
-  canRename: boolean
-  provider: HocuspocusProvider | null
-  status: ConnectionStatus
-  users: CollabUser[]
-}
+  docId: string;
+  initialTitle: string;
+  canRename: boolean;
+  provider: HocuspocusProvider | null;
+  status: ConnectionStatus;
+  users: CollabUser[];
+};
 
 const STATUS_COLOR = {
   connected: "bg-emerald-400",
   connecting: "bg-amber-300",
   disconnected: "bg-zinc-500",
-} as const
+} as const;
 
 function collaboratorIdentity({ user }: CollabUser): SyncUser {
-  const identity = (user && typeof user === "object" ? user : {}) as Record<string, unknown>
+  const identity = (user && typeof user === "object" ? user : {}) as Record<
+    string,
+    unknown
+  >;
   return {
-    name: typeof identity.name === "string" && identity.name ? identity.name : "?",
+    name:
+      typeof identity.name === "string" && identity.name ? identity.name : "?",
     color: typeof identity.color === "string" ? identity.color : "#94a3b8",
-  }
+  };
 }
 
 function truncateTitle(title: string, limit: number) {
-  return title.length > limit ? `${title.slice(0, limit)}...` : title
+  return title.length > limit ? `${title.slice(0, limit)}...` : title;
 }
 
 export function DocumentNavbar({
@@ -51,52 +55,54 @@ export function DocumentNavbar({
   status,
   users,
 }: DocumentNavbarProps) {
-  const [title, setTitle] = useState(initialTitle)
-  const [draftTitle, setDraftTitle] = useState(initialTitle)
-  const [isEditing, setIsEditing] = useState(false)
-  const [isRenaming, setIsRenaming] = useState(false)
-  const [renameError, setRenameError] = useState("")
+  const [title, setTitle] = useState(initialTitle);
+  const [draftTitle, setDraftTitle] = useState(initialTitle);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [renameError, setRenameError] = useState("");
 
   // Broadcast only: the map is observed but never read at mount, because
   // Postgres is the source of truth and a rename from the dashboard never
   // touches Yjs — a title stored here can be older than the database.
   useEffect(() => {
-    if (!provider) return
-    const meta = provider.document.getMap<string>("meta")
+    if (!provider) return;
+    const meta = provider.document.getMap<string>("meta");
     const onMetaChange = () => {
-      const nextTitle = meta.get("title")
-      if (nextTitle) setTitle(nextTitle)
-    }
-    meta.observe(onMetaChange)
-    return () => meta.unobserve(onMetaChange)
-  }, [provider])
+      const nextTitle = meta.get("title");
+      if (nextTitle) setTitle(nextTitle);
+    };
+    meta.observe(onMetaChange);
+    return () => meta.unobserve(onMetaChange);
+  }, [provider]);
 
   function cancelEditing() {
-    setDraftTitle(title)
-    setRenameError("")
-    setIsEditing(false)
+    setDraftTitle(title);
+    setRenameError("");
+    setIsEditing(false);
   }
 
   async function saveTitle() {
-    const nextTitle = draftTitle.trim()
+    const nextTitle = draftTitle.trim();
     if (!nextTitle || nextTitle === title) {
-      setDraftTitle(title)
-      setIsEditing(false)
-      return
+      setDraftTitle(title);
+      setIsEditing(false);
+      return;
     }
 
-    setIsRenaming(true)
-    setRenameError("")
+    setIsRenaming(true);
+    setRenameError("");
     try {
-      const renamedDocument = await renameDocument_api(docId, nextTitle)
-      setTitle(renamedDocument.title)
-      setDraftTitle(renamedDocument.title)
-      setIsEditing(false)
-      provider?.document.getMap<string>("meta").set("title", renamedDocument.title)
+      const renamedDocument = await renameDocument_api(docId, nextTitle);
+      setTitle(renamedDocument.title);
+      setDraftTitle(renamedDocument.title);
+      setIsEditing(false);
+      provider?.document
+        .getMap<string>("meta")
+        .set("title", renamedDocument.title);
     } catch {
-      setRenameError("Could not rename document")
+      setRenameError("Could not rename document");
     } finally {
-      setIsRenaming(false)
+      setIsRenaming(false);
     }
   }
 
@@ -106,66 +112,76 @@ export function DocumentNavbar({
     >
       <nav
         aria-label="Document navigation"
-        className="grid min-h-12
-           grid-cols-[1fr_auto]
-           items-center gap-x-2 gap-y-1
-           px-2 py-1
+        className="relative grid min-h-16
+           grid-cols-[auto_minmax(0,1fr)_auto]
+           items-center gap-x-1
+           px-2 py-2
            min-[901px]:min-h-16
            min-[901px]:grid-cols-[auto_minmax(0,1fr)_auto]
            min-[901px]:gap-3
            min-[901px]:px-6
            min-[901px]:py-2">
-        <div className="row-start-2 flex min-w-0 items-center gap-2
-                        min-[901px]:row-auto min-[901px]:gap-5">
-          <Link
-            href="/"
-            aria-label="SyncText home"
-            className="text-[#f4f2ee] no-underline"
-          >
-            <DisplayText className="text-lg min-[901px]:text-2xl">
-              SyncText
-            </DisplayText>
-          </Link>
-
+        <div className="col-start-1 row-start-1 flex min-w-0 items-center
+                        min-[901px]:col-auto min-[901px]:row-auto min-[901px]:gap-5">
           {!isEditing ? (
-            <div className="max-[900px]:scale-75 max-[900px]:origin-left">
+            <>
+              <Link
+                href="/dashboard"
+                aria-label="Back to dashboard"
+                className="inline-flex size-11 items-center justify-center border border-[#6fd3ff]/30 bg-[#101b30] text-[#f4f2ee] transition-colors hover:border-[#6fd3ff] hover:bg-[#152744] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6fd3ff] min-[901px]:hidden"
+              >
+                <ArrowLeft aria-hidden="true" size={18} />
+              </Link>
+              <div className="hidden min-[901px]:block">
+                <Link
+                  href="/"
+                  aria-label="SyncText home"
+                  className="mr-5 font-serif text-2xl text-[#f4f2ee] no-underline"
+                >
+                  SyncText
+                </Link>
               <Button href="/dashboard" compact>
                 Dashboard
               </Button>
-            </div>
+              </div>
+            </>
           ) : null}
         </div>
 
-        <div className="col-span-2 row-start-1 min-w-0
+        <div className="absolute left-1/2 row-start-1 w-[min(42vw,20rem)] min-w-0 -translate-x-1/2
                 min-[901px]:col-span-1
+                min-[901px]:static min-[901px]:w-auto min-[901px]:translate-x-0
                 min-[901px]:row-auto
-                min-[901px]:px-3">
+                min-[901px]:px-3"
+        >
           {isEditing ? (
             <form
               className="mx-auto flex max-w-xl items-center gap-2"
               onSubmit={(event) => {
-                event.preventDefault()
-                void saveTitle()
+                event.preventDefault();
+                void saveTitle();
               }}
               onBlur={(event) => {
                 if (!event.currentTarget.contains(event.relatedTarget)) {
-                  cancelEditing()
+                  cancelEditing();
                 }
               }}
             >
               <div className="min-w-0 flex-1">
-                <Box
+                <InputBox
                   autoFocus
                   value={draftTitle}
-                  maxLength={120}
+                  maxLength={50}
                   disabled={isRenaming}
                   aria-label="Document title"
-                  aria-describedby={renameError ? "document-rename-error" : undefined}
+                  aria-describedby={
+                    renameError ? "document-rename-error" : undefined
+                  }
                   onChange={(event) => setDraftTitle(event.target.value)}
                   onFocus={(event) => event.currentTarget.select()}
                   onKeyDown={(event) => {
                     if (event.key === "Escape") {
-                      cancelEditing()
+                      cancelEditing();
                     }
                   }}
                 />
@@ -184,8 +200,8 @@ export function DocumentNavbar({
               type="button"
               disabled={!canRename}
               onClick={() => {
-                setDraftTitle(title)
-                setIsEditing(true)
+                setDraftTitle(title);
+                setIsEditing(true);
               }}
               className="mx-auto flex min-h-10 max-w-xl items-center gap-2
               px-3 text-left text-sm tracking-tight text-white
@@ -194,33 +210,43 @@ export function DocumentNavbar({
                           max-[900px]:w-full
                           max-[900px]:max-w-none
                           max-[900px]:justify-center
-                          max-[900px]:px-0"
+                          max-[900px]:px-1"
               title={canRename ? "Rename document" : "You have view-only access"}
             >
               <span className="min-[901px]:hidden">
-                <TechText className="text-base normal-case">
-                  {truncateTitle(title, 30)}
-                </TechText>
+                <span className="block truncate font-mono text-base tracking-tight text-white">
+                  {truncateTitle(title, 22)}
+                </span>
               </span>
 
               <span className="hidden min-[901px]:inline">
-                <TechText className="text-base normal-case">
+                <span className="font-mono text-base tracking-tight text-white">
                   {truncateTitle(title, 50)}
-                </TechText>
+                </span>
               </span>
-              {canRename ? <Pencil aria-hidden="true" className="shrink-0 text-white/45" size={14} /> : null}
+              {canRename ? (
+                <Pencil
+                  aria-hidden="true"
+                  className="shrink-0 text-white/45"
+                  size={14}
+                />
+              ) : null}
             </button>
           )}
           {renameError ? (
-            <p id="document-rename-error" role="alert" className="mt-1 text-center text-[11px] text-red-300">
+            <p
+              id="document-rename-error"
+              role="alert"
+              className="mt-1 text-center text-[11px] text-red-300"
+            >
               {renameError}
             </p>
           ) : null}
         </div>
 
-          <div className="col-start-2 row-start-2 ml-auto flex min-w-0 items-center justify-end gap-2
+          <div className="col-start-3 row-start-1 ml-auto flex min-w-0 items-center justify-end gap-1
                 min-[901px]:col-auto
-                min-[901px]:row-auto">
+                min-[901px]:row-auto min-[901px]:gap-2">
           <SnapshotHistory key={docId} docId={docId} />
 
           {!isEditing ? (
@@ -233,9 +259,13 @@ export function DocumentNavbar({
                         max-[900px]:bg-transparent
                         max-[900px]:p-0"
               aria-label={`Connection status: ${status}`}
+              aria-live="polite"
               title={status}
             >
-              <span className={`size-2 rounded-full ${STATUS_COLOR[status]}`} aria-hidden="true" />
+              <span
+                className={`size-2 rounded-full ${STATUS_COLOR[status]}`}
+                aria-hidden="true"
+              />
               <TechText className="text-sm normal-case max-[900px]:hidden">
                 {status}
               </TechText>
@@ -247,7 +277,7 @@ export function DocumentNavbar({
             aria-label={`${users.length} other${users.length === 1 ? "" : "s"} online`}
           >
             {users.slice(0, 4).map((onlineUser) => {
-              const identity = collaboratorIdentity(onlineUser)
+              const identity = collaboratorIdentity(onlineUser);
               return (
                 <span
                   key={onlineUser.clientId}
@@ -259,7 +289,7 @@ export function DocumentNavbar({
                 >
                   {identity.name[0]?.toUpperCase()}
                 </span>
-              )
+              );
             })}
             {users.length > 4 ? (
               <span
@@ -270,9 +300,8 @@ export function DocumentNavbar({
               </span>
             ) : null}
           </div>
-
         </div>
       </nav>
     </header>
-  )
+  );
 }

@@ -1,5 +1,5 @@
-@import '../styles/_variables.scss';
-@import '../styles/_keyframe-animations.scss';
+@import "../styles/_variables.scss";
+@import "../styles/_keyframe-animations.scss";
 
 @import "tailwindcss";
 @import "tw-animate-css";
@@ -85,7 +85,7 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
 
- --app-panel-bg: rgba(13, 40, 87, 0.5);
+  --app-panel-bg: rgba(13, 40, 87, 0.5);
   --app-panel-bg2: rgba(8, 25, 55, 0.6);
   --app-panel-border: rgba(100, 190, 255, 0.2);
   --app-text-main: #ffffff;
@@ -135,5 +135,39 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+@layer utility {
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation: none !important;
+      transition: none !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  .skip-link,
+  .visually-hidden {
+    position: absolute;
+    left: -10000px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  .skip-link:focus {
+    left: 0.5rem;
+    top: 0.5rem;
+    width: auto;
+    height: auto;
+    z-index: 100;
+    padding: 0.5rem 0.75rem;
+    background: var(--background);
+    color: var(--foreground);
+    outline: 2px solid #6fd3ff;
   }
 }

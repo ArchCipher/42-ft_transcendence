@@ -1,11 +1,6 @@
-import "./Login.css";
-import AppBackground from "@/components/AppBackground";
+import "./auth.css";
 import LoginForm from "./login-form";
-
-import Navbar from "@/components/Navbar";
-import BrandHeader from "@/components/BrandHeader";
-import AppPanel from "@/components/AppPanel";
-import { Footer } from "@/components/Footer";
+import AuthPageShell from "@/app/components/auth/AuthPageShell";
 
 // NOTICES displayed in navtab
 const NOTICES: Record<string, string> = {
@@ -26,22 +21,16 @@ export default async function Login({
 
 function LoginPage({ verify }: { verify?: string }) {
   return (
-    <AppBackground>
-      <Navbar />
-      <BrandHeader />
-
-      {verify && NOTICES[verify] && (
-        <div className="NoticeBar" role="status">
-          {NOTICES[verify]}
-        </div>
-      )}
-
-      <div className="LoginPage">
-        <AppPanel className="LoginPanel">
-          <LoginForm />
-        </AppPanel>
-      </div>
-      <Footer />
-    </AppBackground>
+    <AuthPageShell
+      notice={
+        verify && NOTICES[verify] ? (
+          <div className="AuthNotice" role="status">
+            {NOTICES[verify]}
+          </div>
+        ) : undefined
+      }
+    >
+      <LoginForm />
+    </AuthPageShell>
   );
 }

@@ -1,20 +1,76 @@
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import { prisma as db } from "@synctext/db"
-import { canEdit, documentAccessSelect, resolveRights } from "@/lib/permissions"
-import { identityFromUser } from "@/lib/sync/sync-user"
-import { SyncEditorPage } from "@/components/sync/sync-editor"
-import { requireSession } from "@/lib/auth/guard"
+import { hashGuestSessionToken } from "@synctext/shared"
 
-// Opens an existing document for collaborative editing; group members only.
+import { ExpiredGuestDocument } from "./expired-guest-document"
+import { getGuestSessionToken } from "@/lib/auth/guest-session"
+import { getCurrentDocumentActor } from "@/lib/documents/access"
+import { canEdit, documentAccessSelect, resolveRights } from "@/lib/permissions"
+import { identityFromGuestSession, identityFromUser } from "@/lib/sync/sync-user"
+import { SyncEditorPage } from "@/components/sync/sync-editor"
+
+async function ownsExpiredGuestDocument(documentId: string): Promise<boolean> {
+  const token = await getGuestSessionToken()
+  if (!token) return false
+
+  const guestSession = await db.guestSession.findUnique({
+    where: { tokenHash: hashGuestSessionToken(token) },
+    select: {
+      expiresAt: true,
+      document: { select: { id: true } },
+    },
+  })
+
+  // Cleanup may already have cascaded the expired session/document away. The
+  // browser-scoped opaque cookie is enough to show the non-sensitive expired
+  // state; it never grants document access after the database deadline.
+  if (!guestSession) return false
+
+  return (
+    guestSession.expiresAt.getTime() <= Date.now() &&
+    guestSession.document?.id === documentId
+  )
+}
+
+// Opens a document the caller reaches through their group, or the guest
+// document bound to this browser's opaque guest-session cookie.
 export default async function DocPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const session = await requireSession();
+  const actor = await getCurrentDocumentActor()
+
+  if (!actor) {
+    if (await ownsExpiredGuestDocument(id)) return <ExpiredGuestDocument />
+    redirect("/auth")
+  }
+
+  if (actor.kind === "guest") {
+    const document = await db.document.findFirst({
+      where: { id, guestSessionId: actor.guestSessionId },
+      select: { id: true, title: true },
+    })
+    if (!document) notFound()
+
+    return (
+      <SyncEditorPage
+        docId={document.id}
+        title={document.title}
+        user={identityFromGuestSession({ id: actor.guestSessionId })}
+        canRename={actor.mode === "EDITABLE"}
+        readOnly={actor.mode === "READ_ONLY"}
+        guestState={{
+          editExpiresAt: actor.editExpiresAt.toISOString(),
+          expiresAt: actor.expiresAt.toISOString(),
+        }}
+      />
+    )
+  }
 
   const document = await db.document.findUnique({
     where: { id },
     select: {
+      id: true,
       title: true,
-      ...documentAccessSelect(session.user.id),
+      ...documentAccessSelect(actor.userId),
     },
   })
   if (!document) notFound()
@@ -23,12 +79,15 @@ export default async function DocPage({ params }: { params: Promise<{ id: string
   const rights = resolveRights(document)
   if (!rights) notFound()
 
+  const editable = canEdit(rights)
+
   return (
     <SyncEditorPage
-      docId={id}
+      docId={document.id}
       title={document.title}
-      user={identityFromUser(session.user)}
-      canEdit={canEdit(rights)}
+      user={identityFromUser({ id: actor.userId, username: actor.username })}
+      canRename={editable}
+      readOnly={!editable}
     />
   )
 }

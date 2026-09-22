@@ -4,7 +4,9 @@
   - You are about to drop the column `ownerId` on the `Document` table. All the data in the column will be lost.
   - The `role` column on the `User` table would be dropped and recreated. This will lead to data loss if there is data in the column.
   - You are about to drop the `DocumentShare` table. If the table is not empty, all the data it contains will be lost.
-  - Added the required column `groupId` to the `Document` table without a default value. This is not possible if the table is not empty.
+  - Added the column `groupId` to the `Document` table. It is nullable: a guest
+    document has no group, and the hand-written CHECK below keeps groupId and
+    guestSessionId mutually exclusive, replacing the ownerId one.
 
 */
 -- CreateEnum
@@ -19,6 +21,10 @@ CREATE TYPE "FriendshipStatus" AS ENUM ('PENDING', 'ACCEPTED', 'DECLINED');
 -- DropForeignKey
 ALTER TABLE "Document" DROP CONSTRAINT "Document_ownerId_fkey";
 
+-- Dropping ownerId would take this CHECK with it; drop it explicitly so the
+-- replacement below reads as a deliberate swap rather than a side effect.
+ALTER TABLE "Document" DROP CONSTRAINT "Document_exactly_one_owner_check";
+
 -- DropForeignKey
 ALTER TABLE "DocumentShare" DROP CONSTRAINT "DocumentShare_documentId_fkey";
 
@@ -28,7 +34,7 @@ ALTER TABLE "DocumentShare" DROP CONSTRAINT "DocumentShare_userId_fkey";
 -- AlterTable
 ALTER TABLE "Document" DROP COLUMN "ownerId",
 ADD COLUMN     "createdById" TEXT,
-ADD COLUMN     "groupId" TEXT NOT NULL;
+ADD COLUMN     "groupId" TEXT;
 
 -- AlterTable
 ALTER TABLE "User" DROP COLUMN "role",
@@ -139,6 +145,17 @@ ALTER TABLE "Friendship" ADD CONSTRAINT "Friendship_userBId_fkey" FOREIGN KEY ("
 CREATE UNIQUE INDEX "GroupMember_single_owner_per_group"
   ON "GroupMember" ("groupId")
   WHERE "role" = 'OWNER';
+
+-- A document is held by a group, or by a guest session while it is still
+-- unclaimed: never both, never neither. Replaces the ownerId check the guest
+-- migration wrote. Claiming one must set groupId and clear guestSessionId in
+-- the same statement, or this fires mid-transaction.
+ALTER TABLE "Document"
+  ADD CONSTRAINT "Document_exactly_one_holder_check"
+  CHECK (
+    ("groupId" IS NOT NULL AND "guestSessionId" IS NULL)
+    OR ("groupId" IS NULL AND "guestSessionId" IS NOT NULL)
+  );
 
 -- One row per pair. The strict inequality also forbids self-friendship.
 ALTER TABLE "Friendship"

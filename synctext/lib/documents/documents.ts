@@ -26,7 +26,6 @@ export const summarySelect = (userId: string) =>
     title: true,
     createdAt: true,
     updatedAt: true,
-    groupId: true,
     createdBy: {
       select: {
         id: true,
@@ -41,7 +40,6 @@ type SummaryDocument = {
   title: string;
   createdAt: Date;
   updatedAt: Date;
-  groupId: string;
   createdBy: { id: string; username: string } | null;
 };
 
@@ -56,7 +54,7 @@ export function toDocumentSummary(
     title: document.title,
     createdAt: document.createdAt.toISOString(),
     updatedAt: document.updatedAt.toISOString(),
-    groupId: document.groupId,
+    groupId: rights.groupId,
     createdBy: document.createdBy,
     canRename: editable,
     canDelete: editable,
