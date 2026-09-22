@@ -8,7 +8,7 @@ import {
   registerLimiter,
 } from "@/lib/auth/rate-limit";
 import { hashPassword } from "@/lib/auth/password";
-import { prisma as db, Prisma } from "@synctext/db";
+import { prisma as db, Prisma, createPrivateSpace } from "@synctext/db";
 import {
   generateVerificationToken,
   hashVerificationToken,
@@ -70,6 +70,7 @@ export async function POST(request: Request) {
       const user = await tx.user.create({
         data: { email: input.email, username: input.username, passwordHash },
       });
+      await createPrivateSpace(tx, user.id);
       await tx.emailVerificationToken.create({
         data: {
           userId: user.id,
