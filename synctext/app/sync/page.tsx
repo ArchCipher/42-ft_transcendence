@@ -2,21 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import dynamic from "next/dynamic";
-
-const SyncEditorPage = dynamic(
-  () =>
-    import("@/components/sync/sync-editor").then(
-      (mod) => mod.SyncEditorPage,
-    ),
-  { ssr: false },
-);
 
 export default function Page() {
   const router = useRouter();
   const started = useRef(false);
   const [error, setError] = useState("");
-  const [signedIn, setSignedIn] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (started.current) return;
@@ -29,12 +19,12 @@ export default function Page() {
           signedIn?: boolean;
         } | null;
 
+        // A signed-in account already has a space of its own to write in.
         if (sessionResponse.ok && session?.signedIn) {
-          setSignedIn(true);
+          router.replace("/dashboard");
           return;
         }
 
-        setSignedIn(false);
         const response = await fetch("/api/guest-documents", { method: "POST" });
         const document = (await response.json().catch(() => null)) as { id?: string } | null;
         if (!response.ok || !document?.id) throw new Error("Could not start guest document");
@@ -46,8 +36,6 @@ export default function Page() {
 
     void startGuestDocument();
   }, [router]);
-
-  if (signedIn) return <SyncEditorPage />;
 
   return (
     <main className="grid min-h-screen place-items-center bg-[oklch(0.12_0.006_285)] px-6 font-mono text-sm text-[#f4f2ee]">
