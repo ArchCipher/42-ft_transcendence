@@ -1,6 +1,7 @@
 import { isAuthorized } from "@/lib/auth/internal";
 import { checkSessionByHash } from "@/lib/auth/session";
 import { prisma as db } from "@synctext/db";
+import { SESSION_LAST_USED_UPDATE_THRESHOLD } from "@synctext/shared";
 
 type VerifyRequest = {
   tokenHash?: unknown;
@@ -99,6 +100,17 @@ export async function POST(request: Request) {
   const collabRole = doc.collab[0]?.docRole; // undefined for owner
   const readOnly = !isOwner && collabRole === "VIEWER";
 
+  // refresh lastUsedAt to avoid self-logout
+  if (
+    !session.lastUsedAt ||
+    Date.now() - session.lastUsedAt.getTime() >
+      SESSION_LAST_USED_UPDATE_THRESHOLD
+  ) {
+    await db.session.update({
+      where: { id: session.id },
+      data: { lastUsedAt: new Date() },
+    });
+  }
   return Response.json({
     valid: true,
     actor: { kind: "user", userId: session.userId },

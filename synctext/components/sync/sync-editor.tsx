@@ -70,8 +70,6 @@ function SyncEditorSession({ docId, title, user, canRename, readOnly, guestState
     if (!guestState) return
     const delay = new Date(guestState.expiresAt).getTime() - Date.now()
     if (delay <= 0) {
-      // Unlike edit expiry, there is no local state that can safely represent
-      // an expired guest session. Reload so the server rejects the access.
       window.location.reload()
       return
     }
