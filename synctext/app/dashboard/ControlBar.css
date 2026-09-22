@@ -1,74 +1,104 @@
 .ControlBar {
-  display: flex;
-  flex-wrap: wrap;
+  width: 100%;
+  padding: 0;
+
+  display: grid;
+  grid-template-columns: auto auto auto 190px;
   align-items: center;
   justify-content: space-between;
-
-  margin-bottom: 28px;
-  padding: 0 24px;
-  gap: 24px;
+  gap: 32px;
 }
 
 .FilterBox,
-.OrderBox,
-.GroupFilter {
+.OrderBox {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
-  padding: 0 6px;
+  padding: 0;
 }
 
-.FilterBox select,
-.OrderBox select,
-.GroupFilter select {
-  padding: 10px 16px;
-  background-color: var(--app-panel-bg);
-  color: var(--app-text-main);
-  border: 1px solid var(--app-panel-border);
-  border-radius: 10px;
-  font-family: monospace;
-  font-size: 14px;
+.DashboardControls {
+  position: relative;
+  z-index: 50;
+  overflow: visible;
 }
 
-.FilterBox select:focus,
-.OrderBox select:focus,
-.GroupFilter select:focus {
-  outline: none;
-  box-shadow: none;
+.DashboardControlsPanel,
+.ControlBar {
+  overflow: visible;
 }
 
-.FilterBox option,
-.OrderBox option,
-.GroupFilter option {
-  font-family: monospace;
+.ControlSelect {
+  position: relative;
+  z-index: 5;
+  width: 190px;
+  min-width: 190px;
+}
+
+.ControlBarLabel {
+  font-size: var(--dashboard-text-size);
+}
+
+.SearchBox {
+  width: 190px;
+  min-width: 190px;
+}
+
+.ControlBar .ControlBarHome {
+  width: 48px;
+  min-width: 48px;
+  height: 48px;
+  min-height: 48px;
+  padding: 0;
 }
 
 /* -----------------    Cellphone      -------------------*/
 
 @media (max-width: 900px) {
   .ControlBar {
-    flex-direction: column;
-    align-items: stretch;
-    padding: 16px 12px;
-    gap: 14px;
-    margin-top: 40px;
-  }
-
-  .FilterBox,
-  .OrderBox,
-  .GroupFilter{
-    width: 100%;
-    padding: 0;
-
-    display: grid;
     grid-template-columns: 120px minmax(0, 1fr);
-    align-items: center;
     gap: 10px;
   }
 
-  .FilterBox select,
-  .OrderBox select,
-  .GroupFilter select {
+  .FilterBox,
+  .OrderBox {
+    grid-column: 1 / -1;
+    position: relative;
+    display: grid;
+    grid-template-columns: 120px minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .FilterBox {
+  grid-row: 1;
+  z-index: 30;
+}
+
+  .OrderBox {
+    grid-row: 2;
+    z-index: 20;
+  }
+
+  .ControlBarHome {
+    grid-column: 1;
+    grid-row: 3;
+    justify-self: center;
+  }
+
+  .SearchBox {
+    grid-column: 2;
+    grid-row: 3;
+
+    min-width: 0;
+    width: 100%;
+
+    position: relative;
+    z-index: 10;
+  }
+
+
+  .ControlSelect {
     width: 100%;
     min-width: 0;
   }

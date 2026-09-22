@@ -1,35 +1,16 @@
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
 
-body {
+.simple-editor-wrapper {
   --tt-toolbar-height: 44px;
   --tt-theme-text: var(--tt-gray-light-900);
 
-  .dark & {
-    --tt-theme-text: var(--tt-gray-dark-900);
-  }
+  width: 100%;
+  min-height: 100vh;
+  overflow: auto;
 }
 
-body {
-  font-family: "Inter", sans-serif;
-  color: var(--tt-theme-text);
-  font-optical-sizing: auto;
-  font-weight: 400;
-  font-style: normal;
-  padding: 0;
-  overscroll-behavior-y: none;
-}
-
-html,
-body {
-  overscroll-behavior-x: none;
-}
-
-html,
-body,
-#root,
-#app {
-  height: 100%;
-  background-color: var(--tt-bg-color);
+.dark .simple-editor-wrapper {
+  --tt-theme-text: var(--tt-gray-dark-900);
 }
 
 ::-webkit-scrollbar {
@@ -52,12 +33,6 @@ body,
 
 .tiptap.ProseMirror {
   font-family: "DM Sans", sans-serif;
-}
-
-.simple-editor-wrapper {
-  width: 100%;
-  min-height: 100vh;
-  overflow: auto;
 }
 
 .simple-editor-search-and-replace {

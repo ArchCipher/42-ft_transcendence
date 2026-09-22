@@ -1,7 +1,4 @@
 "use client";
-import "./ConfirmWindow.css";
-
-import { DisplayText, TechText } from "@/app/components/typography/Typography";
 
 type ConfirmWindowProps = {
   title: string;
@@ -23,14 +20,16 @@ export default function ConfirmWindow({
   return (
     <div className="ConfirmWindowOverlay">
       <div className="ConfirmWindow">
-        <DisplayText>{title}</DisplayText>
+        <h2 className="ConfirmWindowTitle">{title}</h2>
 
-        <TechText className="text-sm">
-          {message}
-        </TechText>
+        <p className="ConfirmWindowMessage">{message}</p>
 
         <div className="ConfirmWindowActions">
-          <button type="button" onClick={onCancel}>
+          <button
+            type="button"
+            className="ConfirmWindowCancel"
+            onClick={onCancel}
+          >
             {cancelLabel}
           </button>
 

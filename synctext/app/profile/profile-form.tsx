@@ -5,7 +5,7 @@ import { User } from "lucide-react";
 
 import { DisplayText, TechText } from "@/app/components/typography/Typography";
 import Button from "@/app/components/ui/Button";
-import Box from "@/app/components/form/Box";
+import InputBox from "@/app/components/form/InputBox";
 import Image from "next/image";
 import { useRef, useState } from "react";
 import ConfirmWindow from "@/app/components/feedback/ConfirmWindow";
@@ -63,7 +63,7 @@ export default function ProfileForm() {
         <TechText className="text-xs">Username</TechText>
       </label>
 
-      <Box
+      <InputBox
         id="profile-username"
         value={username}
         onChange={(e) => setUsername(e.target.value)}
@@ -73,7 +73,7 @@ export default function ProfileForm() {
         <TechText className="text-xs">Email</TechText>
       </label>
 
-      <Box
+      <InputBox
         id="profile-email"
         type="email"
         value={email}

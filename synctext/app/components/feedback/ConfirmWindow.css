@@ -7,8 +7,7 @@
   align-items: center;
   justify-content: center;
 
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
+  background: transparent;
 }
 
 .ConfirmWindow {
@@ -17,6 +16,7 @@
 
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 20px;
 
   background: #0a1128;
@@ -26,18 +26,43 @@
   text-align: center;
 }
 
+.ConfirmWindowTitle {
+  margin: 0;
+  color: #f4f2ee;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.ConfirmWindowMessage {
+  margin: 0;
+  color: #f4f2ee;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 14px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
 .ConfirmWindowActions {
   display: flex;
   justify-content: center;
   gap: 12px;
 }
 
-.ConfirmWindowActions button {
+.ConfirmWindowCancel,
+.ConfirmWindowDelete {
   padding: 10px 18px;
+  font-size: 16px;
   cursor: pointer;
 }
 
+.ConfirmWindowCancel {
+  color: #f4f2ee;
+  background: transparent;
+  border: 1px solid transparent;
+}
+
 .ConfirmWindowDelete {
+  color: white;
   background: #fb4444;
   border: 1px solid #ef4444;
 }

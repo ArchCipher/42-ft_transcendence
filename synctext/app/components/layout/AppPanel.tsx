@@ -12,10 +12,9 @@ export default function AppPanel({
   return (
     <div
       className={`
-        border border-[#6fd3ff]/20
-        bg-[#0A1833]/40
+        border border-[var(--app-panel-border)]
+        bg-[var(--app-panel-bg)]
         backdrop-blur-md
-        rounded-[10px]
         ${className}
       `}
     >

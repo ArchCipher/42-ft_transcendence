@@ -12,8 +12,8 @@ type ButtonProps = {
   disabled?: boolean;
   withArrow?: boolean;
   compact?: boolean;
-  className?: string;
   onClick?: () => void;
+  className?: string;
 };
 
 export default function Button({
@@ -30,8 +30,8 @@ export default function Button({
   const classes = cn(
     styles.button,
     styles[variant],
-    compact && styles.compact,
     className,
+    compact && styles.compact,
   );
   
   const content = (

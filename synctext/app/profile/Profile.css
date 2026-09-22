@@ -44,11 +44,6 @@
   justify-content: center;
 }
 
-.ProfileAvatar {
-  display: flex;
-  justify-content: center;
-}
-
 .ProfileAvatarButton {
   padding: 0;
   border: 0;

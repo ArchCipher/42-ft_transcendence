@@ -1,18 +1,20 @@
-import type { InputHTMLAttributes } from "react";
+import type { ReactNode } from "react";
 import styles from "./Box.module.css";
 
-type BoxProps = InputHTMLAttributes<HTMLInputElement>;
+type BoxProps = {
+  children: ReactNode;
+  className?: string;
+};
 
 export default function Box({
+  children,
   className = "",
-  ...props
 }: BoxProps) {
   return (
-    <div className={styles.frame}>
-      <input
-        {...props}
-        className={`${styles.box} ${className}`}
-      />
+    <div className={`${styles.frame} ${className}`}>
+      <div className={styles.surface}>
+        {children}
+      </div>
     </div>
   );
 }

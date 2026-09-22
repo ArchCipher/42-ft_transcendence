@@ -1,0 +1,167 @@
+.DashboardSidebar {
+  width: 100%;
+  min-width: 0;
+  height: 760px;
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  background: var(--app-panel-bg);
+  border: 1px solid var(--app-panel-border);
+
+  overflow: hidden;
+}
+
+.SidebarGroups,
+.SidebarFriends {
+  min-height: 0;
+  padding: 20px 16px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.SidebarGroups {
+  flex: 35;
+  padding: 0 16px 20px;
+}
+
+.SidebarGroups .SidebarSectionHeader {
+  height: 56px;
+  flex-shrink: 0;
+}
+
+.SidebarFriends {
+  flex: 65;
+  border-top: 1px solid var(--app-panel-border);
+}
+
+.SidebarSectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+
+.FriendGroupAction {
+  border: 0;
+  background: transparent;
+  margin-left: auto;
+  font-size: 18px;
+
+  color: var(--app-accent);
+  cursor: pointer;
+}
+
+.SidebarGroup {
+  width: 100%;
+  padding: 8px 10px;
+
+  text-align: left;
+
+  color: var(--app-text-main);
+  background: transparent;
+
+  border: 0;
+  cursor: pointer;
+}
+
+.SidebarGroupList,
+.SidebarFriendList {
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow-y: auto;
+}
+
+.SidebarFriendList {
+  gap: 10px;
+}
+
+.SidebarGroupActive {
+  color: var(--app-accent);
+  background: rgba(111, 211, 255, 0.12);
+}
+
+.SidebarFriend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 6px;
+
+  color: var(--app-text-main);
+}
+
+.SidebarFriendMember {
+  background: rgba(111, 211, 255, 0.08);
+  border-left: 2px solid var(--app-accent);
+}
+
+.FriendStatus {
+  width: 8px;
+  height: 8px;
+
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+
+.FriendOnline {
+  background: #4ade80;
+}
+
+.FriendOffline {
+  background: #6b7280;
+}
+
+.SidebarContent {
+  height: 100%;
+  min-height: 0;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.SidebarSectionTitle {
+  font-size: var(--dashboard-title-size);
+}
+
+.SidebarGroup,
+.SidebarFriend {
+  font-size: var(--dashboard-text-size);
+}
+
+@media (max-width: 900px) {
+  .DashboardSidebar {
+    position: absolute;
+
+    grid-column: 1;
+    grid-row: 2;
+
+    top: 0;
+    bottom: 0;
+    left: 0;
+
+    width: 60vw;
+    height: auto;
+
+    z-index: 30;
+
+    background: rgb(14, 32, 65);
+
+    transform: translateX(calc(-100% - 30px));
+    transition: transform 0.2s ease;
+  }
+
+  .DashboardSidebar.DashboardSidebarOpen {
+    transform: translateX(0);
+  }
+
+  .SidebarContent {
+    display: flex;
+  }
+}
