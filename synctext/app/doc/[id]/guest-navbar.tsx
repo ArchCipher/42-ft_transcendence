@@ -4,7 +4,7 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import { Check, Clock3, Pencil } from "lucide-react"
 
-import Box from "@/app/components/form/Box"
+import InputBox from "@/app/components/form/InputBox"
 import Logo from "@/app/components/header/Logo"
 import { TechText } from "@/app/components/typography/Typography"
 import Button from "@/app/components/ui/Button"
@@ -101,7 +101,7 @@ export function GuestDocumentNavbar({
                 if (!event.currentTarget.contains(event.relatedTarget)) cancelEditing()
               }}
             >
-              <Box
+              <InputBox
                 autoFocus
                 value={draftTitle}
                 maxLength={120}
