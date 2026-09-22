@@ -5,7 +5,7 @@ import { User } from "lucide-react";
 
 import { DisplayText, TechText } from "@/app/components/typography/Typography";
 import Button from "@/app/components/ui/Button";
-import InputBox from "@/components/InputBox";
+import InputBox from "@/app/components/form/InputBox";
 import Image from "next/image";
 import { useRef, useState } from "react";
 import ConfirmWindow from "@/app/components/feedback/ConfirmWindow";

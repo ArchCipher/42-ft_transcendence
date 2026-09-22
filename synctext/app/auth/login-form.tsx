@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { authPost, FALLBACK } from "./api";
 import { DisplayText, TechText } from "@/app/components/typography/Typography";
 import Button from "@/app/components/ui/Button";
-import InputBox from "@/components/InputBox";
+import InputBox from "@/app/components/form/InputBox";
 
 export default function LoginForm() {
   const router = useRouter();

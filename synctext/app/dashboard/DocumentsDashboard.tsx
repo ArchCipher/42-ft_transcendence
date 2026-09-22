@@ -8,7 +8,7 @@ import { deleteDocument_api, listDocuments_api, renameDocument_api } from "./doc
 import "./DocumentsDashboard.css";
 import { BodyText, SupportText } from "@/app/components/typography/Typography";
 import ConfirmWindow from "@/app/components/feedback/ConfirmWindow";
-import PlusButton from "@/components/PlusButton";
+import PlusButton from "@/app/components/ui/PlusButton";
 
 function truncateTitle(title: string, limit = 18) {
   return title.length > limit

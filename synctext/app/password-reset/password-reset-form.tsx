@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { authPost, FALLBACK } from "../auth/api";
-import InputBox from "@/components/InputBox";
+import InputBox from "@/app/components/form/InputBox";
 import Button from "@/app/components/ui/Button";
 import { DisplayText, TechText } from "@/app/components/typography/Typography";
 

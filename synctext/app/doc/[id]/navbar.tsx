@@ -9,7 +9,7 @@ import type { CollabUser, ConnectionStatus } from "@hocuspocus/provider-react"
 import { renameDocument_api } from "@/app/dashboard/document/document"
 import { TechText } from "@/app/components/typography/Typography"
 import Button from "@/app/components/ui/Button"
-import InputBox from "@/components/InputBox"
+import InputBox from "@/app/components/form/InputBox";
 import { SnapshotHistory } from "@/components/sync/snapshot-history"
 
 import styles from "./navbar.module.css"

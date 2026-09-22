@@ -1,9 +1,9 @@
 "use client";
 
 import "./DashboardSidebar.css";
-import { TechText } from "@/components/Typography";
-import PlusButton from "@/components/PlusButton";
-import InputBox from "@/components/InputBox";
+import { TechText } from "@/app/components/typography/Typography";
+import PlusButton from "@/app/components/ui/PlusButton";
+import InputBox from "@/app/components/form/InputBox";
 
 type DashboardSidebarProps = {
   selectedGroup: {

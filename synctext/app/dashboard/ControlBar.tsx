@@ -1,10 +1,10 @@
 "use client";
 
 import { TechText } from "@/app/components/typography/Typography";
-import Button from "@/components/Button";
+import Button from "@/app/components/ui/Button";
 import { House } from "lucide-react";
-import InputBox from "@/components/InputBox";
-import SelectBox from "@/components/SelectBox";
+import InputBox from "@/app/components/form/InputBox";
+import SelectBox from "@/app/components/form/SelectBox";
 import { useState } from "react";
 import "./ControlBar.css";
 

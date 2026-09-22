@@ -1,5 +1,5 @@
 import type { InputHTMLAttributes } from "react";
-import Box from "./Box";
+import Box from "@/app/components/form/Box";
 import styles from "./InputBox.module.css";
 
 type SearchBoxProps = InputHTMLAttributes<HTMLInputElement>;

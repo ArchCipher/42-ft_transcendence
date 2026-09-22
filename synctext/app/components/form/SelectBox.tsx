@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
 
-import Box from "./Box";
+import Box from "@/app/components/form/Box";
 import styles from "./SelectBox.module.css";
 
 type SelectBoxProps = {

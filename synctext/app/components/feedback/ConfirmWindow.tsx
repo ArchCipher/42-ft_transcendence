@@ -1,7 +1,5 @@
 "use client";
 
-import { DisplayText, TechText } from "@/app/components/typography/Typography";
-
 type ConfirmWindowProps = {
   title: string;
   message: string;

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authPost, FALLBACK } from "../auth/api";
 import Button from "@/app/components/ui/Button";
-import InputBox from "@/components/InputBox";
+import InputBox from "@/app/components/form/InputBox";
 import { DisplayText, TechText } from "@/app/components/typography/Typography";
 
 export default function ForgotPasswordForm() {

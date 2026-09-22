@@ -69,10 +69,6 @@
   white-space: nowrap;
 }
 
-.DeleteDoc {
-  color: var(--app-text-main);
-}
-
 .DocumentTitleInput {
   width: 140px;
   padding: 8px 4px;

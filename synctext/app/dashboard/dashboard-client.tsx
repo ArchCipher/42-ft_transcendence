@@ -13,10 +13,10 @@ import AppPanel from "@/app/components/layout/AppPanel";
 import { Footer } from "@/app/components/footer/Footer";
 import DocumentsDashboard from "./DocumentsDashboard";
 import DashboardSidebar from "./side-panel/DashboardSidebar";
-import { TechText } from "@/components/Typography";
+import { TechText } from "@/app/components/typography/Typography";
+import Button from "@/app/components/ui/Button";
 import { createDocument_api } from "./document/document";
 import { Menu } from "lucide-react";
-import Button from "@/components/Button";
 
 export type UserProps = {
   username: string;
