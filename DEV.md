@@ -25,9 +25,10 @@ To populate your local db with a few test users and one test document:
 => Run (this starts `db` automatically, applies pending migrations, then seeds):
    ```
    docker compose run --rm \
-     -v "$(pwd)/packages/db:/app/packages/db" \
-     migrate \
-     sh -c "npx prisma migrate deploy && npx tsx prisma/seed.ts"
+      -u "$(id -u):$(id -g)" \
+      -v "$(pwd)/packages/db:/app/packages/db" \
+      migrate \
+      sh -c "npx prisma generate && npx prisma migrate deploy && npx tsx prisma/seed.ts"
    ```
 
 Users (each also gets a private space of their own):
