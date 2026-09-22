@@ -43,13 +43,18 @@ export async function GET() {
     orderBy: { updatedAt: "desc" },
   });
 
-  const summaries: DocumentSummary[] = documents.map((document) => {
+  const summaries: DocumentSummary[] = documents.flatMap((document) => {
+    // User-owned/shared queries should never match a guest document. Keep the
+    // nullable Prisma relation from leaking into this normal-user API if an
+    // inconsistent row somehow exists.
+    if (!document.owner) return []
+
     const access: DocumentAccess =
       document.owner.id === session.user.id
         ? "OWNER"
         : (document.collab[0]?.docRole ?? "VIEWER");
 
-    return {
+    return [{
       id: document.id,
       title: document.title,
       createdAt: document.createdAt.toISOString(),
@@ -58,7 +63,7 @@ export async function GET() {
       access,
       canRename: access === "OWNER" || access === "EDITOR",
       canDelete: access === "OWNER",
-    };
+    }]
   });
 
   return NextResponse.json(summaries);
@@ -93,6 +98,8 @@ export async function POST() {
       },
     },
   });
+
+  if (!document.owner) throw new Error("New user document is missing its owner")
 
   const summary: DocumentSummary = {
     id: document.id,

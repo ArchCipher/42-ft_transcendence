@@ -152,6 +152,35 @@ services:
       - frontend
       - backend
 
+  guest-cleanup: # removes unclaimed guest sessions and their cascading docs
+    image: alpine:3.20
+
+    container_name: synctext-guest-cleanup
+
+    restart: unless-stopped
+
+    environment:
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN}
+
+    depends_on:
+      web:
+        condition: service_healthy
+
+    command:
+      - /bin/sh
+      - -ec
+      - |
+        while true; do
+          wget -qO- \
+            --post-data='' \
+            --header="x-internal-service-token: $${INTERNAL_SERVICE_TOKEN}" \
+            http://web:3000/api/internal/guest-sessions/cleanup >/dev/null || true
+          sleep 300
+        done
+
+    networks:
+      - backend
+
 secrets:
   server_certificate:
     file: secrets/${DOMAIN_NAME:-localhost}.crt

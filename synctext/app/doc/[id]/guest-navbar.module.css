@@ -1,0 +1,25 @@
+.guestNavbar { position: relative; z-index: 20; border-bottom: 1px solid rgba(111, 211, 255, 0.24); color: #f4f2ee; }
+.navigation { display: grid; grid-template-columns: minmax(11rem, 1fr) minmax(13rem, 1.25fr) minmax(17rem, 1fr); align-items: center; gap: 1.5rem; min-height: 4.5rem; padding: 0.65rem clamp(1rem, 3vw, 2.25rem); }
+.brand, .actions, .countdownMeta, .renameForm, .titleButton { display: flex; align-items: center; }
+.brand { min-width: 0; gap: 1rem; }
+.logo { --logo-size: 1.35rem; }
+.countdownLabel { font-size: 0.62rem; }
+.titleArea { min-width: 0; text-align: center; }
+.titleButton { justify-content: center; gap: 0.5rem; width: 100%; min-height: 2.5rem; padding: 0.45rem 0.75rem; border: 1px solid transparent; background: transparent; color: #fff; font-family: var(--font-geist-mono), monospace; font-size: 0.92rem; letter-spacing: -0.02em; transition: background-color 160ms ease, border-color 160ms ease; }
+.titleButton > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.titleButton:not(:disabled):hover { border-color: rgba(111, 211, 255, 0.25); background: rgba(111, 211, 255, 0.07); }
+.titleButton:disabled { cursor: default; }
+.renameForm { gap: 0.5rem; max-width: 28rem; margin: 0 auto; }
+.renameForm > :first-child { min-width: 0; flex: 1; }
+.renameError { margin: 0.2rem 0 0; color: #ff9b9b; font-family: var(--font-geist-mono), monospace; font-size: 0.68rem; }
+.actions { justify-content: flex-end; gap: 0.75rem; }
+.countdown { width: min(100%, 11.5rem); min-width: 9.5rem; padding: 0.42rem 0.65rem 0.48rem; border: 1px solid rgba(111, 211, 255, 0.28); background: rgba(5, 21, 47, 0.68); }
+.countdownMeta { justify-content: space-between; gap: 0.5rem; color: rgba(244, 242, 238, 0.65); }
+.countdownTime { display: block; margin-top: 0.05rem; color: #f4f2ee; font-family: var(--font-geist-mono), monospace; font-size: 1.1rem; font-variant-numeric: tabular-nums; letter-spacing: -0.05em; line-height: 1; }
+.progressTrack { display: block; height: 2px; margin-top: 0.45rem; overflow: hidden; background: rgba(111, 211, 255, 0.2); }
+.progressValue { display: block; height: 100%; background: #6fd3ff; box-shadow: 0 0 8px rgba(111, 211, 255, 0.9); transition: width 850ms linear; }
+.loginLink { display: inline-flex; align-items: center; min-height: 2.75rem; padding: 0 0.8rem; border: 1px solid rgba(111, 211, 255, 0.3); background: #101b30; color: #f4f2ee; text-decoration: none; transition: border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease; }
+.loginLink:hover { border-color: #6fd3ff; background: #152744; box-shadow: 0 0 10px rgba(111, 211, 255, 0.25); }
+.loginLink:focus-visible, .titleButton:focus-visible { outline: 2px solid #6fd3ff; outline-offset: 2px; }
+@media (max-width: 900px) { .navigation { grid-template-columns: minmax(0, 1fr) auto; gap: 0.75rem; min-height: 4.25rem; padding: 0.55rem 0.75rem; } .loginLink { display: none; } .titleArea { grid-column: 1 / -1; grid-row: 2; order: 3; padding-bottom: 0.25rem; } .titleButton { min-height: 2rem; font-size: 0.84rem; } .actions { grid-column: 2; grid-row: 1; } .countdown { min-width: 8.75rem; } }
+@media (max-width: 460px) { .logo { --logo-size: 1.1rem; } .countdown { min-width: 7.6rem; padding-inline: 0.5rem; } .countdownLabel { font-size: 0.53rem; } }
