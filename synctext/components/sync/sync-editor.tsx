@@ -1,5 +1,5 @@
 // see : https://tiptap.dev/docs/hocuspocus/provider/react
-"use client"
+"use client";
 
 import {
   HocuspocusProviderWebsocketComponent,
@@ -7,75 +7,93 @@ import {
   useHocuspocusAwareness,
   useHocuspocusConnectionStatus,
   useHocuspocusProvider,
-} from "@hocuspocus/provider-react"
-import { SessionGuard } from "@/hooks/use-session-guard"
-import { AnyExtension, useEditor } from "@tiptap/react"
-import { useEffect, useState } from "react"
+} from "@hocuspocus/provider-react";
+import { SessionGuard } from "@/hooks/use-session-guard";
+import { AnyExtension, useEditor } from "@tiptap/react";
+import { useEffect, useState } from "react";
 
-import Collaboration from "@tiptap/extension-collaboration"
-import CollaborationCaret from "@tiptap/extension-collaboration-caret"
+import Collaboration from "@tiptap/extension-collaboration";
+import CollaborationCaret from "@tiptap/extension-collaboration-caret";
 
-import { SimpleEditorView, simpleEditorConfig, baseTiptapExtensions } from "@/components/tiptap-templates/simple/simple-editor-view"
-import { DocumentNavbar } from "@/app/doc/[id]/navbar"
-import { GuestDocumentNavbar } from "@/app/doc/[id]/guest-navbar"
-import { getLocalUser } from "@/lib/sync/sync-user"
-import { Footer } from "@/app/components/footer/Footer"
+import {
+  SimpleEditorView,
+  simpleEditorConfig,
+  baseTiptapExtensions,
+} from "@/components/tiptap-templates/simple/simple-editor-view";
+import { DocumentNavbar } from "@/app/doc/[id]/navbar";
+import { GuestDocumentNavbar } from "@/app/doc/[id]/guest-navbar";
+import { getLocalUser } from "@/lib/sync/sync-user";
+import { Footer } from "@/app/components/footer/Footer";
 
-type SyncUser = { name: string; color: string }
+type SyncUser = { name: string; color: string };
 
 export type GuestEditorState = {
-  editExpiresAt: string
-  expiresAt: string
-}
+  editExpiresAt: string;
+  expiresAt: string;
+};
 
 // nginx proxies /collab to Hocuspocus on the same origin, so this works behind
 // the app's CSP and TLS. Only ever read in the browser, when the provider connects.
 function getCollabUrl() {
-  if (typeof window === "undefined") return ""
-  const protocol = window.location.protocol === "https:" ? "wss" : "ws"
-  return `${protocol}://${window.location.host}/collab`
+  if (typeof window === "undefined") return "";
+  const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+  return `${protocol}://${window.location.host}/collab`;
 }
 
 // Child of HocuspocusRoom, since useHocuspocusProvider() only works below it —
 // SyncEditorPage cannot build the editor itself.
 type SyncEditorSessionProps = {
-  docId: string
-  title: string
-  user: SyncUser
-  canRename: boolean
-  readOnly: boolean
-  guestState?: GuestEditorState
-}
+  docId: string;
+  title: string;
+  user: SyncUser;
+  canRename: boolean;
+  readOnly: boolean;
+  guestState?: GuestEditorState;
+};
 
-function SyncEditorSession({ docId, title, user, canRename, readOnly, guestState }: SyncEditorSessionProps) {
-  const provider = useHocuspocusProvider()
-  const status = useHocuspocusConnectionStatus()
-  const users = useHocuspocusAwareness()
+function SyncEditorSession({
+  docId,
+  title,
+  user,
+  canRename,
+  readOnly,
+  guestState,
+}: SyncEditorSessionProps) {
+  const provider = useHocuspocusProvider();
+  const status = useHocuspocusConnectionStatus();
+  const users = useHocuspocusAwareness();
   // Everyone but us — a fresh Awareness already registers the local client.
-  const others = users.filter((onlineUser) => onlineUser.clientId !== provider.awareness?.clientID)
+  const others = users.filter(
+    (onlineUser) => onlineUser.clientId !== provider.awareness?.clientID,
+  );
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const [guestReadOnly, setGuestReadOnly] = useState(() =>
-    guestState ? Date.now() >= new Date(guestState.editExpiresAt).getTime() : false,
-  )
-  const effectiveReadOnly = readOnly || guestReadOnly
+    guestState
+      ? Date.now() >= new Date(guestState.editExpiresAt).getTime()
+      : false,
+  );
+  const effectiveReadOnly = readOnly || guestReadOnly;
 
   useEffect(() => {
-    if (!guestState) return
-    const delay = new Date(guestState.editExpiresAt).getTime() - Date.now()
-    if (delay <= 0) return
-    const timer = window.setTimeout(() => setGuestReadOnly(true), delay)
-    return () => window.clearTimeout(timer)
-  }, [guestState])
+    if (!guestState) return;
+    const delay = new Date(guestState.editExpiresAt).getTime() - Date.now();
+    if (delay <= 0) return;
+    const timer = window.setTimeout(() => setGuestReadOnly(true), delay);
+    return () => window.clearTimeout(timer);
+  }, [guestState]);
 
   useEffect(() => {
-    if (!guestState) return
-    const delay = new Date(guestState.expiresAt).getTime() - Date.now()
+    if (!guestState) return;
+    const delay = new Date(guestState.expiresAt).getTime() - Date.now();
     if (delay <= 0) {
-      window.location.reload()
-      return
+      window.location.reload();
+      return;
     }
-    const timer = window.setTimeout(() => window.location.reload(), delay)
-    return () => window.clearTimeout(timer)
-  }, [guestState])
+    const timer = window.setTimeout(() => window.location.reload(), delay);
+    return () => window.clearTimeout(timer);
+  }, [guestState]);
 
   const editor = useEditor({
     ...simpleEditorConfig,
@@ -86,37 +104,51 @@ function SyncEditorSession({ docId, title, user, canRename, readOnly, guestState
       CollaborationCaret.configure({ provider, user }),
     ] as AnyExtension[],
     editable: !effectiveReadOnly,
-  })
+  });
 
   useEffect(() => {
-    editor?.setEditable(!effectiveReadOnly)
-  }, [editor, effectiveReadOnly])
+    editor?.setEditable(!effectiveReadOnly);
+  }, [editor, effectiveReadOnly]);
 
-  const editorContents = (
+  const navbar = guestState ? (
+    <GuestDocumentNavbar
+      docId={docId}
+      initialTitle={title}
+      editExpiresAt={guestState.editExpiresAt}
+      expiresAt={guestState.expiresAt}
+      canRename={canRename && !effectiveReadOnly}
+    />
+  ) : (
+    <DocumentNavbar
+      docId={docId}
+      initialTitle={title}
+      canRename={canRename && !effectiveReadOnly}
+      provider={provider}
+      status={status}
+      users={others}
+    />
+  );
+
+  const body = mounted ? (
     <>
-      {guestState ? (
-        <GuestDocumentNavbar
-          docId={docId}
-          initialTitle={title}
-          editExpiresAt={guestState.editExpiresAt}
-          canRename={canRename && !effectiveReadOnly}
-        />
-      ) : (
-      <DocumentNavbar
-        docId={docId}
-        initialTitle={title}
-        canRename={canRename && !effectiveReadOnly}
-        provider={provider}
-        status={status}
-        users={others}
-      />
-      )}
       <SimpleEditorView editor={editor} showToolbar={!effectiveReadOnly} />
       <Footer />
     </>
-  )
+  ) : (
+    <LoadingEditorScreen />
+  );
 
-  return guestState ? editorContents : <SessionGuard>{editorContents}</SessionGuard>
+  return guestState ? (
+    <>
+      {navbar}
+      {body}
+    </>
+  ) : (
+    <SessionGuard>
+      {navbar}
+      {body}
+    </SessionGuard>
+  );
 }
 
 // What the server paints, title included. Its markup must stay identical to
@@ -129,7 +161,7 @@ function StaticEditorShell({
   readOnly,
   guestState,
 }: Omit<SyncEditorSessionProps, "user">) {
-  const canEdit = canRename && !readOnly
+  const canEdit = canRename && !readOnly;
   return (
     <>
       {guestState ? (
@@ -137,32 +169,41 @@ function StaticEditorShell({
           docId={docId}
           initialTitle={title}
           editExpiresAt={guestState.editExpiresAt}
+          expiresAt={guestState.expiresAt}
           canRename={canEdit}
         />
       ) : (
         <DocumentNavbar
-        docId={docId}
-        initialTitle={title}
-        canRename={canEdit}
-        provider={null}
-        status="connecting"
-        users={[]}
-      />
+          docId={docId}
+          initialTitle={title}
+          canRename={canEdit}
+          provider={null}
+          status="connecting"
+          users={[]}
+        />
       )}
-      <SimpleEditorView editor={null} showToolbar={canEdit} />
-	  <Footer />
+      <LoadingEditorScreen />
+      {/* <Footer /> */}
     </>
-  )
+  );
+}
+
+function LoadingEditorScreen() {
+  return (
+    <div className="flex min-h-[60vh] items-center justify-center">
+      <p className="text-sm text-[rgb(244,242,238,0.55)]">Loading...</p>
+    </div>
+  );
 }
 
 type SyncEditorPageProps = {
-  docId?: string
-  title?: string
-  user?: SyncUser
-  canRename?: boolean
-  readOnly?: boolean
-  guestState?: GuestEditorState
-}
+  docId?: string;
+  title?: string;
+  user?: SyncUser;
+  canRename?: boolean;
+  readOnly?: boolean;
+  guestState?: GuestEditorState;
+};
 
 export function SyncEditorPage({
   docId = "example-document",
@@ -175,10 +216,18 @@ export function SyncEditorPage({
   // HocuspocusProviderWebsocket's constructor starts a timer and opens a socket
   // during render, so it must never run on the server: one leak per request.
   if (typeof window === "undefined") {
-    return <StaticEditorShell docId={docId} title={title} canRename={canRename} readOnly={readOnly} guestState={guestState} />
+    return (
+      <StaticEditorShell
+        docId={docId}
+        title={title}
+        canRename={canRename}
+        readOnly={readOnly}
+        guestState={guestState}
+      />
+    );
   }
 
-  const localUser = user ?? getLocalUser()
+  const localUser = user ?? getLocalUser();
 
   return (
     <HocuspocusProviderWebsocketComponent url={getCollabUrl()}>
@@ -193,5 +242,5 @@ export function SyncEditorPage({
         />
       </HocuspocusRoom>
     </HocuspocusProviderWebsocketComponent>
-  )
+  );
 }

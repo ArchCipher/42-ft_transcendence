@@ -44,7 +44,8 @@ function collaboratorIdentity({ user }: CollabUser): SyncUser {
 }
 
 function truncateTitle(title: string, limit: number) {
-  return title.length > limit ? `${title.slice(0, limit)}...` : title;
+  const value = title ?? "";
+  return value.length > limit ? `${value.slice(0, limit)}...` : value;
 }
 
 export function DocumentNavbar({

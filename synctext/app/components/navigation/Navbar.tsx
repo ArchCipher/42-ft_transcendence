@@ -13,7 +13,7 @@ export default function Navbar({ children,
                                   className = "",
                                 }: NavbarProps) {
   return (
-    <header className={`relative z-50 w-full border-b border-white/15 ${className}`}>
+    <header className={`relative z-[60] w-full border-b border-white/15 ${className}`}>
       <nav
         aria-label="Main navigation"
         className="

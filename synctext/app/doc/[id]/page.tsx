@@ -9,6 +9,7 @@ import { canEdit, documentAccessSelect, resolveRights } from "@/lib/permissions"
 import { identityFromGuestSession, identityFromUser } from "@/lib/sync/sync-user"
 import { SyncEditorPage } from "@/components/sync/sync-editor"
 import UserNavbar from "@/app/components/navigation/UserNavbar";
+import PublicNavbar from "@/app/components/navigation/PublicNavbar";
 
 async function ownsExpiredGuestDocument(documentId: string): Promise<boolean> {
   const token = await getGuestSessionToken()
@@ -52,18 +53,21 @@ export default async function DocPage({ params }: { params: Promise<{ id: string
     if (!document) notFound()
 
     return (
-      <SyncEditorPage
-        docId={document.id}
-        title={document.title}
-        user={identityFromGuestSession({ id: actor.guestSessionId })}
-        canRename={actor.mode === "EDITABLE"}
-        readOnly={actor.mode === "READ_ONLY"}
-        guestState={{
-          editExpiresAt: actor.editExpiresAt.toISOString(),
-          expiresAt: actor.expiresAt.toISOString(),
-        }}
-      />
-    )
+      <>
+        <PublicNavbar />
+        <SyncEditorPage
+          docId={document.id}
+          title={document.title}
+          user={identityFromGuestSession({ id: actor.guestSessionId })}
+          canRename={actor.mode === "EDITABLE"}
+          readOnly={actor.mode === "READ_ONLY"}
+          guestState={{
+            editExpiresAt: actor.editExpiresAt.toISOString(),
+            expiresAt: actor.expiresAt.toISOString(),
+          }}
+        />
+      </>
+    );
   }
 
   const document = await db.document.findUnique({

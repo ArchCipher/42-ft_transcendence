@@ -7,11 +7,3 @@
 .navbar nav { min-height: 4.5rem; }
 
 .navbarLogo { --logo-size: 1.6rem; }
-
-.dashboardButton {
-	width: 32px;
-	height: 32px;
-	min-height: 32px;
-	padding: 0;
-	clip-path: none;
-}
