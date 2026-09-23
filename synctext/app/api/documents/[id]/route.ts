@@ -2,58 +2,58 @@ import { prisma as db } from "@synctext/db"
 import { NextResponse } from "next/server"
 
 import {
-  documentEditWhere,
-  documentReadWhere,
-  type DocumentAccess,
-  type DocumentSummary,
-} from "@/lib/documents/documents"
-import { getCurrentDocumentActor } from "@/lib/documents/access"
+  summarySelect,
+  toDocumentSummary,
+} from "@/lib/documents/documents";
+import { getCurrentDocumentActor } from "@/lib/documents/access";
+import { canEdit, requireDocRights, resolveRights } from "@/lib/permissions";
+import { badRequest, forbidden, notFound, readJson, unauthorized } from "@/lib/api/responses";
 
-type SummaryDocument = {
-  id: string
-  title: string
-  createdAt: Date
-  updatedAt: Date
-  owner: {
-    id: string
-    username: string
-  } | null
-  collab: Array<{
-    docRole: "EDITOR" | "VIEWER"
-  }>
-}
+const documentNotFound = () => notFound("Document");
 
+/*
+API Response contracts: /api/documents/[id]
+
+  GET                                any member of the document's group, or the
+                                     guest session this document belongs to
+        -> 200 DocumentSummary | GuestDocumentResponse
+        -> 401 { error }
+        -> 404 { error }             no such document, or caller not in its group
+
+  PATCH { title }                    canEdit: the group's owner, or a grant.
+                                     A guest may rename until its edit deadline.
+        -> 200 DocumentSummary | GuestDocumentResponse
+        -> 400 { error }             title empty or over 120 chars
+        -> 401 { error }
+        -> 403 { error }             in the group, but read-only on this document
+        -> 404 { error }
+
+  DELETE                             canEdit: an editor may also delete.
+                                     Never a guest: expiry deletes its document.
+        -> 204
+        -> 401 { error }
+        -> 403 { error }
+        -> 404 { error }
+
+  403 and 404 differ on purpose: 403 says the document exists and you may not,
+  404 is for anyone outside the group, who must not learn that it exists.
+*/
+
+// A guest document has neither group nor creator, so no Rights can be resolved
+// for it: what it may do comes from its session's deadline instead.
 type GuestDocumentResponse = {
   id: string
   title: string
   createdAt: string
   updatedAt: string
-  owner: null
-  access: "GUEST"
+  groupId: null
+  createdBy: null
   canRename: boolean
   canDelete: false
   guest: {
     mode: "EDITABLE" | "READ_ONLY"
     editExpiresAt: string
     expiresAt: string
-  }
-}
-
-function toDocumentSummary(document: SummaryDocument, userId: string): DocumentSummary {
-  if (!document.owner) throw new Error("Normal document is missing its owner")
-
-  const access: DocumentAccess =
-    document.owner.id === userId ? "OWNER" : (document.collab[0]?.docRole ?? "VIEWER")
-
-  return {
-    id: document.id,
-    title: document.title,
-    createdAt: document.createdAt.toISOString(),
-    updatedAt: document.updatedAt.toISOString(),
-    owner: document.owner,
-    access,
-    canRename: access === "OWNER" || access === "EDITOR",
-    canDelete: access === "OWNER",
   }
 }
 
@@ -70,8 +70,8 @@ function toGuestDocumentResponse(
     title: document.title,
     createdAt: document.createdAt.toISOString(),
     updatedAt: document.updatedAt.toISOString(),
-    owner: null,
-    access: "GUEST",
+    groupId: null,
+    createdBy: null,
     canRename: guest.mode === "EDITABLE",
     canDelete: false,
     guest: {
@@ -82,24 +82,6 @@ function toGuestDocumentResponse(
   }
 }
 
-const summarySelect = (userId: string) =>
-  ({
-    id: true,
-    title: true,
-    createdAt: true,
-    updatedAt: true,
-    owner: {
-      select: {
-        id: true,
-        username: true,
-      },
-    },
-    collab: {
-      where: { userId },
-      select: { docRole: true },
-    },
-  }) as const
-
 const guestSelect = {
   id: true,
   title: true,
@@ -107,122 +89,120 @@ const guestSelect = {
   updatedAt: true,
 } as const
 
-function unauthorized() {
-  return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-}
-
-function notFoundResponse() {
-  // Do not reveal whether an ID exists outside the current user/guest scope.
-  return NextResponse.json({ error: "Document not found" }, { status: 404 })
-}
-
 // Get one document that belongs to the signed-in actor or this browser's guest session.
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const actor = await getCurrentDocumentActor()
-  if (!actor) return unauthorized()
+  const actor = await getCurrentDocumentActor();
+  if (!actor) return unauthorized();
 
-  const { id } = await params
+  const { id } = await params;
   if (actor.kind === "guest") {
     const document = await db.document.findFirst({
       where: { id, guestSessionId: actor.guestSessionId },
       select: guestSelect,
-    })
-    if (!document) return notFoundResponse()
-    return NextResponse.json(toGuestDocumentResponse(document, actor))
+    });
+    if (!document) return documentNotFound();
+    return NextResponse.json(toGuestDocumentResponse(document, actor));
   }
 
-  const document = await db.document.findFirst({
-    where: { id, ...documentReadWhere(actor.userId) },
+  const document = await db.document.findUnique({
+    where: { id },
     select: summarySelect(actor.userId),
-  })
-  if (!document || !document.owner) return notFoundResponse()
+  });
+  if (!document) return documentNotFound();
 
-  return NextResponse.json(toDocumentSummary(document, actor.userId))
+  // Not a member of the group: the document does not exist for this user.
+  const rights = resolveRights(document);
+  if (!rights) return documentNotFound();
+
+  return NextResponse.json(toDocumentSummary(document, rights));
 }
 
-// Rename a document when the current actor is a user owner/editor, or the
-// guest document is still inside its first thirty minutes.
+// Rename a document when the caller may edit it, or when the guest document is
+// still inside its first thirty minutes.
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const actor = await getCurrentDocumentActor()
-  if (!actor) return unauthorized()
+  const actor = await getCurrentDocumentActor();
+  if (!actor) return unauthorized();
 
-  let body: unknown
-  try {
-    body = await request.json()
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 })
-  }
-
+  const body = await readJson(request);
   if (
     typeof body !== "object" ||
     body === null ||
     !("title" in body) ||
     typeof body.title !== "string"
   ) {
-    return NextResponse.json({ error: "Title is required" }, { status: 400 })
+    return badRequest("Title is required");
   }
 
   const title = body.title.trim()
   if (title.length === 0 || title.length > 120) {
-    return NextResponse.json(
-      { error: "Title must be between 1 and 120 characters" },
-      { status: 400 },
-    )
+    return badRequest("Title must be between 1 and 120 characters");
   }
 
-  const { id } = await params
+  const { id } = await params;
   if (actor.kind === "guest") {
-    const guestWhere = { id, guestSessionId: actor.guestSessionId }
-    const existing = await db.document.findFirst({ where: guestWhere, select: { id: true } })
-    if (!existing) return notFoundResponse()
+    const existing = await db.document.findFirst({
+      where: { id, guestSessionId: actor.guestSessionId },
+      select: { id: true },
+    });
+    if (!existing) return documentNotFound();
     if (actor.mode === "READ_ONLY") {
       return NextResponse.json(
         { error: "Temporary documents are read-only after 30 minutes" },
         { status: 403 },
-      )
+      );
     }
 
-    await db.document.update({ where: { id: existing.id }, data: { title } })
-    const document = await db.document.findUnique({ where: { id: existing.id }, select: guestSelect })
-    if (!document) return notFoundResponse()
-    return NextResponse.json(toGuestDocumentResponse(document, actor))
+    const document = await db.document.update({
+      where: { id: existing.id },
+      data: { title },
+      select: guestSelect,
+    });
+    return NextResponse.json(toGuestDocumentResponse(document, actor));
   }
-
-  const result = await db.document.updateMany({
-    where: { id, ...documentEditWhere(actor.userId) },
-    data: { title },
-  })
-  if (result.count === 0) return notFoundResponse()
 
   const document = await db.document.findUnique({
     where: { id },
     select: summarySelect(actor.userId),
-  })
-  if (!document || !document.owner) return notFoundResponse()
+  });
+  if (!document) return documentNotFound();
 
-  return NextResponse.json(toDocumentSummary(document, actor.userId))
+  const rights = resolveRights(document);
+  if (!rights) return documentNotFound();
+  if (!canEdit(rights)) return forbidden();
+
+  const updated = await db.document.update({
+    where: { id },
+    data: { title },
+    select: summarySelect(actor.userId),
+  });
+
+  return NextResponse.json(toDocumentSummary(updated, rights));
 }
 
-// Permanently delete only normal documents owned by the signed-in user.
+// Permanently delete a document the caller may edit. Never a guest document:
+// its session's expiry deletes it by cascade.
 export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const actor = await getCurrentDocumentActor()
-  if (!actor) return unauthorized()
-  if (actor.kind === "guest") return notFoundResponse()
+  const actor = await getCurrentDocumentActor();
+  if (!actor) return unauthorized();
+  if (actor.kind === "guest") return documentNotFound();
 
-  const { id } = await params
-  const result = await db.document.deleteMany({
-    where: { id, ownerId: actor.userId },
-  })
-  if (result.count === 0) return notFoundResponse()
+  // Only the rights are needed here, so this fetches less than summarySelect.
+  const { id } = await params;
+  const rights = await requireDocRights(db, actor.userId, id);
+  if (!rights) return documentNotFound();
+  if (!canEdit(rights)) return forbidden();
 
-  return new NextResponse(null, { status: 204 })
+  // Cascade: snapshots and grants go with the document.
+  await db.document.delete({ where: { id } });
+
+  return new NextResponse(null, { status: 204 });
 }

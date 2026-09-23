@@ -1,5 +1,6 @@
 import { isAuthorized } from "@/lib/auth/internal";
 import { checkSessionByHash } from "@/lib/auth/session";
+import { canEdit, requireDocRights } from "@/lib/permissions";
 import { prisma as db } from "@synctext/db";
 import { SESSION_LAST_USED_UPDATE_THRESHOLD } from "@synctext/shared";
 
@@ -73,32 +74,10 @@ export async function POST(request: Request) {
   const session = await checkSessionByHash(tokenHash);
   if (!session) return Response.json({ valid: false }, { status: 401 });
 
-  // 2 queries combined
-  // 1. Recheck document access: owner / any collaborator (READ), owner / editor (WRITE)
-  // 2. Determine the access role. VIEWER are readOnly
-  const doc = await db.document.findFirst({
-    where: {
-      id: documentName,
-      OR: [
-        { ownerId: session.userId },
-        { collab: { some: { userId: session.userId } } },
-      ],
-    },
-    select: {
-      id: true,
-      ownerId: true,
-      collab: {
-        where: { userId: session.userId },
-        select: { docRole: true },
-        take: 1,
-      },
-    },
-  });
-  if (!doc) return Response.json({ valid: false }, { status: 401 });
-
-  const isOwner = doc.ownerId === session.userId;
-  const collabRole = doc.collab[0]?.docRole; // undefined for owner
-  const readOnly = !isOwner && collabRole === "VIEWER";
+  // One query for the caller's group role and their grant on this document.
+  // No such document and not a member are the same answer here.
+  const rights = await requireDocRights(db, session.userId, documentName);
+  if (!rights) return Response.json({ valid: false }, { status: 401 });
 
   // refresh lastUsedAt to avoid self-logout
   if (
@@ -111,11 +90,12 @@ export async function POST(request: Request) {
       data: { lastUsedAt: new Date() },
     });
   }
+
   return Response.json({
     valid: true,
     actor: { kind: "user", userId: session.userId },
     // Retain userId for consumers that have not yet moved to actor.kind.
     userId: session.userId,
-    readOnly,
+    readOnly: !canEdit(rights),
   });
 }

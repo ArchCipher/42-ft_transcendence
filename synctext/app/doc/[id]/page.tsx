@@ -5,7 +5,7 @@ import { hashGuestSessionToken } from "@synctext/shared"
 import { ExpiredGuestDocument } from "./expired-guest-document"
 import { getGuestSessionToken } from "@/lib/auth/guest-session"
 import { getCurrentDocumentActor } from "@/lib/documents/access"
-import { documentReadWhere } from "@/lib/documents/documents"
+import { canEdit, documentAccessSelect, resolveRights } from "@/lib/permissions"
 import { identityFromGuestSession, identityFromUser } from "@/lib/sync/sync-user"
 import { SyncEditorPage } from "@/components/sync/sync-editor"
 
@@ -32,8 +32,8 @@ async function ownsExpiredGuestDocument(documentId: string): Promise<boolean> {
   )
 }
 
-// Opens a normal owner/collaborator document or the guest document bound to
-// this browser's opaque guest-session cookie.
+// Opens a document the caller reaches through their group, or the guest
+// document bound to this browser's opaque guest-session cookie.
 export default async function DocPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const actor = await getCurrentDocumentActor()
@@ -65,30 +65,29 @@ export default async function DocPage({ params }: { params: Promise<{ id: string
     )
   }
 
-  const document = await db.document.findFirst({
-    where: { id, ...documentReadWhere(actor.userId) },
+  const document = await db.document.findUnique({
+    where: { id },
     select: {
       id: true,
       title: true,
-      ownerId: true,
-      collab: {
-        where: { userId: actor.userId },
-        select: { docRole: true },
-      },
+      ...documentAccessSelect(actor.userId),
     },
   })
   if (!document) notFound()
 
-  const canRename =
-    document.ownerId === actor.userId || document.collab[0]?.docRole === "EDITOR"
+  // Not a member of the group: the document does not exist for this user.
+  const rights = resolveRights(document)
+  if (!rights) notFound()
+
+  const editable = canEdit(rights)
 
   return (
     <SyncEditorPage
       docId={document.id}
       title={document.title}
       user={identityFromUser({ id: actor.userId, username: actor.username })}
-      canRename={canRename}
-      readOnly={!canRename}
+      canRename={editable}
+      readOnly={!editable}
     />
   )
 }

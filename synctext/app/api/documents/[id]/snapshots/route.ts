@@ -3,7 +3,7 @@ import {
   getSessionToken,
   validateSession,
 } from "@/lib/auth/session";
-import { documentReadWhere } from "@/lib/documents/documents";
+import { documentReadWhere } from "@/lib/permissions";
 import { NextResponse } from "next/server";
 
 // list the latest snapshots for a document the current user can read
