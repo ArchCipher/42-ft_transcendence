@@ -8,6 +8,7 @@ import { authPost, FALLBACK } from "../auth/api";
 import { DisplayText, TechText } from "@/app/components/typography/Typography";
 import Button from "@/app/components/ui/Button";
 import Field from "@/app/components/form/Field";
+import ErrorNote from "../components/form/ErrorNote";
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -76,40 +77,40 @@ export default function RegisterForm() {
       </h2>
       <Field
         id="email"
-		label="Email"
+        label="Email"
         type="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
-		error={fieldErrors?.email}
+        error={fieldErrors?.email}
         autoComplete="email"
       />
 
       <Field
         id="username"
-		label="Username"
+        label="Username"
         value={username}
         onChange={(e) => setUsername(e.target.value)}
         maxLength={32}
         required
-		error={fieldErrors?.username}
+        error={fieldErrors?.username}
         autoComplete="username"
       />
 
       <Field
         id="password"
-		label="Password"
+        label="Password"
         type={showPassword ? "text" : "password"}
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
-		error={fieldErrors?.password}
+        error={fieldErrors?.password}
         autoComplete="new-password"
       />
 
       <Field
         id="confirm-password"
-		label="Confirm password"
+        label="Confirm password"
         type={showPassword ? "text" : "password"}
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
@@ -126,17 +127,17 @@ export default function RegisterForm() {
         <TechText className="text-xs">Show password</TechText>
       </label>
 
-      {error && (
-        <p className="FormError" role="alert">
-          <TechText className="text-xs">{error}</TechText>
-        </p>
-      )}
+      {error && <ErrorNote>{error}</ErrorNote>}
 
       <Button className="AuthSubmitButton" type="submit" disabled={loading}>
         {loading ? "Registering..." : "Register"}
       </Button>
       <div className="AuthLinks AuthSingleLink">
-        <Link href="/auth"><TechText className="text-xs">Already have an account? Log in</TechText></Link>
+        <Link href="/auth">
+          <TechText className="text-xs">
+            Already have an account? Log in
+          </TechText>
+        </Link>
       </div>
     </form>
   );

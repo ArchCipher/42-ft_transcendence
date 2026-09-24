@@ -7,6 +7,7 @@ import { authPost, FALLBACK } from "./api";
 import { DisplayText, TechText } from "@/app/components/typography/Typography";
 import Button from "@/app/components/ui/Button";
 import Field from "@/app/components/form/Field";
+import ErrorNote from "../components/form/ErrorNote";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -27,10 +28,13 @@ export default function LoginForm() {
     setLoading(true);
 
     try {
-      const { ok, fields, error, redirectTo } = await authPost("/api/auth/login", {
-        email,
-        password,
-      });
+      const { ok, fields, error, redirectTo } = await authPost(
+        "/api/auth/login",
+        {
+          email,
+          password,
+        },
+      );
 
       if (!ok) {
         if (fields)
@@ -93,11 +97,7 @@ export default function LoginForm() {
         <TechText className="text-xs">Show password</TechText>
       </label>
 
-      {error && (
-        <p className="FormError" role="alert">
-          <TechText className="text-xs">{error}</TechText>
-        </p>
-      )}
+      {error && <ErrorNote>{error}</ErrorNote>}
 
       <Button className="AuthSubmitButton" type="submit" disabled={loading}>
         {loading ? "Accessing..." : "Login"}

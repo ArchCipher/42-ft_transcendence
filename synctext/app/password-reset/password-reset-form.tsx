@@ -7,6 +7,7 @@ import { authPost, FALLBACK } from "../auth/api";
 import Field from "@/app/components/form/Field";
 import Button from "@/app/components/ui/Button";
 import { DisplayText, TechText } from "@/app/components/typography/Typography";
+import ErrorNote from "../components/form/ErrorNote";
 
 export default function PasswordResetForm() {
   const router = useRouter();
@@ -95,11 +96,7 @@ export default function PasswordResetForm() {
         autoComplete="new-password"
       />
 
-      {error && (
-        <p className="FormError" role="alert">
-          {error}
-        </p>
-      )}
+      {error && <ErrorNote>{error}</ErrorNote>}
 
       <Button
         className="AuthSubmitButton"

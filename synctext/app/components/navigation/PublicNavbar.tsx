@@ -3,7 +3,7 @@
 import Navbar from "@/app/components/navigation/Navbar";
 import Logo from "@/app/components/header/Logo";
 import Button from "@/app/components/ui/Button";
-import styles from "./PublicNavbar.module.css";
+import baseStyles from "./Navbar.module.css"
 import { usePathname } from "next/navigation";
 
 export default function PublicNavbar() {
@@ -11,11 +11,10 @@ export default function PublicNavbar() {
 
   return (
     <Navbar
-      className={styles.navbar}
-      brand={<Logo className={styles.navbarLogo} href="/" />}
+      className={baseStyles.navbar}
+      brand={<Logo className={baseStyles.navbarLogo} href="/" />}
     >
       <Button
-        className={styles.homeOutlineButton}
         href="#features"
         variant="outline"
       >
@@ -24,7 +23,6 @@ export default function PublicNavbar() {
 
       {pathname !== "/auth" ?(
       <Button
-        className={styles.homeOutlineButton}
         href="/auth"
         variant="outline"
       >
@@ -32,9 +30,13 @@ export default function PublicNavbar() {
       </Button>
 	  ) : null}
 
-      <Button className={styles.homePrimaryButton} href="/sync">
+     {(pathname !== "/sync" && !pathname.startsWith("/doc")) ? (
+      <Button href="/sync">
         Get writing
-      </Button>
+      </Button>) :
+	  <Button href="/register">
+        Register
+      </Button>}
     </Navbar>
   );
 }

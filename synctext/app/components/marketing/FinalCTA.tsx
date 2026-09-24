@@ -20,7 +20,7 @@ export function FinalCTA() {
         </p>
       </div>
       <div className={styles.finalCtaAction}>
-        <Button className={styles.homePrimaryButton} href="/sync" withArrow>
+        <Button href="/sync" withArrow>
           Get writing
         </Button>
       </div>

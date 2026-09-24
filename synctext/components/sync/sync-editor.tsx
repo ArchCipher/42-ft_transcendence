@@ -183,7 +183,6 @@ function StaticEditorShell({
         />
       )}
       <LoadingEditorScreen />
-      {/* <Footer /> */}
     </>
   );
 }

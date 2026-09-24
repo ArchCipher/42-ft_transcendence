@@ -2,14 +2,14 @@
 
 import { Menu } from "@base-ui/react/menu";
 import { TechText } from "@/app/components/typography/Typography";
-import "./UserMenu.css";
+import "./NavMenu.css";
 import { useRouter } from "next/navigation";
 import { LOGGED_OUT_URL, logoutClient } from "@/lib/auth/session-state";
 
 export default function UserMenu({ username }: {username:string}) {
   const router = useRouter();
   return (
-    <div className="UserMenuContainer">
+    <div className="NavMenuRoot">
       <Menu.Root modal={false}>
         <Menu.Trigger className="UserMenu" aria-label="Account menu">
 		  <span className="UserAvatarInitial" aria-hidden="true">
@@ -18,25 +18,25 @@ export default function UserMenu({ username }: {username:string}) {
         </Menu.Trigger>
 
         <Menu.Portal>
-          <Menu.Positioner className="UserMenuPositioner">
-            <Menu.Popup className="UserDropdown">
+          <Menu.Positioner className="NavMenuPositioner">
+            <Menu.Popup className="NavMenuPanel">
 
               <Menu.Item
-                className="UserDropdownItem"
+                className="NavMenuItem"
                 onClickCapture={() => router.push("/profile")}
               >
-                <TechText className="text-xs">
+                <TechText className="text-sm">
                   Profile
                 </TechText>
               </Menu.Item>
 
               <Menu.Item
-                className="UserDropdownItem"
+                className="NavMenuItem"
                 onClick={() =>
                   void logoutClient(() => router.push(LOGGED_OUT_URL))
                 }
               >
-                <TechText className="text-xs">Logout</TechText>
+                <TechText className="text-sm">Logout</TechText>
               </Menu.Item>
             </Menu.Popup>
           </Menu.Positioner>

@@ -111,14 +111,6 @@
   outline-offset: 3px;
 }
 
-.FieldError,
-.FormError {
-  margin: 0;
-  color: oklch(0.78 0.16 25);
-  font-family: var(--font-geist-mono), monospace;
-  font-size: 0.75rem;
-  line-height: 1.45;
-}
 
 .AuthStatus {
   margin: 0;
@@ -146,24 +138,6 @@
 
 .AuthSubmitButton {
   width: 100%;
-  align-self: stretch;
-  margin-top: 0.5rem;
-  border-color: oklch(0.84 0.12 250);
-  background: oklch(0.8 0.1 250);
-  box-shadow: 0 0 0 1px oklch(0.88 0.08 250 / 0.16), 0 0 1.1rem oklch(0.64 0.15 250 / 0.2);
-  color: oklch(0.15 0.025 250);
-}
-
-.AuthSubmitButton:hover:not(:disabled) {
-  border-color: oklch(0.94 0.07 245);
-  background: oklch(0.88 0.1 245);
-  box-shadow: 0 0 0 2px oklch(0.9 0.08 250 / 0.28), 0 0 1.6rem oklch(0.68 0.16 250 / 0.45);
-  transform: translateY(-2px);
-}
-
-.AuthSubmitButton:focus-visible {
-  outline: 2px solid oklch(0.9 0.1 245);
-  outline-offset: 3px;
 }
 
 @media (max-width: 700px) {
@@ -172,6 +146,5 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .AuthLinks a, .AuthSubmitButton { transition: none; }
-  .AuthSubmitButton:hover:not(:disabled) { transform: none; }
+  .AuthLinks a { transition: none; }
 }

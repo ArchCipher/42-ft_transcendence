@@ -339,7 +339,7 @@ export function SimpleEditorView({
   }
 
   return (
-    <div className="simple-editor-wrapper">
+    <div className="simple-editor-wrapper app-editor-wrapper">
       <EditorContext.Provider value={{ editor }}>
         <Toolbar ref={toolbarRef}>
           {toolbarContent}

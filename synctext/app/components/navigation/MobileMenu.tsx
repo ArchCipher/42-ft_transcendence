@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu } from "@base-ui/react/menu";
+import { Menu as MenuIcon, X } from "lucide-react";
+import { useState } from "react";
 import type { ReactNode } from "react";
 
-import "./MobileMenu.css";
+import "./NavMenu.css";
 
 type MobileMenuProps = {
   children: ReactNode;
@@ -12,46 +13,28 @@ type MobileMenuProps = {
 
 export default function MobileMenu({ children }: MobileMenuProps) {
   const [open, setOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        open &&
-        menuRef.current &&
-        !menuRef.current.contains(event.target as Node)
-      ) {
-        setOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [open]);
 
   return (
-    <div className="MobileMenu" ref={menuRef}>
-      <button
-        type="button"
-        className="MobileMenuTrigger"
-        onClick={() => setOpen((current) => !current)}
-        aria-expanded={open}
-        aria-label={open ? "Close navigation menu" : "Open navigation menu"}
-      >
-        {open ? <X size={24} /> : <Menu size={24} />}
-      </button>
-
-      {open ? (
-        <div
-          className="MobileMenuPanel"
-          onClick={() => setOpen(false)}
+    <div className="NavMenuRoot">
+      <Menu.Root modal={false} open={open} onOpenChange={setOpen}>
+        <Menu.Trigger
+          className="NavMenuTrigger"
+          aria-label={open ? "Close navigation menu" : "Open navigation menu"}
         >
-          {children}
-        </div>
-      ) : null}
+          {open ? <X size={20} /> : <MenuIcon size={20} />}
+        </Menu.Trigger>
+
+        <Menu.Portal>
+          <Menu.Positioner className="NavMenuPositioner">
+            <Menu.Popup
+              className="NavMenuPanel NavMenuPanel--mobile"
+              onClick={() => setOpen(false)}
+            >
+              {children}
+            </Menu.Popup>
+          </Menu.Positioner>
+        </Menu.Portal>
+      </Menu.Root>
     </div>
   );
 }

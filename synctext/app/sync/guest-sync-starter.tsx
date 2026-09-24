@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import ErrorNote from "../components/form/ErrorNote";
 
 export default function GuestSyncStarter() {
   const router = useRouter();
@@ -36,7 +37,7 @@ export default function GuestSyncStarter() {
     <main className="grid min-h-screen place-items-center bg-[oklch(0.12_0.006_285)] px-6 font-mono text-sm text-[#f4f2ee]">
       {error ? (
         <div className="max-w-md space-y-4 text-center">
-          <p role="alert">{error}</p>
+          <ErrorNote>{error}</ErrorNote>
           <button
             type="button"
             onClick={() => window.location.reload()}

@@ -7,6 +7,7 @@ import { authPost, FALLBACK } from "../auth/api";
 import Button from "@/app/components/ui/Button";
 import Field from "@/app/components/form/Field";
 import { DisplayText, TechText } from "@/app/components/typography/Typography";
+import ErrorNote from "../components/form/ErrorNote";
 
 export default function ForgotPasswordForm() {
   const router = useRouter();
@@ -70,11 +71,7 @@ export default function ForgotPasswordForm() {
         autoComplete="email"
       />
 
-      {error && (
-        <p className="FormError" role="alert">
-          {error}
-        </p>
-      )}
+      {error && <ErrorNote>{error}</ErrorNote>}
 
       <Button className="AuthSubmitButton" type="submit" disabled={loading}>
         {loading ? "Sending..." : "Send password reset email"}

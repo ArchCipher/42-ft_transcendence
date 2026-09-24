@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, TriangleAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TechText } from "@/app/components/typography/Typography";
 import styles from "./Button.module.css";
@@ -33,13 +33,11 @@ export default function Button({
     className,
     compact && styles.compact,
   );
-  
+
   const content = (
     <>
-        <TechText className={compact ? "text-sm" : "text-xs"}>
-          {children}
-        </TechText>
-
+      {variant === "danger" && <TriangleAlert aria-hidden="true" size={14} />}
+      <TechText className="text-sm">{children}</TechText>
       {withArrow && <ArrowUpRight aria-hidden="true" />}
     </>
   );

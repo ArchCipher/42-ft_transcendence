@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { DisplayText, TechText } from "@/app/components/typography/Typography";
+import ErrorNote from "../components/form/ErrorNote";
 
 type Status = "verifying" | "success" | "error";
 
@@ -61,7 +62,7 @@ export default function VerifyEmailForm({ token }: { token: string }) {
       )}
       {status === "error" && (
         <>
-          <p className="FormError" role="alert">{error}</p>
+          <ErrorNote>{error}</ErrorNote>
           <div className="AuthLinks"><Link href="/auth"><TechText className="text-xs">Back to log in</TechText></Link></div>
         </>
       )}

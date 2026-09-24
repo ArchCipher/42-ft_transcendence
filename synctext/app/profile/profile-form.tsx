@@ -91,7 +91,7 @@ export default function ProfileForm() {
       </Button>
 
       <div className="ProfileDeleteButton">
-      <Button onClick={() => setShowDeleteConfirm(true)}>
+      <Button variant="danger" onClick={() => setShowDeleteConfirm(true)}>
         Delete account
       </Button>
       </div>

@@ -3,8 +3,7 @@
 import Navbar from "@/app/components/navigation/Navbar";
 import Logo from "@/app/components/header/Logo";
 import UserMenu from "./UserMenu";
-import styles from "./UserNavbar.module.css";
-import { usePathname } from "next/navigation";
+import styles from "./Navbar.module.css";
 import { TechText } from "../typography/Typography";
 
 export type UserNavbarProps = {
@@ -12,20 +11,13 @@ export type UserNavbarProps = {
 };
 
 export default function UserNavbar({ username }: UserNavbarProps) {
-  const pathname = usePathname();
   return (
     <Navbar
-      brand={
-        <div className="flex items-center gap-3">
-          <Logo className={styles.navbarLogo} href="/dashboard" />
-        </div>
-      }
       className={styles.navbar}
+      brand={<Logo className={styles.navbarLogo} href="/dashboard" />}
       mobileMenu={false}
     >
-      <span className={styles.username}>
-        <TechText className="text-xs truncate">{username}</TechText>
-      </span>
+      <TechText className="min-w-0 truncate text-sm text-[var(--app-text-white)]">{username}</TechText>
       <UserMenu username={username} />
     </Navbar>
   );

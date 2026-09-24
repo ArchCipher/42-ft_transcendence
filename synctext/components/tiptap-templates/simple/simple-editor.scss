@@ -9,6 +9,12 @@
   overflow: auto;
 }
 
+.app-editor-wrapper {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow: visible;
+}
+
 .dark .simple-editor-wrapper {
   --tt-theme-text: var(--tt-gray-dark-900);
 }
@@ -68,5 +74,19 @@
 
   .simple-editor-content .tiptap.ProseMirror.simple-editor {
     padding: 1rem 1.5rem 30vh;
+  }
+}
+
+// mobile only
+@media screen and (max-width: 900px) {
+  .simple-editor-content .tiptap.ProseMirror p:not(td p):not(th p) {
+	font-size: 0.9375rem;
+	line-height: 1.55;
+  }
+
+  .simple-editor-content .tiptap.ProseMirror.simple-editor {
+	h1 {font-size: 1.35em;}
+	h2 {font-size: 1.2em;}
+	h3 {font-size: 1.075em;}
   }
 }

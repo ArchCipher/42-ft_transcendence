@@ -76,7 +76,7 @@
   color: white;
   background: transparent;
 
-  border: 1px solid var(--app-accent);
+  border: 1px solid var(--app-accent-neon);
   border-radius: 4px;
 
   text-align: center;

@@ -2,14 +2,15 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Check, Clock3, Pencil } from "lucide-react";
+import { Check, Clock3, Lock, Pencil, Unlock } from "lucide-react";
 
 import InputBox from "@/app/components/form/InputBox";
 import { TechText } from "@/app/components/typography/Typography";
 import Button from "@/app/components/ui/Button";
 
-import sharedStyles from "./navbar.module.css";
 import styles from "./guest-navbar.module.css";
+import ErrorNote from "@/app/components/form/ErrorNote";
+import buttonStyles from "@/app/components/ui/Button.module.css";
 
 type GuestDocumentNavbarProps = {
   docId: string;
@@ -43,8 +44,12 @@ export function GuestDocumentNavbar({
 
   const editDeadline = new Date(editExpiresAt).getTime();
   const sessionDeadline = new Date(expiresAt).getTime();
-  const editRemaining = mounted ? Math.max(0, Math.ceil((editDeadline - now) / 1000)) : 0;
-  const sessionRemaining = mounted ? Math.max(0, Math.ceil((sessionDeadline - now) / 1000)) : 0;
+  const editRemaining = mounted
+    ? Math.max(0, Math.ceil((editDeadline - now) / 1000))
+    : 0;
+  const sessionRemaining = mounted
+    ? Math.max(0, Math.ceil((sessionDeadline - now) / 1000))
+    : 0;
 
   // At 0, the edit window is over, show 5-minute grace
   const inGrace = mounted && editRemaining <= 0;
@@ -55,8 +60,8 @@ export function GuestDocumentNavbar({
   );
 
   useEffect(() => {
-	setMounted(true);
-	setNow(Date.now());
+    setMounted(true);
+    setNow(Date.now());
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(timer);
   }, []);
@@ -99,33 +104,48 @@ export function GuestDocumentNavbar({
   }
 
   return (
-    <header className={`${sharedStyles.editorNavbar} ${styles.guestNavbar}`}>
+    <header className={`${styles.guestNavbar}`}>
       <nav
         aria-label="Temporary document navigation"
         className={styles.navigation}
       >
+		<div className={styles.rightControls}>
         <div
-          className={`${styles.countdown} ${inGrace ? styles.countdownReadOnly: ""}`}
+          className={`${styles.countdown} ${inGrace ? styles.countdownReadOnly : ""}`}
           aria-label={`${formatTime(remainingSeconds)} left to edit`}
         >
-          <div className={styles.countdownMeta}>
-            <Clock3 aria-hidden="true" size={14} />
-            <TechText className={styles.countdownLabel}>
-              {mounted ? (inGrace ? "Read only" : "Editable") : "Loading"}
-            </TechText>
-          </div>
-          <time
+		  <time
             dateTime={`PT${remainingSeconds}S`}
             className={styles.countdownTime}
           >
-			{mounted ? formatTime(remainingSeconds) : "--:--"}
+            {mounted ? formatTime(remainingSeconds) : "--:--"}
           </time>
+          <div className={styles.countdownMeta}>
+            {!mounted ? (
+              <Clock3 aria-hidden="true" size={14} />
+            ) : inGrace ? (
+              <Lock aria-hidden="true" size={14} />
+            ) : (
+              <Unlock aria-hidden="true" size={14} />
+            )}
+          </div>
           <span className={styles.progressTrack} aria-hidden="true">
             <span
               className={styles.progressValue}
               style={{ width: `${progress}%` }}
             />
           </span>
+		  </div>
+		  <Link
+          href="/auth"
+          className={[
+            buttonStyles.button,
+            buttonStyles.outline,
+            styles.loginLink,
+          ].join(" ")}
+        >
+          <TechText className="text-xs">Save</TechText>
+        </Link>
         </div>
 
         <div className={styles.titleArea}>
@@ -184,20 +204,13 @@ export function GuestDocumentNavbar({
             </button>
           )}
           {renameError ? (
-            <p
-              id="guest-document-rename-error"
-              role="alert"
-              className={styles.renameError}
-            >
-              {renameError}
-            </p>
+            <div className="mt-2">
+              <ErrorNote id="guest-document-rename-error">
+                {renameError}
+              </ErrorNote>
+            </div>
           ) : null}
         </div>
-
-          <Link href="/auth" className={styles.loginLink}>
-            <TechText className="text-xs">Log in to save</TechText>
-          </Link>
-
       </nav>
     </header>
   );

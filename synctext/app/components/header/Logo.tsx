@@ -12,7 +12,7 @@ type LogoProps = {
 export default function Logo({ className, href }: LogoProps) {
   const lockup = (
     <span className={cn(styles.logo, className)}>
-      <DisplayText className={styles.wordmark}>SyncText</DisplayText>
+      <DisplayText className={styles.logo}>SyncText</DisplayText>
       <span aria-hidden="true" className={styles.separator}>{"//"}</span>
       <Image
         alt=""

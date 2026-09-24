@@ -1,6 +1,7 @@
 import type { InputHTMLAttributes } from "react";
 import Box from "./Box";
 import styles from "./Field.module.css";
+import ErrorNote from "./ErrorNote";
 
 type FieldProps = InputHTMLAttributes<HTMLInputElement> & {
   label: string;
@@ -20,17 +21,15 @@ export default function Field({
       <label htmlFor={id} className={styles.label}>
         {label}
       </label>
-      <Box
-        id={id}
-        {...inputProps}
-        aria-invalid={error ? true : undefined}
-        aria-describedby={error ? errorId : undefined}
-      />
-      {error && (
-        <p id={errorId} className={styles.fieldError}>
-          {error}
-        </p>
-      )}
+      <Box>
+        <input
+          id={id}
+          {...inputProps}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? errorId : undefined}
+        />
+      </Box>
+      {error && <ErrorNote id={errorId}>{error}</ErrorNote>}
     </div>
   );
 }

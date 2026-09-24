@@ -17,10 +17,10 @@ export default function Navbar({ children,
       <nav
         aria-label="Main navigation"
         className="
-                    flex min-h-20 
+                    flex
                     items-center 
                     justify-between 
-                    px-5 
+                    px-5
                     sm:px-[clamp(1.25rem,5vw,5rem)]"
       >
       {brand ? <div className="shrink-0">{brand}</div> : null}

@@ -88,8 +88,9 @@
   --app-panel-bg: rgba(13, 40, 87, 0.5);
   --app-panel-bg2: rgba(8, 25, 55, 0.6);
   --app-panel-border: rgba(100, 190, 255, 0.2);
-  --app-text-main: #ffffff;
-  --app-accent: #6fd3ff;
+  --app-text-white: #ffffff;
+  --app-accent-neon: #00f3ff;
+  --app-accent-yellow: #ffd700;
 }
 
 .dark {
