@@ -7,11 +7,16 @@ import {
   hashSessionToken,
   SESSION_COOKIE_NAME,
 } from "@synctext/shared";
+import { lockDocument, unlockDocument } from "./document-lock.js";
+import { handleRestoreRequest } from "./restore-request.js";
+import { loadDocumentState, saveDocumentState } from "./web-api.js";
 import type {
   Connection,
   onAuthenticatePayload,
   beforeHandleMessagePayload,
+  afterHandleMessagePayload,
   onAwarenessUpdatePayload,
+  onRequestPayload,
 } from "@hocuspocus/server";
 
 // collab doesn't access postgres directly, it persists Yjs state through this internal Next.js API
@@ -147,6 +152,14 @@ const server = new Server({
   name: "hocuspocus-synctext",
   port: 1234,
 
+  async onRequest(data: onRequestPayload) {
+    if (data.request.url?.split("?")[0] !== "/internal/restore") return;
+
+    await handleRestoreRequest(data);
+    // hocuspocus expects this rejection after we send our own http response
+    throw null;
+  },
+
   /*
 Runs once, when HTTP connection is upgraded to Websocket and the client sends
 its auth message.
@@ -196,12 +209,24 @@ so we parse them there. Hocuspocus's own 'token' is not used.
     const ctx = data.context as AuthContext | undefined;
     if (!ctx) throw UNAUTHENTICATED;
 
-    if (Date.now() < ctx.nextAccessCheckAt) return;
+    await lockDocument(data.connection);
 
-    // revalidate session against the DB (revocation / expiry)
-    const result = await recheckAccess(ctx, data.documentName);
-    if (result === "session-revoked") throw SESSION_REVOKED;
-    if (result === "write-revoked") throw WRITE_REVOKED;
+    try {
+      if (Date.now() < ctx.nextAccessCheckAt) return;
+
+      // revalidate session against the DB (revocation / expiry)
+      const result = await recheckAccess(ctx, data.documentName);
+      if (result === "session-revoked") throw SESSION_REVOKED;
+      if (result === "write-revoked") throw WRITE_REVOKED;
+    } catch (error) {
+      // afterHandleMessage does not run when this hook rejects the message
+      unlockDocument(data.connection);
+      throw error;
+    }
+  },
+
+  async afterHandleMessage(data: afterHandleMessagePayload) {
+    unlockDocument(data.connection);
   },
 
   /*
@@ -242,50 +267,11 @@ so we parse them there. Hocuspocus's own 'token' is not used.
   // db extension connects hocuspocus's in memory Yjs docs to our persistent Document.ystate storage
   extensions: [
     new Database({
-      // called when hocuspocus needs to restore a document
       fetch: async ({ documentName }) => {
-        // documentName is expected to match the Prisma Document.id
-        const response = await fetch(
-          `${webUrl}/api/internal/documents/${encodeURIComponent(documentName)}/state`,
-          {
-            method: "GET",
-            headers: {
-              "x-internal-service-token": internalToken,
-            },
-          },
-        );
-
-        if (!response.ok) {
-          throw new Error(`Failed to load document: ${response.status}`);
-        }
-
-        if (response.status === 204) {
-          // 204 means doc exists but no persisted Yjs state yet
-          return null;
-        }
-
-        const state = await response.arrayBuffer();
-
-        return new Uint8Array(state);
+        return loadDocumentState(documentName);
       },
-
-      // called when hocuspocus wants to persist the latest Yjs document state
       store: async ({ documentName, state }) => {
-        const response = await fetch(
-          `${webUrl}/api/internal/documents/${encodeURIComponent(documentName)}/state`,
-          {
-            method: "PUT",
-            headers: {
-              "content-type": "application/octet-stream",
-              "x-internal-service-token": internalToken,
-            },
-            body: new Uint8Array(state),
-          },
-        );
-
-        if (!response.ok) {
-          throw new Error(`Failed to store document: ${response.status}`);
-        }
+        await saveDocumentState(documentName, state);
       },
     }),
   ],

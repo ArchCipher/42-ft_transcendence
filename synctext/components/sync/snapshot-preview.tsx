@@ -13,6 +13,7 @@ import {
 type SnapshotPreviewProps = {
   docId: string
   snapshotId: string
+  onReady?: (snapshotId: string) => void
 }
 
 async function fetchSnapshotBytes(
@@ -91,7 +92,7 @@ function SnapshotEditor({ snapshotDocument }: SnapshotEditorProps) {
   )
 }
 
-function SnapshotPreviewContent({ docId, snapshotId }: SnapshotPreviewProps) {
+function SnapshotPreviewContent({ docId, snapshotId, onReady }: SnapshotPreviewProps) {
   const [snapshotDocument, setSnapshotDocument] = useState<Y.Doc | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState("")
@@ -107,6 +108,7 @@ function SnapshotPreviewContent({ docId, snapshotId }: SnapshotPreviewProps) {
 
         temporaryDocument = createSnapshotDocument(bytes)
         setSnapshotDocument(temporaryDocument)
+        onReady?.(snapshotId)
       } catch (loadError) {
         if (controller.signal.aborted) return
 
@@ -131,7 +133,7 @@ function SnapshotPreviewContent({ docId, snapshotId }: SnapshotPreviewProps) {
         temporaryDocument.destroy()
       }
     }
-  }, [docId, snapshotId])
+  }, [docId, snapshotId, onReady])
 
   if (isLoading) {
     return <p role="status">Loading snapshot...</p>
@@ -149,12 +151,13 @@ function SnapshotPreviewContent({ docId, snapshotId }: SnapshotPreviewProps) {
 }
 
 // remount for a new selection so previous content and errors are cleared
-export function SnapshotPreview({ docId, snapshotId }: SnapshotPreviewProps) {
+export function SnapshotPreview({ docId, snapshotId, onReady }: SnapshotPreviewProps) {
   return (
     <SnapshotPreviewContent
       key={snapshotId}
       docId={docId}
       snapshotId={snapshotId}
+      onReady={onReady}
     />
   )
 }

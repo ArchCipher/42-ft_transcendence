@@ -1,8 +1,8 @@
 import { isAuthorized } from "@/lib/auth/internal";
+import { createDocumentSnapshot } from "@/lib/documents/snapshots";
 import { prisma as db } from "@synctext/db";
 
 const SNAPSHOT_INTERVAL_MS = 5 * 60 * 1000;
-const SNAPSHOT_RETENTION_LIMIT = 5;
 
 // load the persisted Yjs state for the document requested by hocuspocus
 export async function GET(
@@ -104,28 +104,7 @@ export async function PUT(
 
       if (snapshotDue) {
         // preserve the last persisted state before replacing it
-        await tx.documentSnapshot.create({
-          data: {
-            documentId: id,
-            ystate: previousState,
-          },
-        });
-
-        // keep only the newest snapshots for recovery
-        const snapshotsToDelete = await tx.documentSnapshot.findMany({
-          where: { documentId: id },
-          orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-          skip: SNAPSHOT_RETENTION_LIMIT,
-          select: { id: true },
-        });
-
-        if (snapshotsToDelete.length > 0) {
-          await tx.documentSnapshot.deleteMany({
-            where: {
-              id: { in: snapshotsToDelete.map((snapshot) => snapshot.id) },
-            },
-          });
-        }
+        await createDocumentSnapshot(tx, id, previousState);
       }
     }
 
