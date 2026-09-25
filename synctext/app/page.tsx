@@ -3,9 +3,6 @@ import { Features } from "./main-page/features";
 import { Hero } from "./main-page/hero";
 
 import AppBackground from "@/app/components/background/AppBackground";
-import Navbar from "@/app/components/navigation/Navbar";
-import Logo from "@/app/components/header/Logo";
-import Button from "@/app/components/ui/Button";
 import { Footer } from "@/app/components/footer/Footer";
 import { FinalCTA } from "@/app/components/marketing/FinalCTA";
 import styles from "./main-page/HomePage.module.css";

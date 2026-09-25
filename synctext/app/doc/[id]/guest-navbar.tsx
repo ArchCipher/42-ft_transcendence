@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Clock3, Lock, Unlock } from "lucide-react";
 
@@ -8,6 +7,7 @@ import styles from "./document-navbar.module.css";
 import { DocumentTitle } from "./document-title";
 import Button from "@/app/components/ui/Button";
 import { SaveGuestDialog } from "./save-guest-dialog";
+import { useHydrated } from "@/hooks/use-hydrated";
 
 type GuestDocumentNavbarProps = {
   docId: string;
@@ -36,9 +36,10 @@ export function GuestDocumentNavbar({
   const [isEditing, setIsEditing] = useState(false);
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameError, setRenameError] = useState("");
-  const [mounted, setMounted] = useState(false);
-  const [now, setNow] = useState(0);
+  const [now, setNow] = useState(()=> Date.now());
   const [saveOpen, setSaveOpen] = useState(false);
+
+  const mounted = useHydrated();
 
   const editDeadline = new Date(editExpiresAt).getTime();
   const sessionDeadline = new Date(expiresAt).getTime();
@@ -58,8 +59,6 @@ export function GuestDocumentNavbar({
   );
 
   useEffect(() => {
-    setMounted(true);
-    setNow(Date.now());
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(timer);
   }, []);
@@ -109,8 +108,6 @@ export function GuestDocumentNavbar({
       setIsRenaming(false);
     }
   }
-
-  const router = useRouter();
 
   return (
     <header className={`${styles.guestNavbar}`}>

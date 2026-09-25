@@ -5,6 +5,7 @@ import InputBox from "@/app/components/form/InputBox";
 import Button from "@/app/components/ui/Button";
 import ErrorNote from "@/app/components/form/ErrorNote";
 import styles from "./document-navbar.module.css";
+import buttonStyles from "@/app/components/ui/Button.module.css";
 
 type DocumentTitleProps = {
   title: string;
@@ -51,6 +52,8 @@ export function DocumentTitle({
           }}
         >
           <InputBox
+            variant="inline"
+            className={`${buttonStyles.button} ${buttonStyles.outline} ${styles.renameInput}`}
             autoFocus
             value={draftTitle}
             maxLength={120}
@@ -67,7 +70,6 @@ export function DocumentTitle({
           />
           <Button
             type="submit"
-            compact
             disabled={isRenaming || !draftTitle.trim()}
             aria-label="Save document title"
           >

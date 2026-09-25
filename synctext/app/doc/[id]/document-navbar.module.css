@@ -90,7 +90,7 @@
   justify-content: center;
   gap: 0.5rem;
   width: 100%;
-  min-height: 2.75rem;
+  min-height: 36px;
   border: 1px solid transparent;
   background: transparent;
   color: #fff;
@@ -112,40 +112,59 @@
 }
 .renameForm {
   gap: 0.5rem;
-  max-width: 28rem;
+  width: 100%;
+  min-width: 0;
   margin: 0 auto;
+  gap: 0.25rem;	
 }
 .renameForm > :first-child {
   min-width: 0;
   flex: 1;
+}
+.renameForm .renameInput {
+  color: #fff;
+  cursor: text;
+  width: 100%;
+  max-width: 100%;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 1rem;
+  letter-spacing: -0.02em;
+  caret-color: var(--app-accent-neon);
+}
+.renameForm .renameInput:focus-visible {
+  outline: none;
 }
 
 /* --- mobile --- */
 
 @media (max-width: 900px) {
   .navigation {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1fr);
+    grid-template-columns: minmax(7rem, 1fr) auto;
     gap: 0.75rem;
     min-height: 3.2rem;
   }
   .rightControls {
-    grid-column: 2 / 4;
+    grid-column: 2;
     grid-row: 1;
     justify-self: end;
   }
   .titleArea {
     grid-column: 1;
     grid-row: 1;
-	justify-self: start;
-	text-align: left;
+    justify-self: stretch;
+    min-width: 0;
+    text-align: left;
   }
   .titleButton {
-	justify-content: flex-start;
+    justify-content: flex-start;
     min-height: 2rem;
     font-size: 0.84rem;
   }
+  .renameForm .renameInput {
+    font-size: 0.84rem;
+  }
   .countdown {
-	min-width: 4rem;
+    min-width: 4rem;
   }
   .countdownTime {
     font-size: 0.9rem;

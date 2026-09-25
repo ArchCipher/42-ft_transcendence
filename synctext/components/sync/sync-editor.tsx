@@ -24,6 +24,7 @@ import { DocumentNavbar } from "@/app/doc/[id]/navbar";
 import { GuestDocumentNavbar } from "@/app/doc/[id]/guest-navbar";
 import { getLocalUser } from "@/lib/sync/sync-user";
 import { Footer } from "@/app/components/footer/Footer";
+import { useHydrated } from "@/hooks/use-hydrated";
 
 type SyncUser = { name: string; color: string };
 
@@ -67,8 +68,8 @@ function SyncEditorSession({
     (onlineUser) => onlineUser.clientId !== provider.awareness?.clientID,
   );
 
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const mounted = useHydrated();
+
   const [guestReadOnly, setGuestReadOnly] = useState(() =>
     guestState
       ? Date.now() >= new Date(guestState.editExpiresAt).getTime()

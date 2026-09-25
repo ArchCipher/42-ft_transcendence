@@ -9,6 +9,7 @@ import { renameDocument_api } from "@/app/dashboard/document/document";
 import { SnapshotHistory } from "@/components/sync/snapshot-history";
 
 import styles from "./document-navbar.module.css";
+import { useHydrated } from "@/hooks/use-hydrated";
 
 type SyncUser = { name: string; color: string };
 
@@ -52,9 +53,8 @@ export function DocumentNavbar({
   const [isEditing, setIsEditing] = useState(false);
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameError, setRenameError] = useState("");
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => setMounted(true), []);
+  const mounted = useHydrated();
 
   // Broadcast only: the map is observed but never read at mount, because
   // Postgres is the source of truth and a rename from the dashboard never
