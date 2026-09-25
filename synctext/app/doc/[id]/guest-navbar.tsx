@@ -162,7 +162,7 @@ export function GuestDocumentNavbar({
             styles.loginLink,
           ].join(" ")}
         >
-          <TechText className="text-xs">Save</TechText>
+          <TechText className="text-xs max-[900px]:text-xs">Save</TechText>
         </Link>
         </div>
 

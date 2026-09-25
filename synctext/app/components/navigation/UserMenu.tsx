@@ -18,14 +18,14 @@ export default function UserMenu({ username }: {username:string}) {
         </Menu.Trigger>
 
         <Menu.Portal>
-          <Menu.Positioner className="NavMenuPositioner">
+          <Menu.Positioner className="NavMenuPositioner" align="end">
             <Menu.Popup className="NavMenuPanel">
 
               <Menu.Item
                 className="NavMenuItem"
                 onClickCapture={() => router.push("/profile")}
               >
-                <TechText className="text-sm">
+                <TechText className="text-sm max-[900px]:text-xs">
                   Profile
                 </TechText>
               </Menu.Item>
@@ -36,7 +36,7 @@ export default function UserMenu({ username }: {username:string}) {
                   void logoutClient(() => router.push(LOGGED_OUT_URL))
                 }
               >
-                <TechText className="text-sm">Logout</TechText>
+                <TechText className="text-sm max-[900px]:text-xs">Logout</TechText>
               </Menu.Item>
             </Menu.Popup>
           </Menu.Positioner>

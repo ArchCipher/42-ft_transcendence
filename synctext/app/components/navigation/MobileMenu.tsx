@@ -25,7 +25,7 @@ export default function MobileMenu({ children }: MobileMenuProps) {
         </Menu.Trigger>
 
         <Menu.Portal>
-          <Menu.Positioner className="NavMenuPositioner">
+          <Menu.Positioner className="NavMenuPositioner" align="end">
             <Menu.Popup
               className="NavMenuPanel NavMenuPanel--mobile"
               onClick={() => setOpen(false)}

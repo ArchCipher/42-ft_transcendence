@@ -37,7 +37,7 @@ export default function Button({
   const content = (
     <>
       {variant === "danger" && <TriangleAlert aria-hidden="true" size={14} />}
-      <TechText className="text-sm">{children}</TechText>
+      <TechText className="text-sm max-[900px]:text-xs">{children}</TechText>
       {withArrow && <ArrowUpRight aria-hidden="true" />}
     </>
   );
