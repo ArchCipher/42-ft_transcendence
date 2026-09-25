@@ -31,10 +31,10 @@ export default function PublicNavbar() {
 	  ) : null}
 
      {(pathname !== "/sync" && !pathname.startsWith("/doc")) ? (
-      <Button href="/sync">
+      <Button href="/sync" className="navMenuCTA">
         Get writing
       </Button>) :
-	  <Button href="/register">
+	  <Button href="/register" className="navMenuCTA">
         Register
       </Button>}
     </Navbar>

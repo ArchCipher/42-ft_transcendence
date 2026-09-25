@@ -2,15 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Check, Clock3, Lock, Pencil, Unlock } from "lucide-react";
+import { Clock3, Lock, Unlock } from "lucide-react";
 
-import InputBox from "@/app/components/form/InputBox";
 import { TechText } from "@/app/components/typography/Typography";
-import Button from "@/app/components/ui/Button";
 
-import styles from "./guest-navbar.module.css";
-import ErrorNote from "@/app/components/form/ErrorNote";
+import styles from "./document-navbar.module.css";
 import buttonStyles from "@/app/components/ui/Button.module.css";
+import { DocumentTitle } from "./document-title";
 
 type GuestDocumentNavbarProps = {
   docId: string;
@@ -109,6 +107,26 @@ export function GuestDocumentNavbar({
         aria-label="Temporary document navigation"
         className={styles.navigation}
       >
+		{/* Document title */}
+		<DocumentTitle
+          title={title}
+          draftTitle={draftTitle}
+          isEditing={isEditing}
+          isRenaming={isRenaming}
+          renameError={renameError}
+          canRename={canRename}
+          errorId="guest-document-rename-error"
+          readOnlyHint="Temporary document is read-only"
+          onStartEdit={() => {
+            setDraftTitle(title);
+            setIsEditing(true);
+          }}
+          onDraftChange={setDraftTitle}
+          onSubmit={() => void saveTitle()}
+          onCancel={cancelEditing}
+        />
+
+    {/* Right: timer + save */}
 		<div className={styles.rightControls}>
         <div
           className={`${styles.countdown} ${inGrace ? styles.countdownReadOnly : ""}`}
@@ -148,69 +166,6 @@ export function GuestDocumentNavbar({
         </Link>
         </div>
 
-        <div className={styles.titleArea}>
-          {isEditing ? (
-            <form
-              className={styles.renameForm}
-              onSubmit={(event) => {
-                event.preventDefault();
-                void saveTitle();
-              }}
-              onBlur={(event) => {
-                if (!event.currentTarget.contains(event.relatedTarget))
-                  cancelEditing();
-              }}
-            >
-              <InputBox
-                autoFocus
-                value={draftTitle}
-                maxLength={120}
-                disabled={isRenaming}
-                aria-label="Document title"
-                aria-describedby={
-                  renameError ? "guest-document-rename-error" : undefined
-                }
-                onChange={(event) => setDraftTitle(event.target.value)}
-                onFocus={(event) => event.currentTarget.select()}
-                onKeyDown={(event) => {
-                  if (event.key === "Escape") cancelEditing();
-                }}
-              />
-              <Button
-                type="submit"
-                compact
-                disabled={isRenaming || !draftTitle.trim()}
-              >
-                <Check aria-hidden="true" size={16} />
-              </Button>
-            </form>
-          ) : (
-            <button
-              type="button"
-              disabled={!canRename}
-              onClick={() => {
-                setDraftTitle(title);
-                setIsEditing(true);
-              }}
-              className={styles.titleButton}
-              title={
-                canRename
-                  ? "Rename document"
-                  : "Temporary document is read-only"
-              }
-            >
-              <span>{title}</span>
-              {canRename ? <Pencil aria-hidden="true" size={14} /> : null}
-            </button>
-          )}
-          {renameError ? (
-            <div className="mt-2">
-              <ErrorNote id="guest-document-rename-error">
-                {renameError}
-              </ErrorNote>
-            </div>
-          ) : null}
-        </div>
       </nav>
     </header>
   );

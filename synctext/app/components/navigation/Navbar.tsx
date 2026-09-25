@@ -20,8 +20,7 @@ export default function Navbar({ children,
                     flex
                     items-center 
                     justify-between 
-                    px-5
-                    sm:px-[clamp(1.25rem,5vw,5rem)]"
+                    px-[var(--nav-x-padding)]"
       >
       {brand ? <div className="shrink-0">{brand}</div> : null}
       {children && (

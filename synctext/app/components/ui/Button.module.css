@@ -78,4 +78,5 @@
 @media (max-width: 900px) {
   .text-sm {font-size: 12px;}
   .button {min-height: 32px; padding: 0 10px;}
+  .button :global(.text-sm) {font-size: 12px;}
 }

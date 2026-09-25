@@ -339,7 +339,7 @@ export function SnapshotHistory({ docId, canRestore, isConnected }: SnapshotHist
         className={[buttonStyles.button, buttonStyles.outline].filter(Boolean).join(" ")}
       >
         <History aria-hidden="true" size={15} />
-        <TechText>History</TechText>
+        <TechText className="text-base max-[900px]:text-[0.7rem]">History</TechText>
       </DialogTrigger>
 
       <DialogContent

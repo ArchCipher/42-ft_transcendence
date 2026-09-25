@@ -31,7 +31,7 @@ export default function UserMenu({ username }: {username:string}) {
               </Menu.Item>
 
               <Menu.Item
-                className="NavMenuItem"
+                className="NavMenuItem navMenuDanger"
                 onClick={() =>
                   void logoutClient(() => router.push(LOGGED_OUT_URL))
                 }
