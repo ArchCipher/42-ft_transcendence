@@ -1,14 +1,13 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { Clock3, Lock, Unlock } from "lucide-react";
 
-import { TechText } from "@/app/components/typography/Typography";
-
 import styles from "./document-navbar.module.css";
-import buttonStyles from "@/app/components/ui/Button.module.css";
 import { DocumentTitle } from "./document-title";
+import Button from "@/app/components/ui/Button";
+import { SaveGuestDialog } from "./save-guest-dialog";
 
 type GuestDocumentNavbarProps = {
   docId: string;
@@ -39,6 +38,7 @@ export function GuestDocumentNavbar({
   const [renameError, setRenameError] = useState("");
   const [mounted, setMounted] = useState(false);
   const [now, setNow] = useState(0);
+  const [saveOpen, setSaveOpen] = useState(false);
 
   const editDeadline = new Date(editExpiresAt).getTime();
   const sessionDeadline = new Date(expiresAt).getTime();
@@ -63,6 +63,15 @@ export function GuestDocumentNavbar({
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(timer);
   }, []);
+
+  const gracePrompted = useRef(false);
+
+  useEffect(() => {
+    if (inGrace && !gracePrompted.current) {
+      gracePrompted.current = true;
+      setSaveOpen(true);
+    }
+  }, [inGrace]);
 
   function cancelEditing() {
     setDraftTitle(title);
@@ -101,14 +110,16 @@ export function GuestDocumentNavbar({
     }
   }
 
+  const router = useRouter();
+
   return (
     <header className={`${styles.guestNavbar}`}>
       <nav
         aria-label="Temporary document navigation"
         className={styles.navigation}
       >
-		{/* Document title */}
-		<DocumentTitle
+        {/* Document title */}
+        <DocumentTitle
           title={title}
           draftTitle={draftTitle}
           isEditing={isEditing}
@@ -126,46 +137,44 @@ export function GuestDocumentNavbar({
           onCancel={cancelEditing}
         />
 
-    {/* Right: timer + save */}
-		<div className={styles.rightControls}>
-        <div
-          className={`${styles.countdown} ${inGrace ? styles.countdownReadOnly : ""}`}
-          aria-label={`${formatTime(remainingSeconds)} left to edit`}
-        >
-		  <time
-            dateTime={`PT${remainingSeconds}S`}
-            className={styles.countdownTime}
+        {/* Right: timer + save */}
+        <div className={styles.rightControls}>
+          <div
+            className={`${styles.countdown} ${inGrace ? styles.countdownReadOnly : ""}`}
+            aria-label={`${formatTime(remainingSeconds)} left on this session`}
           >
-            {mounted ? formatTime(remainingSeconds) : "--:--"}
-          </time>
-          <div className={styles.countdownMeta}>
-            {!mounted ? (
-              <Clock3 aria-hidden="true" size={14} />
-            ) : inGrace ? (
-              <Lock aria-hidden="true" size={14} />
-            ) : (
-              <Unlock aria-hidden="true" size={14} />
-            )}
+            <time
+              dateTime={`PT${remainingSeconds}S`}
+              className={styles.countdownTime}
+            >
+              {mounted ? formatTime(remainingSeconds) : "--:--"}
+            </time>
+            <div className={styles.countdownMeta}>
+              {!mounted ? (
+                <Clock3 aria-hidden="true" size={14} />
+              ) : inGrace ? (
+                <Lock aria-hidden="true" size={14} />
+              ) : (
+                <Unlock aria-hidden="true" size={14} />
+              )}
+            </div>
+            <span className={styles.progressTrack} aria-hidden="true">
+              <span
+                className={styles.progressValue}
+                style={{ width: `${progress}%` }}
+              />
+            </span>
           </div>
-          <span className={styles.progressTrack} aria-hidden="true">
-            <span
-              className={styles.progressValue}
-              style={{ width: `${progress}%` }}
-            />
-          </span>
-		  </div>
-		  <Link
-          href="/auth"
-          className={[
-            buttonStyles.button,
-            buttonStyles.outline,
-            styles.loginLink,
-          ].join(" ")}
-        >
-          <TechText className="text-xs max-[900px]:text-xs">Save</TechText>
-        </Link>
+          <Button variant="outline" onClick={() => setSaveOpen(true)}>
+            Save
+          </Button>
+          <SaveGuestDialog
+            open={saveOpen}
+            onOpenChange={setSaveOpen}
+            sessionRemaining={sessionRemaining}
+            grace={inGrace}
+          />
         </div>
-
       </nav>
     </header>
   );
