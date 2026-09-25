@@ -335,7 +335,6 @@ export function SnapshotHistory({ docId, canRestore, isConnected }: SnapshotHist
       <DialogTrigger
         aria-label="Snapshot history"
         title="Snapshot history"
-        render={<Button variant="outline" />}
         className={[buttonStyles.button, buttonStyles.outline].filter(Boolean).join(" ")}
       >
         <History aria-hidden="true" size={15} />
