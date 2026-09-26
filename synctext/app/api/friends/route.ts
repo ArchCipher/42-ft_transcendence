@@ -69,7 +69,7 @@ export async function POST(request: Request) {
     return badRequest("identifier must be a string");
   }
 
-  const identifier = body.identifier.trim();
+  const identifier = body.identifier.trim().toLowerCase();
   if (!identifier) return badRequest("identifier must not be empty");
 
   const userId = session.user.id;
@@ -166,14 +166,7 @@ export async function POST(request: Request) {
   } catch (error) {
     // The compound primary key protects against two users creating
     // the same friendship pair at the same time.
-    const friendship = await db.friendship.findUnique({
-      where: {
-        userAId_userBId: { userAId, userBId },
-      },
-      select: { userAId: true },
-    });
-
-    if (friendship) {
+    if (isPrismaErrorCode(error, "P2002")) {
       return badRequest("A friendship or friend request already exists");
     }
 
@@ -269,6 +262,15 @@ export async function DELETE(request: Request) {
   }
 
   return new NextResponse(null, { status: 204 });
+}
+
+function isPrismaErrorCode(error: unknown, code: string) {
+  return (
+    typeof error === "object"
+    && error !== null
+    && "code" in error
+    && error.code === code
+  );
 }
 
 function compareUsernames(firstUser: FriendUser, secondUser: FriendUser) {
