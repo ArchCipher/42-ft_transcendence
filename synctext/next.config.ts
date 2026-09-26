@@ -16,7 +16,7 @@ Directives explained:
   font-src 'self' data:       fonts if we self-host them
   connect-src 'self'          covers the Hocuspocus WebSocket too: nginx proxies
                                it at /collab on the same origin as the page
-  frame-ancestors 'self'      block framing/clickjacking
+  frame-ancestors 'none'      block framing/clickjacking
   base-uri 'self'             stop attackers rewriting <base> to load scripts from their domain
 */
 
@@ -32,7 +32,7 @@ const securityHeaders = [
           "connect-src 'self'",
           "object-src 'none'",
           "form-action 'self'",
-          "frame-ancestors 'self'",
+          "frame-ancestors 'none'",
           "base-uri 'self'",
         ].join("; "),
       },
@@ -47,6 +47,10 @@ const otherHeaders = [
   {
     key: "Referrer-Policy",
     value: "strict-origin-when-cross-origin", // default in most browsers
+  },
+  {
+    key: "X-Content-Type-Options",
+    value: "nosniff",
   },
 ];
 

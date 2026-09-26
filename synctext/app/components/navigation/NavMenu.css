@@ -27,6 +27,8 @@
   width: 2.25rem;
   aspect-ratio: 1;
   flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
   padding: 0;
   cursor: pointer;
   border: 1px solid var(--app-accent-neon);
@@ -49,6 +51,10 @@
   font-weight: 700;
   color: var(--app-accent-neon);
   text-shadow: 0 0 0.6rem rgba(0, 243, 255, 0.8);
+}
+
+.UserAvatarImg {
+  object-fit: cover;
 }
 
 .NavMenuPositioner {

@@ -20,7 +20,7 @@ export default async function LegalLayout({
         Skip to content
       </a>
       {session?.user ? (
-        <UserNavbar username={session.user.username} />
+        <UserNavbar username={session.user.username} avatarUrl={session.user.avatarUrl} />
       ) : (
         <PublicNavbar />
       )}

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { revalidatePath } from "next/cache";
 import { prisma as db, Prisma } from "@synctext/db";
 import {
   getSessionToken,
@@ -7,6 +8,9 @@ import {
 } from "@/lib/auth/session";
 import { usernameSchema } from "@/lib/auth/validation";
 import { parseRequest } from "@/lib/auth/parse-request";
+import { accountLimiter, accountKey } from "@/lib/auth/rate-limit";
+import { AVATAR_MAX_BYTES } from "@synctext/shared/constants";
+import { validateAvatarDataUrl } from "@/lib/auth/avatar";
 
 /*
 Own profile: read via the server-rendered page, mutations happen here.
@@ -27,13 +31,15 @@ API Response contracts: /api/profile
 		  500 → { error } (unhandled server error)
 */
 
+/*
+NOTE: Math.ceil(AVATAR_MAX_BYTES * 1.37) + 128
+Cheap string-length pre-filter.
+Base64 inflates (3bytes -> 4chars), and "data:image/png;base64," prefix
+dds 22 more, so a max size image is ~955,758 chars. 1.37 is deliberately loose
+*/
 const avatarUrlSchema = z
   .string()
-  .max(2_100_000, "Image too large")
-  .refine(
-    (v) => v.startsWith("data:image/") || /^https?:\/\//.test(v),
-    "Avatar must be an image (data URL or http(s) URL)",
-  )
+  .max(Math.ceil(AVATAR_MAX_BYTES * 1.37) + 128, "Image too large")
   .nullable();
 
 const updateProfileSchema = z
@@ -60,10 +66,33 @@ export async function PUT(request: Request) {
 
   const user = auth.session!.user;
 
+  const maxBodyBytes = Math.ceil(AVATAR_MAX_BYTES * 1.37) + 4096;
+  const declaredLength = Number(request.headers.get("content-length") ?? 0);
+  if (Number.isFinite(declaredLength) && declaredLength > maxBodyBytes) {
+    return Response.json({ error: "Image too large" }, { status: 413 });
+  }
+
+  const limitKey = accountKey(user.email);
+  if ((await accountLimiter.blockedRemaining(limitKey)) > 0) {
+    return Response.json(
+      { error: "Too many attempts. Try again later." },
+      { status: 429 },
+    );
+  }
+
   const result = await parseRequest(request, updateProfileSchema);
   if (result.error) return result.error;
 
   const input = result.data;
+
+  if (input.avatarUrl !== undefined && input.avatarUrl !== null) {
+    const check = validateAvatarDataUrl(input.avatarUrl);
+    if (!check.ok) {
+	  // a rejected payload counts as an attempt and cleared on success
+      await accountLimiter.recordFailure(limitKey);
+      return Response.json({ error: check.error }, { status: 400 });
+    }
+  }
 
   const usernameChanged =
     input.username !== undefined && input.username !== user.username;
@@ -90,7 +119,12 @@ export async function PUT(request: Request) {
       select: { username: true, email: true, avatarUrl: true },
     });
 
-    return Response.json({ ok: true, user: updated }, { status: 200 });
+    await accountLimiter.clear(limitKey);
+    revalidatePath("/", "layout");
+    return Response.json(
+      { ok: true, user: { username: updated.username, email: updated.email } },
+      { status: 200 },
+    );
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
@@ -105,21 +139,29 @@ export async function PUT(request: Request) {
   }
 }
 
-// Remove the account and everything owned by it, then drop the session.
+// Remove the account and everything owned by it, resolving every shared group
+// this user solely owns.
+// TODO: this currently only handles private space
+// Shared group the user is the SOLE owner of it is left with no owner now.
 export async function DELETE() {
   const auth = await requireApiSession();
   if (auth.error) return auth.error;
 
   const user = auth.session!.user;
 
-  // Owned documents (snapshots cascade), then the user (sessions, tokens and
-  // shares cascade). Deleting in this order avoids FK violations on Document.
   await db.$transaction([
-    db.document.deleteMany({ where: { ownerId: user.id } }),
+    // The private space holds the user's own documents and cascades away.
+    db.group.deleteMany({
+      where: { isPrivateSpace: true, members: { some: { userId: user.id } } },
+    }),
+    // GroupMember.user is onDelete: Restrict, so memberships have to go first.
+    db.groupMember.deleteMany({ where: { userId: user.id } }),
+    // Sessions, tokens and friendships cascade; createdById on documents other
+    // people still hold is set to null.
     db.user.delete({ where: { id: user.id } }),
   ]);
 
   await logoutCurrentSession();
 
-  return Response.json({ ok: true }, { status: 200 });
+  return Response.json({ ok: true });
 }

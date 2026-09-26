@@ -2,10 +2,8 @@ import type { Metadata } from "next";
 
 import ProfileClient from "./profile-client";
 
-import AuthPageShell from "@/app/components/auth/AuthPageShell";
 import { requireSession } from "@/lib/auth/guard";
 import { SessionGuard } from "@/hooks/use-session-guard";
-import UserNavbar from "../components/navigation/UserNavbar";
 
 export const metadata: Metadata = { title: "Profile — SyncText" };
 

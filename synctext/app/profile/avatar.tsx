@@ -1,11 +1,18 @@
 "use client";
 
 import { useState, useRef, type ChangeEvent } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { Menu } from "@base-ui/react/menu";
 
-import styles from "./Profile.module.css";
 import { TechText } from "@/app/components/typography/Typography";
+import styles from "./Profile.module.css";
+import "@/app/components/navigation/NavMenu.css";
 import type { Status } from "./profile-client";
+import {
+  AVATAR_MAX_BYTES,
+  AVATAR_MIME_TYPES,
+} from "@synctext/shared/constants";
 
 const FALLBACK = "Something went wrong. Please try again.";
 
@@ -20,9 +27,10 @@ export default function Avatar({
   username,
   onStatus,
 }: AvatarProps) {
+  const router = useRouter();
+
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl);
   const [avatarBusy, setAvatarBusy] = useState(false);
-  const [showAvatarMenu, setShowAvatarMenu] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const initialLetter = (username[0] ?? "?").toUpperCase();
@@ -43,6 +51,7 @@ export default function Avatar({
       }
 
       setAvatarUrl(next);
+      router.refresh();
       onStatus({
         kind: "saved",
         text: next ? "Avatar updated." : "Avatar removed.",
@@ -63,86 +72,82 @@ export default function Avatar({
       onStatus({ kind: "error", text: "Please choose an image." });
       return;
     }
-    if (file.size > 1_500_000) {
-      onStatus({ kind: "error", text: "Image too large (max 1.5 MB)." });
+    if (!(AVATAR_MIME_TYPES as readonly string[]).includes(file.type)) {
+      onStatus({
+        kind: "error",
+        text: `Use one of: ${AVATAR_MIME_TYPES.join(", ")}`,
+      });
       return;
     }
-
-    onStatus(null);
+    if (file.size > AVATAR_MAX_BYTES) {
+      onStatus({
+        kind: "error",
+        text: `Image too large (max ${Math.round(AVATAR_MAX_BYTES / 1024 / 1024)} MB).`,
+      });
+      return;
+    }
 
     const reader = new FileReader();
     reader.onload = () => {
       const dataUrl = typeof reader.result === "string" ? reader.result : null;
-      if (dataUrl) void saveAvatar(dataUrl);
+      if (dataUrl) {
+        onStatus(null);
+        void saveAvatar(dataUrl);
+      }
     };
     reader.readAsDataURL(file);
   }
 
   return (
     <div className={styles.avatarWrap}>
-      <button
-        type="button"
-        className={styles.avatar}
-        onClick={() => setShowAvatarMenu((v) => !v)}
-        aria-haspopup="menu"
-        aria-expanded={showAvatarMenu}
-        aria-label="Change your avatar"
-        disabled={avatarBusy}
-      >
-        {avatarUrl ? (
-          <Image
-            src={avatarUrl}
-            alt=""
-            fill sizes="72px"
-            className={styles.avatarImg}
-            unoptimized
-          />
-        ) : (
-          <span className={styles.avatarInitial}>{initialLetter}</span>
-        )}
-        <span className={styles.avatarOverlay} aria-hidden="true">
-          Change
-        </span>
-      </button>
+      <Menu.Root modal={false}>
+        <Menu.Trigger
+          className={styles.avatar}
+          aria-label="Change your avatar"
+          disabled={avatarBusy}
+        >
+          {avatarUrl ? (
+            <Image
+              src={avatarUrl}
+              alt=""
+              fill
+              sizes="72px"
+              className={styles.avatarImg}
+              unoptimized
+            />
+          ) : (
+            <span className={styles.avatarInitial}>{initialLetter}</span>
+          )}
+          <span className={styles.avatarOverlay} aria-hidden="true">
+            Change
+          </span>
+        </Menu.Trigger>
 
-      {showAvatarMenu && (
-        <>
-          <div
-            className={styles.avatarMenuBackdrop}
-            onClick={() => setShowAvatarMenu(false)}
-          />
-          <div
-            className={styles.avatarMenu}
-            role="menu"
-            aria-label="Avatar options"
-          >
-            <button
-              type="button"
-              role="menuitem"
-              className={styles.avatarMenuItem}
-              onClick={() => {
-                setShowAvatarMenu(false);
-                fileInputRef.current?.click();
-              }}
-            >
-              <TechText className="text-xs">Upload image</TechText>
-            </button>
-            {avatarUrl && (
-              <button
-                type="button"
-                role="menuitem"
-                className={styles.avatarMenuItem}
-                onClick={() => {
-                  setShowAvatarMenu(false);
-                  void saveAvatar(null);
-                }}
+        <Menu.Portal>
+          <Menu.Positioner className="NavMenuPositioner" align="end">
+            <Menu.Popup className="NavMenuPanel" aria-label="Avatar options">
+              <Menu.Item
+                className="NavMenuItem"
+                onClick={() => fileInputRef.current?.click()}
               >
-                <TechText className="text-xs">Remove avatar</TechText>
-              </button>
-            )}
-          </div>
-        </>
-      )}
+                <TechText className="text-sm max-[900px]:text-xs">
+                  Upload image
+                </TechText>
+              </Menu.Item>
+              {avatarUrl && (
+                <Menu.Item
+                  className="NavMenuItem"
+                  onClick={() => void saveAvatar(null)}
+                >
+                  <TechText className="text-sm max-[900px]:text-xs">
+                    Remove avatar
+                  </TechText>
+                </Menu.Item>
+              )}
+            </Menu.Popup>
+          </Menu.Positioner>
+        </Menu.Portal>
+      </Menu.Root>
 
       <input
         ref={fileInputRef}

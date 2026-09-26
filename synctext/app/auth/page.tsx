@@ -25,7 +25,7 @@ export default async function Login({
       verify={verify}
       navbar={
         session?.user ? (
-          <UserNavbar username={session.user.username} />
+          <UserNavbar username={session.user.username} avatarUrl={session.user.avatarUrl} />
         ) : undefined
       }
     />

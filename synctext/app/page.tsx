@@ -24,7 +24,7 @@ export default async function MainPage() {
 
         <div className={styles.navigation}>
           {actor?.kind == "user" ? (
-            <UserNavbar username={actor.username} />
+            <UserNavbar username={actor.username} avatarUrl={actor.avatarUrl} />
           ) : (
             <PublicNavbar />
           )}

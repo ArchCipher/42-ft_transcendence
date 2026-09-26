@@ -89,7 +89,7 @@ export default function ProfileClient({ initial }: { initial: ProfileInput }) {
   }
   return (
     <AuthPageShell
-      navbar={<UserNavbar username={initial.username} />}
+      navbar={<UserNavbar username={initial.username} avatarUrl={initial.avatarUrl} />}
       notice={
         status && (
           <StatusNotice role={status.kind === "error" ? "alert" : "status"}>

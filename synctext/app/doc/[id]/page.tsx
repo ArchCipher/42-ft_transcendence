@@ -88,7 +88,7 @@ export default async function DocPage({ params }: { params: Promise<{ id: string
 
   return (
 	<>
-    <UserNavbar username={actor.username} />
+    <UserNavbar username={actor.username} avatarUrl={actor.avatarUrl} />
     <SyncEditorPage
       docId={document.id}
       title={document.title}

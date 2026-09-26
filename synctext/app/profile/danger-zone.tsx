@@ -21,12 +21,9 @@ export default function DangerZone({
   onStatus: (status: Status) => void;
 }) {
   const router = useRouter();
-  const [deleting, setDeleting] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
 
   async function handleDelete() {
-    setDeleting(true);
-
     try {
       const res = await fetch("/api/profile", { method: "DELETE" });
       if (!res.ok) {
@@ -39,7 +36,6 @@ export default function DangerZone({
     } catch {
       onStatus({ kind: "error", text: FALLBACK });
       setShowDelete(false);
-      setDeleting(false);
     }
   }
   return (
