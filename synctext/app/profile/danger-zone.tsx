@@ -47,7 +47,6 @@ export default function DangerZone({
       <div className={styles.zoneRow}>
         <Button
           variant="outline"
-          compact
           onClick={() => void logoutClient(() => router.push(LOGGED_OUT_URL))}
         >
           Log out
@@ -57,7 +56,6 @@ export default function DangerZone({
       <div className={styles.zoneRow}>
         <Button
           variant="danger"
-          compact
           className={styles.dangerButton}
           onClick={() => setShowDelete(true)}
         >

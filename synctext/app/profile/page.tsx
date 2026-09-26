@@ -13,20 +13,16 @@ export default async function ProfilePage() {
   const { user } = await requireSession();
 
   return (
-	<SessionGuard>
-    <AuthPageShell
-      navbar={<UserNavbar username={user.username} />}
-    >
-        <ProfileClient
-          initial={{
-            username: user.username,
-            email: user.email,
-            avatarUrl: user.avatarUrl ?? null,
-            emailVerifiedAt: user.emailVerifiedAt?.toISOString() ?? null,
-            createdAt: user.createdAt.toISOString(),
-          }}
-        />
-    </AuthPageShell>
-	</SessionGuard>
+    <SessionGuard>
+      <ProfileClient
+        initial={{
+          username: user.username,
+          email: user.email,
+          avatarUrl: user.avatarUrl ?? null,
+          emailVerifiedAt: user.emailVerifiedAt?.toISOString() ?? null,
+          createdAt: user.createdAt.toISOString(),
+        }}
+      />
+    </SessionGuard>
   );
 }

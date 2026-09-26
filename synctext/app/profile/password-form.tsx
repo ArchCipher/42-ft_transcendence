@@ -8,6 +8,7 @@ import { TechText } from "@/app/components/typography/Typography";
 import Button from "@/app/components/ui/Button";
 import Field from "@/app/components/form/Field";
 import type { Status } from "./profile-client";
+import ErrorNote from "../components/form/ErrorNote";
 
 const FALLBACK = "Something went wrong. Please try again.";
 
@@ -167,11 +168,7 @@ export default function PasswordForm({
             </Link>
           </div>
 
-          {error && (
-            <p className={styles.fieldError} role="alert">
-              {error}
-            </p>
-          )}
+          {error && <ErrorNote>{error}</ErrorNote>}
 
           <div className={styles.actionsRow}>
             <Button

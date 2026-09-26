@@ -3,6 +3,7 @@ import "./auth.css";
 import LoginForm from "./login-form";
 import AuthPageShell from "@/app/components/auth/AuthPageShell";
 import UserNavbar from "../components/navigation/UserNavbar";
+import StatusNotice from "../components/form/StatusNotice";
 
 // NOTICES displayed in navtab
 const NOTICES: Record<string, string> = {
@@ -40,12 +41,10 @@ function LoginPage({
 }) {
   return (
     <AuthPageShell
-	  navbar={navbar}
+      navbar={navbar}
       notice={
         verify && NOTICES[verify] ? (
-          <div className="AuthNotice" role="status">
-            {NOTICES[verify]}
-          </div>
+          <StatusNotice>{NOTICES[verify]}</StatusNotice>
         ) : undefined
       }
     >

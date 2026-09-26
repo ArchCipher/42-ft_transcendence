@@ -93,8 +93,7 @@ export default function Avatar({
           <Image
             src={avatarUrl}
             alt=""
-            width={72}
-            height={72}
+            fill sizes="72px"
             className={styles.avatarImg}
             unoptimized
           />

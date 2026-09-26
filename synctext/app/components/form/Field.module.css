@@ -6,7 +6,7 @@
 
 .label {
   margin: 0;
-  color: oklch(0.78 0.06 250);
+  color: var(--app-text-white);
   font-family: var(--font-geist-mono), monospace;
   font-size: 0.75rem;
   font-weight: 600;

@@ -1,55 +1,14 @@
-/* Shell panel (AppPanel) override: glass layer, sharp edges, cut corner */
-:global(.AuthPage) .panel {
-  --space-xs: 0.5rem;
-  --space-sm: 0.75rem;
-  --space-md: 1rem;
-  --space-lg: 1.5rem;
-  --space-xl: 2rem;
-  --ink: #f4f2ee;
-  --faint-ink: oklch(0.66 0.02 285);
-  --signal: #00f3ff;
-  --signal-rgb: 0, 243, 255;
-  --base: #05070a;
-  --deep: #0a1128;
-
-  position: relative;
-
-  width: min(32rem, 100%);
-  padding: clamp(1.5rem, 4vw, 2.25rem);
-
-  border-color: rgba(var(--signal-rgb), 0.3);
-  border-radius: 0;
-
-  background:
-    linear-gradient(160deg, rgba(10, 17, 40, 0.9), rgba(5, 7, 10, 0.74));
-
-  backdrop-filter: blur(14px) saturate(140%);
-
-  box-shadow:
-    0 0 3rem rgba(var(--signal-rgb), 0.1),
-    inset 0 1px 0 rgba(var(--signal-rgb), 0.12);
-
-  clip-path: polygon(
-    0 0,
-    calc(100% - 1.6rem) 0,
-    100% 1.6rem,
-    100% 100%,
-    0 100%
-  );
-}
-
 .profileBody {
   display: flex;
   flex-direction: column;
-  gap: var(--space-lg);
-
-  color: var(--ink);
+  gap: 1.5rem;
+  color: var(--app-text-white);
 }
 
 .headerRow {
   display: flex;
   align-items: center;
-  gap: var(--space-lg);
+  gap: 1.5rem;
 }
 
 .headerCopy {
@@ -58,18 +17,15 @@
 }
 
 .kicker {
-  margin: 0 0 var(--space-xs);
-  color: var(--signal);
-  font-family: var(--font-geist-mono), monospace;
-  font-size: 0.62rem;
-  font-weight: 600;
-  letter-spacing: 0.16em;
+  color: var(--app-accent-neon);
+  font-size: var(--app-text-label);
   text-transform: uppercase;
 }
 
 .title {
   margin: 0;
-  font-size: clamp(2.2rem, 6vw, 3rem);
+  font-size: var(--app-text-title);
+  color: var(--app-text-white);
   font-weight: 400;
   line-height: 0.9;
   letter-spacing: -0.04em;
@@ -91,20 +47,12 @@
   padding: 0;
   cursor: pointer;
 
-  border: 1px solid rgba(var(--signal-rgb), 0.45);
+  border: 1px solid rgba(0, 243, 255, 0.45);
   background:
-    radial-gradient(circle at 50% 30%, rgba(var(--signal-rgb), 0.18), transparent 62%),
-    var(--deep);
+    radial-gradient(circle at 50% 30%, rgba(0, 243, 255, 0.18), transparent 62%),
+    #0a1128;
 
-  box-shadow: 0 0 1.2rem rgba(var(--signal-rgb), 0.22);
-
-  clip-path: polygon(
-    0 0,
-    calc(100% - 0.7rem) 0,
-    100% 0.7rem,
-    100% 100%,
-    0 100%
-  );
+  box-shadow: 0 0 1.2rem rgba(0, 243, 255, 0.22);
 }
 
 .avatar:hover:not(:disabled) .avatarOverlay,
@@ -126,9 +74,9 @@
 
   background: rgba(5, 7, 10, 0.66);
 
-  color: var(--signal);
+  color: var(--app-accent-neon);
   font-family: var(--font-geist-mono), monospace;
-  font-size: 0.62rem;
+  font-size: var(--app-text-label);
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -153,7 +101,7 @@
   flex-direction: column;
   min-width: 11.5rem;
 
-  border: 1px solid rgba(var(--signal-rgb), 0.3);
+  border: 1px solid rgba( 0, 243, 255, 0.3);
   background: rgba(10, 17, 40, 0.96);
   backdrop-filter: blur(10px);
   box-shadow: 0 0.8rem 2rem rgba(0, 0, 0, 0.45);
@@ -163,10 +111,9 @@
   padding: 0.6rem 0.9rem;
 
   border: 0;
-  border-bottom: 1px solid rgba(var(--signal-rgb), 0.15);
+  border-bottom: 1px solid rgba( 0, 243, 255, 0.15);
   background: transparent;
 
-  color: var(--ink);
   text-align: left;
   cursor: pointer;
 }
@@ -176,8 +123,8 @@
 }
 
 .avatarMenuItem:hover {
-  background: rgba(var(--signal-rgb), 0.08);
-  color: var(--signal);
+  background: rgba( 0, 243, 255, 0.08);
+  color: var(--app-accent-neon);
 }
 
 .fileInput {
@@ -185,8 +132,6 @@
 }
 
 .avatarImg {
-  width: 100%;
-  height: 100%;
   object-fit: cover;
 }
 
@@ -194,15 +139,15 @@
   font-family: var(--font-geist-mono), monospace;
   font-size: 1.8rem;
   font-weight: 700;
-  color: var(--signal);
-  text-shadow: 0 0 0.6rem rgba(var(--signal-rgb), 0.8);
+  color: var(--app-accent-neon);
+  text-shadow: 0 0 0.6rem rgba( 0, 243, 255, 0.8);
 }
 
 .metaRow {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-sm);
+  gap: 0.75rem;
 }
 
 /* two badges split the row evenly: badge + badge + gap = one field width */
@@ -216,12 +161,12 @@
   box-sizing: border-box;
   padding: 0.3rem 0.6rem;
 
-  border: 1px solid rgba(var(--signal-rgb), 0.34);
-  background: rgba(var(--signal-rgb), 0.07);
+  border: 1px solid var(--app-line-dim);
+  background: rgba(0, 243, 255, 0.07);
 
-  color: var(--faint-ink);
+  color: var(--app-muted);
   font-family: var(--font-geist-mono), monospace;
-  font-size: 0.58rem;
+  font-size: var(--app-text-meta);
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -249,64 +194,22 @@
   }
 }
 
-.fieldGroup {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
-}
-
-.label {
-  margin: 0;
-  color: oklch(0.78 0.06 250);
-  font-family: var(--font-geist-mono), monospace;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.fieldError {
-  margin: 0;
-  color: #ff6b6b;
-  font-family: var(--font-geist-mono), monospace;
-  font-size: 0.7rem;
-}
-
 .actionsRow {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: var(--space-md);
-
-  margin-top: var(--space-xs);
-}
-
-.saveButton {
-  background: var(--signal) !important;
-  border-color: rgba(var(--signal-rgb), 0.9) !important;
-  color: var(--base) !important;
-  box-shadow:
-    0 0 1.1rem rgba(var(--signal-rgb), 0.35),
-    0 0 0 1px rgba(var(--signal-rgb), 0.18) !important;
-}
-
-.saveButton:hover:not(:disabled) {
-  background: oklch(0.94 0.1 197) !important;
-  border-color: oklch(0.94 0.1 197) !important;
-  box-shadow:
-    0 0 1.6rem rgba(var(--signal-rgb), 0.55),
-    0 0 0 2px rgba(var(--signal-rgb), 0.28) !important;
+  gap: 20px;
 }
 
 .linkRow {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-xs);
+  gap: 0.5rem;
 }
 
 .passwordRow a {
-  color: var(--signal);
+  color: var(--app-accent-neon);
 }
 
 .passwordRow a:hover{
@@ -320,12 +223,12 @@
 }
 
 .passLink {
-  margin-top: var(--space-md);
+  margin-top: 1rem;
   padding: 0;
   border: 0;
   background: none;
 
-  color: var(--signal);
+  color: var(--app-accent-neon);
   text-decoration: none;
   cursor: pointer;
   text-align: left;
@@ -339,60 +242,25 @@
 .passwordForm {
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm);
+  gap: 0.75rem;
 }
 
 .divider {
   height: 1px;
   border: 0;
   background: oklch(0.78 0.05 270 / 0.22);
-  margin: var(--space-sm) 0 0;
+  margin: 0.75rem 0 0;
 }
 
 .zoneRow {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-md);
+  gap: 1rem;
 }
 
 .dangerButton {
   box-shadow: 0 0 0.8rem rgba(255, 80, 80, 0.25) !important;
-}
-
-.statusNotice {
-  margin: 0;
-  padding: 0.8rem 1rem;
-
-  border: 1px solid oklch(0.8 0.1 250 / 0.72);
-  background: oklch(0.22 0.055 250 / 0.8);
-
-  color: oklch(0.94 0.035 250);
-  font-family: var(--font-geist-mono), monospace;
-  font-size: 0.75rem;
-  line-height: 1.45;
-}
-
-.statusNoticeError {
-  border-color: oklch(0.72 0.18 20 / 0.72);
-  background: oklch(0.26 0.09 20 / 0.85);
-  color: oklch(0.95 0.06 20);
-}
-
-@media (max-width: 560px) {
-  .actionsRow {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .actionsRow > * {
-    width: 100%;
-  }
-
-  .zoneRow {
-    flex-direction: column;
-    align-items: stretch;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -91,7 +91,12 @@
   --app-panel-border: rgba(0, 243, 255, 0.14);
   --app-text-white: #ffffff;
   --app-accent-neon: #00f3ff;
+  --app-line-dim: rgba(0, 243, 255, 0.34);
   --app-accent-yellow: #ffd700;
+  --app-text-title: clamp(2rem, 5vw, 2.75rem);
+  --app-text-label: 0.75rem;
+  --app-text-meta: 0.82rem;
+  --app-muted: oklch(0.76 0.025 285);
 
   @media (min-width: 640px) {
 	--nav-x-padding: clamp(1.25rem, 5vw, 5rem);

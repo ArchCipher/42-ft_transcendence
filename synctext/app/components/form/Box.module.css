@@ -1,22 +1,19 @@
 .frame {
   width: 100%;
   box-sizing: border-box;
-  padding: 2px;
 
-  background: rgba(111, 211, 255, 0.4);
-
-  clip-path: polygon(
-    7px 0,
-    100% 0,
-    100% calc(100% - 7px),
-    calc(100% - 7px) 100%,
-    0 100%,
-    0 7px
-  );
+  border: 1px solid transparent;
+  border-bottom-color: var(--app-line-dim);
 
   transition:
-    background 0.15s ease,
-    filter 0.15s ease;
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.frame:hover,
+.frame:focus-within {
+  border-color: var(--app-line-dim);
+  box-shadow: 0 0 1px var(--app-accent-neon), 0 0 10px rgba(0, 243, 255, 0.55);
 }
 
 .surface {
@@ -27,20 +24,7 @@
   display: flex;
   align-items: center;
 
-  color: #f4f2ee;
-  background: #101b30;
-
-  clip-path: polygon(
-    6px 0,
-    100% 0,
-    100% calc(100% - 6px),
-    calc(100% - 6px) 100%,
-    0 100%,
-    0 6px
-  );
-
-  box-shadow:
-    inset 0 0 0 1px rgba(111, 211, 255, 0.25);
+  background: transparent;
 
   font-family: monospace;
   font-size: var(--dashboard-text-size, 14px);
@@ -50,7 +34,6 @@
   width: 100%;
   min-height: 42px;
   box-sizing: border-box;
-  box-shadow: inset 0 0 0 1px rgba(111, 211, 255, 0.18);
   padding: 10px 12px;
 
   color: inherit;
@@ -60,19 +43,4 @@
   outline: none;
 
   font: inherit;
-}
-
-.frame:hover,
-.frame:focus-within {
-  background: #6fd3ff;
-
-  filter:
-    drop-shadow(0 0 5px rgba(111, 211, 255, 0.45))
-    drop-shadow(0 0 10px rgba(111, 211, 255, 0.18));
-}
-
-.frame:hover .surface,
-.frame:focus-within .surface {
-  box-shadow:
-    inset 0 0 0 1px rgba(111, 211, 255, 0.55);
 }

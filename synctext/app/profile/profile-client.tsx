@@ -1,13 +1,16 @@
 "use client";
 
 import styles from "./Profile.module.css";
-import { DisplayText } from "@/app/components/typography/Typography";
+import { DisplayText, TechText } from "@/app/components/typography/Typography";
 import Button from "@/app/components/ui/Button";
 import Field from "@/app/components/form/Field";
 import Avatar from "./avatar";
 import DangerZone from "./danger-zone";
 import PasswordForm from "./password-form";
 import { useState } from "react";
+import AuthPageShell from "../components/auth/AuthPageShell";
+import UserNavbar from "../components/navigation/UserNavbar";
+import StatusNotice from "../components/form/StatusNotice";
 
 const FALLBACK = "Something went wrong. Please try again.";
 
@@ -32,17 +35,17 @@ export default function ProfileClient({ initial }: { initial: ProfileInput }) {
   const [status, setStatus] = useState<Status>(null);
   const [saving, setSaving] = useState(false);
 
-  const dirty = username !== saved.username;
+  function isRealEdit(value: string, saved: string): boolean {
+    return value.trim().toLowerCase() !== saved.trim().toLowerCase();
+  }
+
+  const dirty = isRealEdit(username, saved.username);
 
   const memberSince = new Intl.DateTimeFormat("en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",
   }).format(new Date(initial.createdAt));
-
-  function isRealEdit(value: string, saved: string): boolean {
-    return value !== saved && value.trim().toLowerCase() !== saved;
-  }
 
   function handleCancel() {
     setUsername(saved.username);
@@ -54,21 +57,7 @@ export default function ProfileClient({ initial }: { initial: ProfileInput }) {
     setFieldErrors({});
     setStatus(null);
 
-    if (!dirty) return;
-
-    // Usernames and emails are canonicalized to lowercase server-side, so a
-    // change in casing alone is not a real edit.
-    const body: Record<string, string> = {};
-    if (isRealEdit(username, saved.username)) body.username = username;
-
-    if (Object.keys(body).length === 0) {
-      setStatus({
-        kind: "error",
-        text: "Nothing to save — usernames and emails are case-insensitive.",
-      });
-      return;
-    }
-
+    const body = {username};
     setSaving(true);
 
     try {
@@ -99,48 +88,47 @@ export default function ProfileClient({ initial }: { initial: ProfileInput }) {
     }
   }
   return (
-    <div className={styles.profileBody}>
-      {status && (
-        <p
-          role={status.kind === "error" ? "alert" : undefined}
-          aria-live="polite"
-          className={`${styles.statusNotice}${
-            status.kind === "error" ? ` ${styles.statusNoticeError}` : ""
-          }`}
-        >
-          {status.text}
-        </p>
-      )}
+    <AuthPageShell
+      navbar={<UserNavbar username={initial.username} />}
+      notice={
+        status && (
+          <StatusNotice role={status.kind === "error" ? "alert" : "status"}>
+            {status.text}
+          </StatusNotice>
+        )
+      }
+    >
+      <div className={styles.profileBody}>
+        <div className={styles.headerRow}>
+          <div className={styles.headerCopy}>
+            <TechText className={styles.kicker}>Profile</TechText>
+            <h1>
+              <DisplayText className={styles.title}>
+                {saved.username}
+              </DisplayText>
+            </h1>
+          </div>
 
-      <div className={styles.headerRow}>
-        <div className={styles.headerCopy}>
-          <p className={styles.kicker}>Profile</p>
-          <h1 className={styles.title}>
-            <DisplayText>{saved.username}</DisplayText>
-          </h1>
+          <Avatar
+            initialAvatarUrl={initial.avatarUrl}
+            username={saved.username}
+            onStatus={setStatus}
+          />
         </div>
 
-        <Avatar
-          initialAvatarUrl={initial.avatarUrl}
-          username={saved.username}
-          onStatus={setStatus}
-        />
-      </div>
+        <div className={styles.metaRow}>
+          <span className={styles.badge}>Member since {memberSince}</span>
+          <span
+            className={
+              initial.emailVerifiedAt
+                ? styles.badge
+                : `${styles.badge} ${styles.badgeUnverified}`
+            }
+          >
+            Email {initial.emailVerifiedAt ? "verified" : "not verified"}
+          </span>
+        </div>
 
-      <div className={styles.metaRow}>
-        <span className={styles.badge}>Member since {memberSince}</span>
-        <span
-          className={
-            initial.emailVerifiedAt
-              ? styles.badge
-              : `${styles.badge} ${styles.badgeUnverified}`
-          }
-        >
-          Email {initial.emailVerifiedAt ? "verified" : "not verified"}
-        </span>
-      </div>
-
-      <div className={styles.fieldGroup}>
         <Field
           id="profile-username"
           label="Username"
@@ -154,9 +142,7 @@ export default function ProfileClient({ initial }: { initial: ProfileInput }) {
           error={fieldErrors?.username}
           autoComplete="username"
         />
-      </div>
 
-      <div className={styles.fieldGroup}>
         <Field
           id="profile-email"
           label="Email"
@@ -168,30 +154,25 @@ export default function ProfileClient({ initial }: { initial: ProfileInput }) {
           autoComplete="off"
         />
         <PasswordForm onStatus={setStatus} />
+
+        <div className={styles.actionsRow}>
+          <Button
+            variant="primary"
+            disabled={!dirty || saving}
+            onClick={() => void handleSave()}
+          >
+            {saving ? "Saving..." : "Save"}
+          </Button>
+
+          <Button variant="outline" disabled={!dirty} onClick={handleCancel}>
+            Cancel
+          </Button>
+        </div>
+
+        <hr className={styles.divider} />
+
+        <DangerZone onStatus={setStatus} />
       </div>
-
-      <div className={styles.actionsRow}>
-        <Button
-          className={styles.saveButton}
-          disabled={!dirty || saving}
-          onClick={() => void handleSave()}
-        >
-          {saving ? "Saving..." : "Save"}
-        </Button>
-
-        <Button
-          variant="outline"
-          compact
-          disabled={!dirty}
-          onClick={handleCancel}
-        >
-          Cancel
-        </Button>
-      </div>
-
-      <hr className={styles.divider} />
-
-      <DangerZone onStatus={setStatus} />
-    </div>
+    </AuthPageShell>
   );
 }
