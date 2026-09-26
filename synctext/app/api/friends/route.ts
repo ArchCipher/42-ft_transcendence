@@ -74,7 +74,7 @@ export async function POST(request: Request) {
 
   const userId = session.user.id;
 
-  const otherUser = await db.user.findFirst({
+  const matchingUsers = await db.user.findMany({
     where: {
       OR: [
         { username: identifier },
@@ -86,8 +86,14 @@ export async function POST(request: Request) {
       username: true,
       avatarUrl: true,
     },
+    take: 2,
   });
 
+  if (matchingUsers.length > 1) {
+    return badRequest("Identifier is ambiguous");
+  }
+
+  const otherUser = matchingUsers[0];
   if (!otherUser) return notFound("User");
 
   if (otherUser.id === userId) {
