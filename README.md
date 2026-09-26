@@ -164,7 +164,7 @@ All team members contribute through implementation, review, testing, and documen
 | Collaboration | Yjs 13.6.32, Hocuspocus 4.6.0 | Handles concurrent document state and real-time WebSocket synchronization |
 | Database | PostgreSQL 16, Prisma 7.9.1 | Relational data model, typed queries, migrations, transactions, and binary document-state storage |
 | UI | Tailwind CSS 4.3.3, shadcn/Base UI, custom CSS, Lucide icons | Reusable UI primitives and responsive styling |
-| Authentication | Argon2id, Zod, opaque session tokens | Secure password hashing, input validation, and revocable server-side sessions |
+| Authentication | Argon2id, Zod, zxcvbn, opaque session tokens | Secure password hashing, input validation, password strength estimation and revocable server-side sessions |
 | Runtime and deployment | Node.js 22, Docker Compose, NGINX | Reproducible builds and a single HTTPS/WSS entry point |
 | Development email | Mailpit | Local inspection of verification and password-reset emails |
 
