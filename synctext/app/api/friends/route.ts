@@ -177,6 +177,53 @@ export async function POST(request: Request) {
   return NextResponse.json(otherUser, { status: 201 });
 }
 
+export async function PATCH(request: Request) {
+  const session = await validateSession(await getSessionToken());
+  if (!session?.user?.id) return unauthorized();
+
+  const body = await readJson(request);
+  if (
+    typeof body !== "object"
+    || body === null
+    || !("userId" in body)
+    || typeof body.userId !== "string"
+    || !("action" in body)
+    || (body.action !== "accept" && body.action !== "decline")
+  ) {
+    return badRequest('userId and action ("accept" or "decline") are required');
+  }
+
+  const otherUserId = body.userId.trim();
+  if (!otherUserId) return badRequest("userId must not be empty");
+
+  const userId = session.user.id;
+  const [userAId, userBId] = [userId, otherUserId].sort();
+
+  const status = body.action === "accept"
+    ? "ACCEPTED"
+    : "DECLINED";
+
+  const updated = await db.friendship.updateMany({
+    where: {
+      userAId,
+      userBId,
+      status: "PENDING",
+      // Only the recipient may answer the request.
+      requestedById: otherUserId,
+    },
+    data: {
+      status,
+      respondedAt: new Date(),
+    },
+  });
+
+  if (updated.count !== 1) {
+    return notFound("Friend request");
+  }
+
+  return NextResponse.json({ status });
+}
+
 function compareUsernames(firstUser: FriendUser, secondUser: FriendUser) {
   return firstUser.username.localeCompare(secondUser.username);
 }
