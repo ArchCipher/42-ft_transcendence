@@ -1,6 +1,11 @@
 import { prisma as db } from "@synctext/db";
 import { getSessionToken, validateSession } from "@/lib/auth/session";
-import { unauthorized } from "@/lib/api/responses";
+import {
+  badRequest,
+  notFound,
+  readJson,
+  unauthorized,
+} from "@/lib/api/responses";
 import type { FriendUser, FriendsResponse } from "@/lib/friends/types";
 import { NextResponse } from "next/server";
 
@@ -48,6 +53,128 @@ export async function GET() {
   response.outgoingRequests.sort(compareUsernames);
 
   return NextResponse.json(response);
+}
+
+export async function POST(request: Request) {
+  const session = await validateSession(await getSessionToken());
+  if (!session?.user?.id) return unauthorized();
+
+  const body = await readJson(request);
+  if (
+    typeof body !== "object"
+    || body === null
+    || !("identifier" in body)
+    || typeof body.identifier !== "string"
+  ) {
+    return badRequest("identifier must be a string");
+  }
+
+  const identifier = body.identifier.trim();
+  if (!identifier) return badRequest("identifier must not be empty");
+
+  const userId = session.user.id;
+
+  const otherUser = await db.user.findFirst({
+    where: {
+      OR: [
+        { username: identifier },
+        { email: identifier },
+      ],
+    },
+    select: {
+      id: true,
+      username: true,
+      avatarUrl: true,
+    },
+  });
+
+  if (!otherUser) return notFound("User");
+
+  if (otherUser.id === userId) {
+    return badRequest("You cannot send a friend request to yourself");
+  }
+
+  // Friendship rows always store the smaller user id first.
+  const [userAId, userBId] = [userId, otherUser.id].sort();
+
+  const existing = await db.friendship.findUnique({
+    where: {
+      userAId_userBId: { userAId, userBId },
+    },
+    select: {
+      status: true,
+      requestedById: true,
+    },
+  });
+
+  if (existing?.status === "ACCEPTED") {
+    return badRequest("You are already friends");
+  }
+
+  if (existing?.status === "PENDING") {
+    if (existing.requestedById === userId) {
+      return badRequest("Friend request already sent");
+    }
+
+    return badRequest("This user already sent you a friend request");
+  }
+
+  if (existing?.status === "DECLINED") {
+    // requestedById is the previous requester, so the other user is the
+    // person who declined. Only that person may start a new request.
+    if (existing.requestedById === userId) {
+      return badRequest("You cannot send another friend request to this user");
+    }
+
+    const updated = await db.friendship.updateMany({
+      where: {
+        userAId,
+        userBId,
+        status: "DECLINED",
+        requestedById: { not: userId },
+      },
+      data: {
+        status: "PENDING",
+        requestedById: userId,
+        respondedAt: null,
+        createdAt: new Date(),
+      },
+    });
+
+    // Another request may have changed the row between the read and update.
+    if (updated.count !== 1) {
+      return badRequest("Friendship changed, please try again");
+    }
+
+    return NextResponse.json(otherUser, { status: 201 });
+  }
+
+  try {
+    await db.friendship.create({
+      data: {
+        userAId,
+        userBId,
+        requestedById: userId,
+      },
+    });
+  } catch (error) {
+    // The compound primary key protects against two users creating
+    // the same friendship pair at the same time.
+    const friendship = await db.friendship.findUnique({
+      where: {
+        userAId_userBId: { userAId, userBId },
+      },
+      select: { userAId: true },
+    });
+
+    if (friendship) {
+      return badRequest("A friendship or friend request already exists");
+    }
+
+    throw error;
+  }
+
+  return NextResponse.json(otherUser, { status: 201 });
 }
 
 function compareUsernames(firstUser: FriendUser, secondUser: FriendUser) {
