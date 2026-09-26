@@ -28,8 +28,8 @@ export default function Navbar({ children,
           <div
             className={
               mobileMenu
-                ? "hidden min-[901px]:flex items-center gap-2 ml-auto"
-                : "flex items-center gap-2 ml-auto"}>
+                ? "hidden min-[901px]:flex min-w-0 items-center gap-2 ml-auto"
+                : "flex min-w-0 items-center gap-2 ml-auto"}>
 
             {children}
           </div>

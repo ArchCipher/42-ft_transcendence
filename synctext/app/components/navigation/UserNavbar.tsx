@@ -17,7 +17,7 @@ export default function UserNavbar({ username }: UserNavbarProps) {
       brand={<Logo className={styles.navbarLogo} href="/dashboard" />}
       mobileMenu={false}
     >
-      <TechText className="min-w-0 truncate text-sm text-[var(--app-text-white)]">{username}</TechText>
+      <TechText className="min-w-0 max-w-[8rem] truncate text-sm text-[var(--app-text-white)]">{username}</TechText>
       <UserMenu username={username} />
     </Navbar>
   );
