@@ -224,6 +224,47 @@ export async function PATCH(request: Request) {
   return NextResponse.json({ status });
 }
 
+export async function DELETE(request: Request) {
+  const session = await validateSession(await getSessionToken());
+  if (!session?.user?.id) return unauthorized();
+
+  const body = await readJson(request);
+  if (
+    typeof body !== "object"
+    || body === null
+    || !("userId" in body)
+    || typeof body.userId !== "string"
+  ) {
+    return badRequest("userId must be a string");
+  }
+
+  const otherUserId = body.userId.trim();
+  if (!otherUserId) return badRequest("userId must not be empty");
+
+  const userId = session.user.id;
+  const [userAId, userBId] = [userId, otherUserId].sort();
+
+  const deleted = await db.friendship.deleteMany({
+    where: {
+      userAId,
+      userBId,
+      OR: [
+        { status: "ACCEPTED" },
+        {
+          status: "PENDING",
+          requestedById: userId,
+        },
+      ],
+    },
+  });
+
+  if (deleted.count !== 1) {
+    return notFound("Friendship");
+  }
+
+  return new NextResponse(null, { status: 204 });
+}
+
 function compareUsernames(firstUser: FriendUser, secondUser: FriendUser) {
   return firstUser.username.localeCompare(secondUser.username);
 }
