@@ -8,7 +8,7 @@ all: up
 # ---- setup -------------------------------------------------------------------
 
 # create missing local configuration and tls files
-setup: setup_cert
+setup: setup_env setup_cert
 	@echo "local environment and tls certificate ready"
 
 # create the local environment file from the committed template when missing
