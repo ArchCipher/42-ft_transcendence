@@ -4,6 +4,9 @@ import "./DashboardSidebar.css";
 import { TechText } from "@/app/components/typography/Typography";
 import PlusButton from "@/app/components/ui/PlusButton";
 import InputBox from "@/app/components/form/InputBox";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { useEffect, useState } from "react";
+import { MoreHorizontal } from "lucide-react";
 
 type DashboardSidebarProps = {
   selectedGroup: {
@@ -16,7 +19,6 @@ type DashboardSidebarProps = {
   ) => void;
 
   isOpen: boolean;
-  onClose: () => void;
 };
 
 const groups = [
@@ -42,12 +44,13 @@ export default function DashboardSidebar({
   selectedGroup,
   onSelectGroup,
   isOpen,
-  onClose,
 }: DashboardSidebarProps) {
 
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
+
   const selectedMembers = selectedGroup
-  ? groupMembers[selectedGroup.id] ?? []
-  : [];
+    ? groupMembers[selectedGroup.id] ?? []
+    : [];
 
   const sortedFriends = [...friends].sort((a, b) => {
     const aMember = selectedMembers.includes(a.id);
@@ -56,103 +59,196 @@ export default function DashboardSidebar({
     return Number(bMember) - Number(aMember);
   });
 
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      const target = event.target as HTMLElement;
+
+      if (
+        !target.closest(".SidebarActionMenu") &&
+        !target.closest(".SidebarEditButton")
+      ) {
+        setOpenMenu(null);
+      }
+    }
+
+    document.addEventListener("click", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
+
   return (
     <aside className={`DashboardSidebar ${ isOpen ? "DashboardSidebarOpen" : ""}`}>
 
       <div className="SidebarContent">
-        <section className="SidebarGroups">
-          <div className="SidebarSectionHeader">
-          <TechText className="SidebarSectionTitle text-white/80">
-            Groups
-          </TechText>
+        <Accordion
+          defaultValue={["groups"]}
+          className="SidebarAccordion"
+        >
+        <AccordionItem value="groups" className="SidebarAccordionItem">
+          <AccordionTrigger className="SidebarAccordionTrigger">
+            <TechText className="SidebarSectionTitle">
+              Groups
+            </TechText>
+          </AccordionTrigger>
 
-          <PlusButton
-            size="small"
-            aria-label="Create group"
-          />
-        </div>
+          <AccordionContent className="SidebarAccordionContent">
 
-        <InputBox
-          type="search"
-          placeholder="Search groups..."
-          aria-label="Search groups"
-        />
+            <InputBox
+              type="search"
+              placeholder="Search groups..."
+              aria-label="Search groups"
+            />
 
-        <div className="SidebarGroupList">
-          {groups.map((group) => (
-            <button
-              key={group.id}
-              type="button"
-              className={`SidebarGroup ${
-                selectedGroup?.id === group.id ? "SidebarGroupActive" : ""
-              }`}
-              onClick={() => {
-                onSelectGroup(group);
-                onClose();
-              }}
-            >
-              {group.name}
-            </button>
-          ))}
-        </div>
-        </section>
+            <div className="SidebarAddGroup">
+              <PlusButton
+                size="small"
+                aria-label="Create group"
+              />
+            </div>
 
-        <section className="SidebarFriends">
-          <div className="SidebarSectionHeader">
-          <TechText className="SidebarSectionTitle text-white/80">
-            Friends
-          </TechText>
-
-          <PlusButton
-            size="small"
-            aria-label="Add friend"
-          />
-        </div>
-
-        <InputBox
-          type="search"
-          placeholder="Search friends..."
-          aria-label="Search friends"
-        />
-
-        <div className="SidebarFriendList">
-
-          {sortedFriends.map((friend) => {
-            const isMember = selectedMembers.includes(friend.id);
-
-            return (
-              <div
-                key={friend.id}
-                className={`SidebarFriend ${
-                  isMember ? "SidebarFriendMember" : ""
-                }`}
-              >
-                <span
-                  className={`FriendStatus ${
-                    friend.online
-                      ? "FriendOnline"
-                      : "FriendOffline"
-                  }`}
-                />
-
-                <span>{friend.name}</span>
-
-                {selectedGroup !== null && (
+            <div className="SidebarGroupList">
+              {groups.map((group) => (
+                <div key={group.id} className="SidebarActionRow">
                   <button
                     type="button"
-                    className="FriendGroupAction"
+                    className={`SidebarGroup ${
+                      selectedGroup?.id === group.id ? "SidebarGroupActive" : ""
+                    }`}
+                    onClick={() => onSelectGroup(group)}
                   >
-                    {isMember ? "−" : "+"}
+                    <span>{group.name}</span>
                   </button>
-                )}
-              </div>
-            );
-          })}
 
-        </div>
-        </section>
-      </div>
+                  <button
+                    type="button"
+                    className="SidebarEditButton"
+                    aria-label={`Edit ${group.name}`}
+                    onClick={(e) => { e.stopPropagation();
+                                      setOpenMenu((current) =>
+                                    current === `group-${group.id}`
+                                    ? null
+                                    : `group-${group.id}` ); }}
+                  >
+                    <MoreHorizontal size={16} />
+                  </button>
 
-    </aside>
+                  {openMenu === `group-${group.id}` && (
+                    <div className="SidebarActionMenu">
+                      <button type="button" onClick={() => setOpenMenu(null)}>Rename group</button>
+                      <button type="button" onClick={() => setOpenMenu(null)}>Add member</button>
+                      <button type="button" onClick={() => setOpenMenu(null)}>Leave group</button>
+                      <button type="button" onClick={() => setOpenMenu(null)}>Delete group</button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="members" className="SidebarAccordionItem">
+          <AccordionTrigger className="SidebarAccordionTrigger">
+            <TechText className="SidebarSectionTitle">
+              Members
+            </TechText>
+          </AccordionTrigger>
+
+          <AccordionContent className="SidebarAccordionContent">
+            <div className="SidebarFriendList">
+              {friends
+                .filter((friend) => selectedMembers.includes(friend.id))
+                .map((friend) => (
+                  <div key={friend.id} className="SidebarActionRow">
+                    <div className="SidebarFriend">
+                      <span
+                        className={`FriendStatus ${
+                          friend.online ? "FriendOnline" : "FriendOffline"
+                        }`}
+                      />
+                      <span>{friend.name}</span>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="SidebarEditButton"
+                      aria-label={`Actions for ${friend.name}`}
+                      onClick={(e) => { e.stopPropagation();
+                                        setOpenMenu((current) =>
+                                        current === `member-${friend.id}`
+                                        ? null
+                                        : `member-${friend.id}` ); }}
+                    >
+                      <MoreHorizontal size={16} />
+                    </button>
+
+                    {openMenu === `member-${friend.id}` && (
+                      <div className="SidebarActionMenu">
+                        <button type="button" onClick={() => setOpenMenu(null)}>
+                          Remove member
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="friends" className="SidebarAccordionItem">
+          <AccordionTrigger className="SidebarAccordionTrigger">
+            <TechText className="SidebarSectionTitle">
+              Friends
+            </TechText>
+          </AccordionTrigger>
+
+          <AccordionContent className="SidebarAccordionContent">
+            <InputBox
+              type="search"
+              placeholder="Search friends..."
+              aria-label="Search friends"
+            />
+
+            <div className="SidebarFriendList">
+              {sortedFriends.map((friend) => (
+                <div key={friend.id} className="SidebarActionRow">
+                  <div className="SidebarFriend">
+                    <span
+                      className={`FriendStatus ${
+                        friend.online ? "FriendOnline" : "FriendOffline"
+                      }`}
+                    />
+                    <span>{friend.name}</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="SidebarEditButton"
+                    aria-label={`Actions for ${friend.name}`}
+                    onClick={(e) => { e.stopPropagation();
+                                      setOpenMenu((current) =>
+                                      current === `friend-${friend.id}`
+                                      ? null
+                                      : `friend-${friend.id}` ); }}
+                  >
+                    <MoreHorizontal size={16} />
+                  </button>
+
+                  {openMenu === `friend-${friend.id}` && (
+                    <div className="SidebarActionMenu">
+                      <button type="button" onClick={() => setOpenMenu(null)}>
+                        Remove friend
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+    </div>
+  </aside>
   );
 }
