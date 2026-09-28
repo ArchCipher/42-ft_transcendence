@@ -96,12 +96,12 @@ export function canEdit(rights: Rights): boolean {
   return rights.groupRole === GroupRole.OWNER || rights.hasGrant;
 }
 
-/** Rename the group, add and remove plain members. */
+/** Add members, remove plain members. */
 export function canAdminGroup(groupRole: GroupRole): boolean {
   return groupRole === GroupRole.OWNER || groupRole === GroupRole.ADMIN;
 }
 
-/** Delete the group, promote and demote admins. */
+/** Rename and delete the group, promote, demote and remove admins. */
 export function canOwnGroup(groupRole: GroupRole): boolean {
   return groupRole === GroupRole.OWNER;
 }
