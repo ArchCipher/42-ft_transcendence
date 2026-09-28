@@ -37,48 +37,47 @@ Node.js 22 and npm are only required on the host for optional local development 
 
 ### Configuration
 
-From the repository root:
+No manual configuration is required for the default local setup.
 
-```sh
-make setup
-```
+On the first startup, `make` automatically:
 
-This copies `.env.example` to `.env` and creates local TLS certificate files under `secrets/`.
+1. creates `.env` from `.env.example`,
+2. generates random local values for `DB_PASSWORD` and `INTERNAL_SERVICE_TOKEN`,
+3. creates a self-signed TLS certificate under `secrets/`.
 
-Edit `.env` before starting the application:
+Existing `.env` and TLS files are preserved on later runs.
 
-| Variable | Purpose |
+The default local configuration uses:
+
+| Variable | Local value / purpose |
 |---|---|
-| `DOMAIN_NAME` | Hostname used for the TLS certificate and NGINX |
-| `APP_URL` | Public application URL, normally `https://localhost:8443` |
-| `NODE_ENV` | Runtime environment |
-| `DB_NAME`, `DB_USER`, `DB_PASSWORD` | PostgreSQL configuration |
-| `INTERNAL_SERVICE_TOKEN` | Secret used for protected service-to-service requests |
-| `MAILPIT_URL` | Internal URL of the development email service |
+| `DOMAIN_NAME` | `localhost`, used for the TLS certificate and NGINX host |
+| `APP_URL` | `https://localhost:8443`, used in application links |
+| `NODE_ENV` | `production`, matching the container runtime |
+| `DB_NAME`, `DB_USER` | `synctext` |
+| `DB_PASSWORD` | Randomly generated on first startup |
+| `INTERNAL_SERVICE_TOKEN` | Randomly generated on first startup |
+| `MAILPIT_URL` | `http://mailpit:8025`, the internal development mail service |
 
-Generate local secrets with:
-
-```sh
-openssl rand -hex 32
-```
-
-Keep `.env` and private certificate keys out of Git.
+`.env`, generated credentials, and TLS private keys remain local and are ignored by Git.
 
 ### Start the application
 
-Build and start the full stack:
+From the repository root, build and start the complete application with one command:
 
 ```sh
 make
 ```
 
-`make` starts the Docker Compose stack, waits for PostgreSQL, applies database migrations, starts the web application, and then starts dependent services.
+This prepares missing local configuration, builds the Docker images, starts PostgreSQL, applies database migrations, starts Next.js and Hocuspocus, and exposes browser traffic through NGINX over HTTPS/WSS.
 
 Open:
 
 ```text
 https://localhost:8443
 ```
+
+The local TLS certificate is self-signed, so the browser may show a certificate warning on first access.
 
 For development email verification and password-reset messages, open Mailpit at:
 
