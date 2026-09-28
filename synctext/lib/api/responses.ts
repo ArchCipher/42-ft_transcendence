@@ -14,6 +14,9 @@ export const notFound = (what = "Resource") =>
 export const badRequest = (message: string) =>
   NextResponse.json({ error: message }, { status: 400 });
 
+export const conflict = (message: string) =>
+  NextResponse.json({ error: message }, { status: 409 });
+
 // Reads a JSON body, returning null when it is absent or malformed.
 export async function readJson(request: Request): Promise<unknown | null> {
   try {
@@ -21,4 +24,13 @@ export async function readJson(request: Request): Promise<unknown | null> {
   } catch {
     return null;
   }
+}
+
+// Reads a group { name }, trimmed, 1 to 120 characters, or null.
+export function readName(body: unknown): string | null {
+  if (typeof body !== "object" || body === null || !("name" in body)) return null;
+  if (typeof body.name !== "string") return null;
+
+  const name = body.name.trim();
+  return name.length > 0 && name.length <= 120 ? name : null;
 }

@@ -1,7 +1,15 @@
 import { prisma as db, GroupRole } from "@synctext/db";
 import { getSessionToken, validateSession } from "@/lib/auth/session";
-import { notFound, unauthorized } from "@/lib/api/responses";
-import { requireGroupRole } from "@/lib/permissions";
+import {
+  badRequest,
+  conflict,
+  forbidden,
+  notFound,
+  readJson,
+  unauthorized,
+} from "@/lib/api/responses";
+import { canAdminGroup, requireGroupRole } from "@/lib/permissions";
+import { addMember } from "@/lib/groups/groups";
 import type { GroupMemberSummary } from "@/lib/groups/types";
 import { NextResponse } from "next/server";
 
@@ -12,6 +20,15 @@ API Response contracts: /api/groups/[id]/members
                                      oldest first within a rank
         -> 401 { error }
         -> 404 { error }             caller is not a member of this group
+
+  POST  { userId }                   canAdminGroup; always added as MEMBER
+        -> 201 { userId, role }
+        -> 400 { error }             userId missing or not a string
+        -> 401 { error }
+        -> 403 { error }             member, but not an admin or the owner
+        -> 404 { error }             not a member of this group, or userId is
+                                     not an accepted friend of the caller
+        -> 409 { error }             already a member, or a private space
 */
 
 const RANK: Record<GroupRole, number> = {
@@ -55,4 +72,35 @@ export async function GET(
     .sort((a, b) => RANK[a.role] - RANK[b.role]);
 
   return NextResponse.json(summaries);
+}
+
+// Add one of the caller's accepted friends as a plain member.
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const session = await validateSession(await getSessionToken());
+  if (!session?.user?.id) return unauthorized();
+
+  const body = await readJson(request);
+  if (
+    typeof body !== "object" ||
+    body === null ||
+    !("userId" in body) ||
+    typeof body.userId !== "string"
+  ) {
+    return badRequest("userId must be a string");
+  }
+
+  const { id } = await params;
+  const callerRole = await requireGroupRole(db, session.user.id, id);
+  if (!callerRole) return notFound("Group");
+  if (!canAdminGroup(callerRole)) return forbidden();
+
+  const result = await addMember(db, id, body.userId, session.user.id);
+  if (result === "private") return conflict("A private space cannot have other members");
+  if (result === "not_friend") return notFound("Friend");
+  if (result === "already_member") return conflict("Already a member");
+
+  return NextResponse.json({ userId: body.userId, role: GroupRole.MEMBER }, { status: 201 });
 }
