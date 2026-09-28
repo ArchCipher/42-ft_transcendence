@@ -1,4 +1,11 @@
-import type { GroupRole } from "@synctext/db";
+import { GroupRole } from "@synctext/db";
+
+/** Sort key for member lists: owner, then admins, then members. */
+export const ROLE_RANK: Record<GroupRole, number> = {
+  [GroupRole.OWNER]: 0,
+  [GroupRole.ADMIN]: 1,
+  [GroupRole.MEMBER]: 2,
+};
 
 /** One group the caller belongs to. */
 export type GroupSummary = {

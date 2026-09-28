@@ -10,7 +10,7 @@ import {
 } from "@/lib/api/responses";
 import { canAdminGroup, requireGroupRole } from "@/lib/permissions";
 import { addMember } from "@/lib/groups/groups";
-import type { GroupMemberSummary } from "@/lib/groups/types";
+import { ROLE_RANK, type GroupMemberSummary } from "@/lib/groups/types";
 import { NextResponse } from "next/server";
 
 /*
@@ -30,12 +30,6 @@ API Response contracts: /api/groups/[id]/members
                                      not an accepted friend of the caller
         -> 409 { error }             already a member, or a private space
 */
-
-const RANK: Record<GroupRole, number> = {
-  [GroupRole.OWNER]: 0,
-  [GroupRole.ADMIN]: 1,
-  [GroupRole.MEMBER]: 2,
-};
 
 // Any member of a group may see who else is in it.
 export async function GET(
@@ -69,7 +63,7 @@ export async function GET(
       role,
       joinedAt: joinedAt.toISOString(),
     }))
-    .sort((a, b) => RANK[a.role] - RANK[b.role]);
+    .sort((a, b) => ROLE_RANK[a.role] - ROLE_RANK[b.role]);
 
   return NextResponse.json(summaries);
 }
