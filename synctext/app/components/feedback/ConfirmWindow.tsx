@@ -28,11 +28,6 @@ export default function ConfirmWindow({
       if (event.key === "Escape") {
         onCancel();
       }
-
-      if (event.key === "Enter") {
-        event.preventDefault();
-        onConfirm();
-      }
     }
 
     window.addEventListener("keydown", handleKeyDown);
@@ -40,7 +35,7 @@ export default function ConfirmWindow({
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [onConfirm, onCancel]);
+  }, [onCancel]);
 
   return createPortal(
     <div
