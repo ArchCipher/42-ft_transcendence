@@ -1,6 +1,7 @@
-import { prisma as db } from "@synctext/db";
+import { prisma as db, GroupRole } from "@synctext/db";
 import { getSessionToken, validateSession } from "@/lib/auth/session";
-import { unauthorized } from "@/lib/api/responses";
+import { badRequest, readJson, readName, unauthorized } from "@/lib/api/responses";
+import { createGroup } from "@/lib/groups/groups";
 import type { GroupSummary } from "@/lib/groups/types";
 import { NextResponse } from "next/server";
 
@@ -13,6 +14,11 @@ API Response contracts: /api/groups
 
   Never 404: everyone has at least their private space, so the list is
   never empty.
+
+  POST  { name }                     any signed-in user, who becomes its owner
+        -> 201 GroupSummary
+        -> 400 { error }             name empty or over 120 chars
+        -> 401 { error }
 */
 
 // Built from memberships, not from the documents: a group holding no documents
@@ -51,4 +57,24 @@ export async function GET() {
   );
 
   return NextResponse.json(groups);
+}
+
+// Create a shared group. The caller is its owner and only member.
+export async function POST(request: Request) {
+  const session = await validateSession(await getSessionToken());
+  if (!session?.user?.id) return unauthorized();
+
+  const name = readName(await readJson(request));
+  if (!name) return badRequest("Name must be between 1 and 120 characters");
+
+  const group = await createGroup(db, session.user.id, name);
+
+  const summary: GroupSummary = {
+    id: group.id,
+    name,
+    isPrivateSpace: false,
+    myRole: GroupRole.OWNER,
+    documentCount: 0,
+  };
+  return NextResponse.json(summary, { status: 201 });
 }

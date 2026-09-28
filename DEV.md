@@ -47,6 +47,15 @@ Shared groups:
    | synctext | OWNER | ADMIN | MEMBER | —      |
    | collab   | —     | OWNER | MEMBER | —      |
 
+Friendships (ACCEPTED; only friends can be added to a group):
+
+   | Requested by | Friend |
+   |--------------|--------|
+   | bob          | alice  |
+   | alice        | tim    |
+
+   zaphod has none: adding him to a group is refused.
+
 Documents:
 
    | id              | Title           | Group    | Created by | Grants     |
