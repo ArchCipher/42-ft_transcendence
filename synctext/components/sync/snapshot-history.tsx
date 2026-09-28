@@ -16,6 +16,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import "@/components/sync/snapshot-history.css"
+import ErrorNote from "@/app/components/form/ErrorNote"
+import buttonStyles from "@/app/components/ui/Button.module.css"
+import { TechText } from "@/app/components/typography/Typography"
 
 type SnapshotSummary = {
   id: string
@@ -231,7 +234,7 @@ function SnapshotHistoryContent({
     }
 
     if (error) {
-      return <p role="alert" className="p-6 text-sm text-destructive">{error}</p>
+      return <div className="p-6"><ErrorNote>{error}</ErrorNote></div>
     }
 
     if (snapshots.length === 0) {
@@ -332,11 +335,10 @@ export function SnapshotHistory({ docId, canRestore, isConnected }: SnapshotHist
       <DialogTrigger
         aria-label="Snapshot history"
         title="Snapshot history"
-        render={<Button variant="ghost" />}
-        className="size-10 border-white/15 text-[#f4f2ee] hover:border-white/45 hover:bg-white/5 hover:text-[#f4f2ee] sm:w-auto sm:px-3"
+        className={[buttonStyles.button, buttonStyles.outline].filter(Boolean).join(" ")}
       >
         <History aria-hidden="true" size={15} />
-        <span className="hidden sm:inline">History</span>
+        <TechText className="text-base max-[900px]:text-[0.7rem]">History</TechText>
       </DialogTrigger>
 
       <DialogContent

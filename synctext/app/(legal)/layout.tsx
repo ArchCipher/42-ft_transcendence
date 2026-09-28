@@ -1,13 +1,16 @@
 import "./legal.css";
 import LegalTOC from "./legal-TOC";
-import BrandHeader from "@/app/components/header/BrandHeader";
 import { Footer } from "@/app/components/footer/Footer";
+import { getSessionToken, validateSession } from "@/lib/auth/session";
+import UserNavbar from "../components/navigation/UserNavbar";
+import PublicNavbar from "../components/navigation/PublicNavbar";
 
-export default function LegalLayout({
+export default async function LegalLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await validateSession(await getSessionToken());
   return (
     <main
       className="min-h-screen"
@@ -16,7 +19,11 @@ export default function LegalLayout({
       <a className="skip-link" href="#legal-content">
         Skip to content
       </a>
-      <BrandHeader />
+      {session?.user ? (
+        <UserNavbar username={session.user.username} />
+      ) : (
+        <PublicNavbar />
+      )}
       <div
         className="legal-wrapper"
         style={{

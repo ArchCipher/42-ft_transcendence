@@ -62,7 +62,8 @@ export async function deleteDocument_api(id: string): Promise<void> {
     method: "DELETE",
   });
 
-  if (!response.ok) {
+  // avoid double click firing a new delete
+  if (!response.ok && response.status !== 404) {
     throw new Error("Failed to delete document");
   }
 }

@@ -51,7 +51,7 @@
   margin-left: auto;
   font-size: 18px;
 
-  color: var(--app-accent);
+  color: var(--app-accent-neon);
   cursor: pointer;
 }
 
@@ -61,7 +61,7 @@
 
   text-align: left;
 
-  color: var(--app-text-main);
+  color: var(--app-text-white);
   background: transparent;
 
   border: 0;
@@ -83,7 +83,7 @@
 }
 
 .SidebarGroupActive {
-  color: var(--app-accent);
+  color: var(--app-accent-neon);
   background: rgba(111, 211, 255, 0.12);
 }
 
@@ -94,12 +94,12 @@
 
   padding: 6px;
 
-  color: var(--app-text-main);
+  color: var(--app-text-white);
 }
 
 .SidebarFriendMember {
   background: rgba(111, 211, 255, 0.08);
-  border-left: 2px solid var(--app-accent);
+  border-left: 2px solid var(--app-accent-neon);
 }
 
 .FriendStatus {

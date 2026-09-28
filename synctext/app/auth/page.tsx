@@ -1,10 +1,12 @@
+import { getSessionToken, validateSession } from "@/lib/auth/session";
 import "./auth.css";
 import LoginForm from "./login-form";
 import AuthPageShell from "@/app/components/auth/AuthPageShell";
+import UserNavbar from "../components/navigation/UserNavbar";
 
 // NOTICES displayed in navtab
 const NOTICES: Record<string, string> = {
-  "pending": "Verification email sent. Check your inbox.",
+  pending: "Verification email sent. Check your inbox.",
   "reset-sent": "Password reset email sent. Check your inbox.",
   "reset-done": "Password reset successful!",
   "logged-out": "You have been logged out.",
@@ -16,12 +18,29 @@ export default async function Login({
   searchParams: Promise<{ verify?: string }>;
 }) {
   const { verify } = await searchParams;
-  return <LoginPage verify={verify} />;
+  const session = await validateSession(await getSessionToken());
+  return (
+    <LoginPage
+      verify={verify}
+      navbar={
+        session?.user ? (
+          <UserNavbar username={session.user.username} />
+        ) : undefined
+      }
+    />
+  );
 }
 
-function LoginPage({ verify }: { verify?: string }) {
+function LoginPage({
+  verify,
+  navbar,
+}: {
+  verify?: string;
+  navbar?: React.ReactNode;
+}) {
   return (
     <AuthPageShell
+	  navbar={navbar}
       notice={
         verify && NOTICES[verify] ? (
           <div className="AuthNotice" role="status">

@@ -23,7 +23,7 @@ export function TechText({
 }: TypographyProps) {
   return (
     <span
-      className={`font-mono uppercase tracking-[0.08em] ${className}`}
+      className={`font-mono font-bold tracking-[0.08em] ${className}`}
     >
       {children}
     </span>

@@ -45,7 +45,7 @@ export function Hero() {
             </BodyText>
           </p>
 
-          <Button className={styles.homePrimaryButton} href="/sync" withArrow>
+          <Button href="/sync" withArrow>
             Get writing
           </Button>
         </div>

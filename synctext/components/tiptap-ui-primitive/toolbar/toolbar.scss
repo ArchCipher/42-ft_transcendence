@@ -50,14 +50,19 @@
     }
 
     @media (max-width: 480px) {
-      position: absolute;
-      top: auto;
-      height: calc(var(--tt-toolbar-height) + var(--tt-safe-area-bottom));
+      position: sticky;
+      top: 0;
+      bottom: auto;
+      left: 0;
+      right: 0;
+      height: auto;
+      flex-wrap: wrap;
+      row-gap: 0.25rem;
+      overflow-x: visible;
+      overscroll-behavior-x: contain;
+      padding: 0.375 0.5rem calc(var(--tt-safe-area-bottom) + 0.375);
       border-top: 1px solid var(--tt-toolbar-border-color);
       border-bottom: none;
-      padding: 0 0.5rem var(--tt-safe-area-bottom);
-      flex-wrap: nowrap;
-      justify-content: flex-start;
 
       .tiptap-toolbar-group {
         flex: 0 0 auto;

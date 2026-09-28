@@ -6,7 +6,7 @@
   border: 0;
   background: transparent;
 
-  color: var(--app-accent);
+  color: var(--app-accent-neon);
   cursor: pointer;
 
   text-shadow:
@@ -42,7 +42,7 @@
 
   font-size: 58px;
 
-  border: 1px dashed var(--app-accent);
+  border: 1px dashed var(--app-accent-neon);
   border-radius: 10px;
 }
 

@@ -9,6 +9,7 @@ import {
   baseTiptapExtensions,
   simpleEditorConfig,
 } from "@/components/tiptap-templates/simple/simple-editor-view"
+import ErrorNote from "@/app/components/form/ErrorNote"
 
 type SnapshotPreviewProps = {
   docId: string
@@ -140,7 +141,7 @@ function SnapshotPreviewContent({ docId, snapshotId, onReady }: SnapshotPreviewP
   }
 
   if (error) {
-    return <p role="alert">{error}</p>
+    return <ErrorNote>{error}</ErrorNote>
   }
 
   if (!snapshotDocument) {

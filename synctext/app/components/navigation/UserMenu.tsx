@@ -1,46 +1,42 @@
 "use client";
 
-import { User } from "lucide-react";
 import { Menu } from "@base-ui/react/menu";
 import { TechText } from "@/app/components/typography/Typography";
-import "./UserMenu.css";
+import "./NavMenu.css";
 import { useRouter } from "next/navigation";
 import { LOGGED_OUT_URL, logoutClient } from "@/lib/auth/session-state";
-import { type UserProps } from "./dashboard-client";
 
-export default function UserMenu({ username }: UserProps) {
+export default function UserMenu({ username }: {username:string}) {
   const router = useRouter();
   return (
-    <div className="UserMenuContainer">
+    <div className="NavMenuRoot">
       <Menu.Root modal={false}>
-        <Menu.Trigger className="UserMenu">
-          <User size={25} />
-
-          <TechText className="text-xs max-w-[90px] truncate">
-            {username}
-          </TechText>
+        <Menu.Trigger className="UserMenu" aria-label="Account menu">
+		  <span className="UserAvatarInitial" aria-hidden="true">
+			{(username.trim().charAt(0) || "?").toUpperCase()}
+		  </span>
         </Menu.Trigger>
 
         <Menu.Portal>
-          <Menu.Positioner className="UserMenuPositioner">
-            <Menu.Popup className="UserDropdown">
+          <Menu.Positioner className="NavMenuPositioner" align="end">
+            <Menu.Popup className="NavMenuPanel">
 
               <Menu.Item
-                className="UserDropdownItem"
+                className="NavMenuItem"
                 onClickCapture={() => router.push("/profile")}
               >
-                <TechText className="text-xs">
+                <TechText className="text-sm max-[900px]:text-xs">
                   Profile
                 </TechText>
               </Menu.Item>
 
               <Menu.Item
-                className="UserDropdownItem"
+                className="NavMenuItem navMenuDanger"
                 onClick={() =>
                   void logoutClient(() => router.push(LOGGED_OUT_URL))
                 }
               >
-                <TechText className="text-xs">Logout</TechText>
+                <TechText className="text-sm max-[900px]:text-xs">Logout</TechText>
               </Menu.Item>
             </Menu.Popup>
           </Menu.Positioner>

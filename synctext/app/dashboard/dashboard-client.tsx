@@ -5,9 +5,6 @@ import { useEffect, useState } from "react";
 import "./Dashboard.css";
 import { useRouter } from "next/navigation";
 import AppBackground from "@/app/components/background/AppBackground";
-import Navbar from "@/app/components/navigation/Navbar";
-import UserMenu from "./UserMenu";
-import BrandHeader from "@/app/components/header/BrandHeader";
 import ControlBar from "./ControlBar";
 import AppPanel from "@/app/components/layout/AppPanel";
 import { Footer } from "@/app/components/footer/Footer";
@@ -17,6 +14,7 @@ import { TechText } from "@/app/components/typography/Typography";
 import Button from "@/app/components/ui/Button";
 import { createDocument_api } from "./document/document";
 import { Menu } from "lucide-react";
+import UserNavbar from "../components/navigation/UserNavbar";
 
 export type UserProps = {
   username: string;
@@ -64,13 +62,7 @@ export default function DashboardClient({ username }: UserProps) {
 
   return (
     <AppBackground>
-      <Navbar mobileMenu={false}>
-        <div className="DashboardNavActions">
-          <UserMenu username={username} />
-        </div>
-      </Navbar>
-
-      <BrandHeader />
+	  <UserNavbar username={username}/>
 
       <div className="DashboardPage">
         <div className="DashboardLayout">

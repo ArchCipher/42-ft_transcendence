@@ -1,0 +1,11 @@
+.navbar {
+  --mobile-nav-height: 3.2rem;
+  border-color: rgba(100, 190, 225, 0.2) !important;
+  background: rgba(10, 17, 40, 0.5);
+}
+
+.navbar nav { min-height: 4rem; }
+
+.navbarLogo { --logo-size: 1.6rem; }
+
+@media (max-width: 900px) { .navbar nav {min-height: var(--mobile-nav-height)} .navbarLogo { --logo-size: 1.35rem; } }

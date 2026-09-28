@@ -7,20 +7,14 @@
   display: inline-flex;
   align-items: center;
   gap: 0.42em;
-  color: #fff;
+  color: var(--app-accent-yellow);
   font-size: var(--logo-size, inherit);
   line-height: 1;
-}
-
-.wordmark {
-  color: #fff !important;
-  font-size: inherit;
-  line-height: 0.9;
-  white-space: nowrap;
+  font-weight: 700;
 }
 
 .separator {
-  color: #fff;
+  color: var(--app-text-white);
   font-family: var(--font-geist-mono), monospace;
   font-size: 0.44em;
   font-weight: 700;
@@ -28,7 +22,7 @@
 }
 
 .mark {
-  width: 1.04em;
+  width: 1em;
   height: auto;
   filter: brightness(0) invert(1);
 }

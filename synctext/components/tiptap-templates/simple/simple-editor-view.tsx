@@ -276,7 +276,6 @@ export function SimpleEditorView({
   showToolbar?: boolean
 }) {
   const isMobile = useIsBreakpoint()
-
   const [mobileView, setMobileView] = useState<"main" | "highlighter" | "link">(
     "main"
   )
@@ -340,7 +339,7 @@ export function SimpleEditorView({
   }
 
   return (
-    <div className="simple-editor-wrapper">
+    <div className="simple-editor-wrapper app-editor-wrapper">
       <EditorContext.Provider value={{ editor }}>
         <Toolbar ref={toolbarRef}>
           {toolbarContent}

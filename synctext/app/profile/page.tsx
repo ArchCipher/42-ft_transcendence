@@ -1,24 +1,19 @@
 import "./Profile.css";
 import ProfileForm from "./profile-form";
 
-import AppBackground from "@/app/components/background/AppBackground";
-import Navbar from "@/app/components/navigation/Navbar";
-import BrandHeader from "@/app/components/header/BrandHeader";
-import AppPanel from "@/app/components/layout/AppPanel";
-import { Footer } from "@/app/components/footer/Footer";
+import UserNavbar from "../components/navigation/UserNavbar";
+import { requireSession } from "@/lib/auth/guard";
+import AuthPageShell from "../components/auth/AuthPageShell";
+import { SessionGuard } from "@/hooks/use-session-guard";
 
 export default async function Profile() {
-  return (
-    <AppBackground>
-      <Navbar />
-      <BrandHeader />
+  const session = await requireSession();
 
-      <div className="ProfilePage">
-        <AppPanel className="ProfilePanel">
-          <ProfileForm />
-        </AppPanel>
-      </div>
-      <Footer />
-    </AppBackground>
+  return (
+    <SessionGuard>
+      <AuthPageShell navbar={<UserNavbar username={session.user.username} />}>
+        <ProfileForm />
+      </AuthPageShell>
+    </SessionGuard>
   );
 }

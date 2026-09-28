@@ -13,15 +13,14 @@ export default function Navbar({ children,
                                   className = "",
                                 }: NavbarProps) {
   return (
-    <header className={`relative z-50 w-full border-b border-white/15 ${className}`}>
+    <header className={`relative z-[60] w-full border-b border-white/15 ${className}`}>
       <nav
         aria-label="Main navigation"
         className="
-                    flex min-h-20 
+                    flex
                     items-center 
                     justify-between 
-                    px-5 
-                    sm:px-[clamp(1.25rem,5vw,5rem)]"
+                    px-[var(--nav-x-padding)]"
       >
       {brand ? <div className="shrink-0">{brand}</div> : null}
       {children && (
@@ -29,8 +28,8 @@ export default function Navbar({ children,
           <div
             className={
               mobileMenu
-                ? "hidden min-[901px]:flex items-center gap-2 ml-auto"
-                : "flex items-center gap-2 ml-auto"}>
+                ? "hidden min-[901px]:flex min-w-0 items-center gap-2 ml-auto"
+                : "flex min-w-0 items-center gap-2 ml-auto"}>
 
             {children}
           </div>

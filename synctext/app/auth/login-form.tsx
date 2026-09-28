@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation";
 import { authPost, FALLBACK } from "./api";
 import { DisplayText, TechText } from "@/app/components/typography/Typography";
 import Button from "@/app/components/ui/Button";
-import InputBox from "@/app/components/form/InputBox";
+import Field from "@/app/components/form/Field";
+import ErrorNote from "../components/form/ErrorNote";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -27,10 +28,13 @@ export default function LoginForm() {
     setLoading(true);
 
     try {
-      const { ok, fields, error, redirectTo } = await authPost("/api/auth/login", {
-        email,
-        password,
-      });
+      const { ok, fields, error, redirectTo } = await authPost(
+        "/api/auth/login",
+        {
+          email,
+          password,
+        },
+      );
 
       if (!ok) {
         if (fields)
@@ -59,52 +63,30 @@ export default function LoginForm() {
       }}
     >
       <h2 className="AuthFormTitle">
-        <DisplayText>
-          Pick up where you left off.
-        </DisplayText>
+        <DisplayText>Pick up where you left off.</DisplayText>
       </h2>
 
-      <label htmlFor="email">
-        <TechText className="text-xs">
-          Email
-        </TechText>
-      </label>
-      <InputBox
+      <Field
         id="email"
+        label="Email"
         type="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
-        aria-invalid={!!fieldErrors?.email}
-        aria-describedby={fieldErrors?.email ? "email-error" : undefined}
+        error={fieldErrors?.email}
         autoComplete="email"
       />
-      {fieldErrors?.email && (
-        <p id="email-error" className="FieldError">
-          <TechText className="text-xs">{fieldErrors.email}</TechText>
-        </p>
-      )}
 
-      <label htmlFor="password">
-        <TechText className="text-xs">
-          Password
-        </TechText>
-      </label>
-      <InputBox
+      <Field
         id="password"
+        label="Password"
         type={showPassword ? "text" : "password"}
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
-        aria-invalid={!!fieldErrors?.password}
-        aria-describedby={fieldErrors?.password ? "password-error" : undefined}
+        error={fieldErrors?.password}
         autoComplete="current-password"
       />
-      {fieldErrors?.password && (
-        <p id="password-error" className="FieldError">
-          <TechText className="text-xs">{fieldErrors.password}</TechText>
-        </p>
-      )}
 
       <label className="ShowPassword">
         <input
@@ -115,20 +97,14 @@ export default function LoginForm() {
         <TechText className="text-xs">Show password</TechText>
       </label>
 
-      {error && (
-        <p className="FormError" role="alert">
-          <TechText className="text-xs">{error}</TechText>
-        </p>
-      )}
+      {error && <ErrorNote>{error}</ErrorNote>}
 
       <Button className="AuthSubmitButton" type="submit" disabled={loading}>
         {loading ? "Accessing..." : "Login"}
       </Button>
       <div className="AuthLinks">
         <Link href="/register">
-          <TechText className="text-xs text-[#6fd3ff]">
-            Create account
-          </TechText>
+          <TechText className="text-xs text-[#6fd3ff]">Create account</TechText>
         </Link>
         <Link href="/forgot-password">
           <TechText className="text-xs text-[#6fd3ff]">
