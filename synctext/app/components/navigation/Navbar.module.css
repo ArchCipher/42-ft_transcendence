@@ -1,7 +1,7 @@
 .navbar {
   --mobile-nav-height: 3.2rem;
   border-color: rgba(100, 190, 225, 0.2) !important;
-  background: rgba(10, 17, 40, var(--nav-bg-alpha));
+  background: rgba(10, 17, 40, 0.5);
 }
 
 .navbar nav { min-height: 4rem; }

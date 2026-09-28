@@ -15,7 +15,7 @@ export default function PublicNavbar() {
       brand={<Logo className={baseStyles.navbarLogo} href="/" />}
     >
       <Button
-        href="#features"
+        href="/#features"
         variant="outline"
       >
         Features
