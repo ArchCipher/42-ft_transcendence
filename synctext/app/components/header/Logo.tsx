@@ -18,6 +18,7 @@ export default function Logo({ className, href }: LogoProps) {
         alt=""
         className={styles.mark}
         height={225}
+		loading="eager"
         src="/assets/42-logo-transparent.png"
         width={225}
       />

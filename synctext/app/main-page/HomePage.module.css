@@ -13,7 +13,7 @@
   --signal-soft: oklch(0.57 0.1 286);
   --surface: oklch(0.15 0.018 285 / 0.88);
   min-height: 100vh;
-  overflow: hidden;
+  overflow-x: clip;
   color: var(--ink);
 }
 
