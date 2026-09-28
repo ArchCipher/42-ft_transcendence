@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "HandoffPurpose" AS ENUM ('SIGN_IN', 'LINK');
+CREATE TYPE "OAuthPurpose" AS ENUM ('SIGN_IN', 'LINK');
 
 -- CreateTable
 CREATE TABLE "OAuthAccount" (
@@ -14,18 +14,17 @@ CREATE TABLE "OAuthAccount" (
 );
 
 -- CreateTable
-CREATE TABLE "OAuthHandoff" (
-    "codeHash" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
-    "purpose" "HandoffPurpose" NOT NULL DEFAULT 'SIGN_IN',
-    "provider" TEXT,
-    "providerAccountId" TEXT,
-    "redirectTo" TEXT NOT NULL DEFAULT '/dashboard',
+CREATE TABLE "OAuthTransaction" (
+    "stateHash" TEXT NOT NULL,
+    "codeVerifier" TEXT NOT NULL,
+    "nonce" TEXT NOT NULL,
+    "purpose" "OAuthPurpose" NOT NULL DEFAULT 'SIGN_IN',
+    "userId" TEXT,
     "expiresAt" TIMESTAMP(3) NOT NULL,
     "usedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "OAuthHandoff_pkey" PRIMARY KEY ("codeHash")
+    CONSTRAINT "OAuthTransaction_pkey" PRIMARY KEY ("stateHash")
 );
 
 -- CreateIndex
@@ -35,7 +34,13 @@ CREATE INDEX "OAuthAccount_userId_idx" ON "OAuthAccount"("userId");
 CREATE UNIQUE INDEX "OAuthAccount_provider_providerAccountId_key" ON "OAuthAccount"("provider", "providerAccountId");
 
 -- CreateIndex
-CREATE INDEX "OAuthHandoff_userId_idx" ON "OAuthHandoff"("userId");
+CREATE INDEX "OAuthTransaction_userId_idx" ON "OAuthTransaction"("userId");
+
+-- CreateIndex
+CREATE INDEX "OAuthTransaction_expiresAt_idx" ON "OAuthTransaction"("expiresAt");
 
 -- AddForeignKey
 ALTER TABLE "OAuthAccount" ADD CONSTRAINT "OAuthAccount_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "OAuthTransaction" ADD CONSTRAINT "OAuthTransaction_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -140,6 +140,20 @@ export const verifyEmailSchema = z
   })
   .strict();
 
+// ---- oauth ---------------------------------------------------------------
+
+export const oauthStartSchema = z
+  .object({
+	purpose: z.enum(["signin", "link"]).default("signin"),
+  })
+  .strict();
+
+export const oauthUnlinkSchema = z
+  .object({
+	provider: z.enum(["google"]),
+  })
+  .strict();
+
 // ---- internal --------------------------------------------------------------
 
 export const internalVerifySchema = z
@@ -168,6 +182,8 @@ export type RegisterInput = z.infer<typeof registerSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type PasswordResetInput = z.infer<typeof passwordResetSchema>;
 export type VerifyEmailInput = z.infer<typeof verifyEmailSchema>;
+export type OauthStartInput = z.infer<typeof oauthStartSchema>;
+export type OauthUnlinkInput = z.infer<typeof oauthUnlinkSchema>;
 export type InternalSessionVerifyInput = z.infer<typeof internalVerifySchema>;
 
 // Stable JSON shape for the client: { error: "Validation failed", ... } per field.
