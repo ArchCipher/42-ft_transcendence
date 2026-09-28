@@ -5,6 +5,7 @@ import {
   createPrivateSpace,
   PlatformRole,
   GroupRole,
+  FriendshipStatus,
 } from "../src/index.js";
 
 // Keep the Argon2id config aligned with synctext/lib/auth/password.ts
@@ -165,9 +166,26 @@ async function main() {
     })),
   });
 
+  // Friendship rows store the smaller id first (CHECK in the migration). zaphod
+  // has no friends: nobody may add him to a group.
+  const friends = (requester: { id: string }, other: { id: string }) => {
+    const [userAId, userBId] = [requester.id, other.id].sort();
+    return {
+      userAId,
+      userBId,
+      requestedById: requester.id,
+      status: FriendshipStatus.ACCEPTED,
+      respondedAt: new Date(),
+    };
+  };
+
+  await prisma.friendship.createMany({
+    data: [friends(bob, alice), friends(alice, tim)],
+  });
+
   console.log(
     `seeded: 4 users (${[zaphod, alice, bob, tim].map((u) => u.username).join(", ")}), ` +
-      `4 private spaces, 2 shared groups, 3 documents, ${snapshotDays.length} snapshots`,
+      `4 private spaces, 2 shared groups, 3 documents, ${snapshotDays.length} snapshots, 2 friendships`,
   );
 }
 
