@@ -43,6 +43,7 @@ model User {
   updatedAt         DateTime     @updatedAt
 
   // Relations
+  accounts                OAuthAccount[]            @relation("UserOAuthAccounts")
   sessions                Session[]                 @relation("UserSession")
   emailVerificationTokens EmailVerificationToken[]  @relation("UserEmailVerification")
   passwordResetTokens     PasswordResetToken[]      @relation("UserPasswordReset")
@@ -212,6 +213,39 @@ model PasswordResetToken {
   expiresAt   DateTime
   usedAt      DateTime?
   createdAt   DateTime @default(now())
+
+  @@index([userId])
+}
+
+model OAuthAccount {
+  id                  String   @id @default(cuid())
+  userId              String
+  provider            String  // "google"
+  providerAccountId   String  // OIDC `sub` (subject claim). The link key. Never an email
+  emailAtLinkTime     String?
+  createdAt           DateTime @default(now())
+
+  user User @relation("UserOAuthAccounts", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+enum HandoffPurpose {
+  SIGN_IN
+  LINK
+}
+
+model OAuthHandoff {
+  codeHash            String  @id
+  userId              String
+  purpose             HandoffPurpose   @default(SIGN_IN)
+  provider            String?
+  providerAccountId   String?
+  redirectTo          String  @default("/dashboard")
+  expiresAt           DateTime
+  usedAt              DateTime?  // null = still live
+  createdAt           DateTime @default(now())
 
   @@index([userId])
 }
