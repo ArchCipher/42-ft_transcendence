@@ -1,5 +1,10 @@
 "use client";
 
+import { useEffect } from "react";
+import { createPortal } from "react-dom";
+
+import "./ConfirmWindow.css";
+
 type ConfirmWindowProps = {
   title: string;
   message: string;
@@ -17,9 +22,30 @@ export default function ConfirmWindow({
   onConfirm,
   onCancel,
 }: ConfirmWindowProps) {
-  return (
-    <div className="ConfirmWindowOverlay">
-      <div className="ConfirmWindow">
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        onCancel();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onCancel]);
+
+  return createPortal(
+    <div
+      className="ConfirmWindowOverlay"
+      onClick={onCancel}
+    >
+      <div
+        className="ConfirmWindow"
+        onClick={(event) => event.stopPropagation()}
+      >
         <h2 className="ConfirmWindowTitle">{title}</h2>
 
         <p className="ConfirmWindowMessage">{message}</p>
@@ -42,6 +68,7 @@ export default function ConfirmWindow({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
