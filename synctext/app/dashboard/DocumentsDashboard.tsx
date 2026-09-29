@@ -1,8 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { FileText } from "lucide-react";
 import type { DocumentSummary } from "@/lib/documents/documents";
 import { deleteDocument_api, listDocuments_api, renameDocument_api } from "./document/document";
 import "./DocumentsDashboard.css";
@@ -139,6 +139,7 @@ async function saveRename(): Promise<boolean> {
 
       <PlusButton
         size="tile"
+        className="CreateDocumentTile"
         aria-label={isCreatingDocument ? "Creating document" : "Create document"}
         disabled={isCreatingDocument}
         onClick={onCreateDocument}
@@ -241,7 +242,14 @@ function DocumentCard({ title,
   return (
     <div className="DocumentCard">
       {onDelete ? (
-        <button className="DeleteDoc" onClick={onDelete}>×</button>
+        <button
+          type="button"
+          className="DeleteDoc"
+          aria-label={`Delete ${title}`}
+          onClick={onDelete}
+        >
+          ×
+        </button>
       ) : null}
 
       <button
@@ -250,13 +258,7 @@ function DocumentCard({ title,
         onClick={onOpen}
         aria-label={`Open ${title}`}
       >
-        <Image
-          src="/assets/doc-icon.png"
-          alt="Document icon"
-          width={90}
-          height={90}
-          className="DocumentIcon"
-        />
+        <FileText className="DocumentIcon" aria-hidden="true" strokeWidth={1.4} />
       </button>
 
       {isEditing ? (
@@ -300,13 +302,14 @@ function DocumentCard({ title,
             )}
           </div>
         ) : (
-        <span
+        <button
+          type="button"
           className="DocumentTitle"
           onClick={onEdit}
           title={title}
         >
           {truncateTitle(title)}
-        </span>
+        </button>
       )}
     </div>
   );

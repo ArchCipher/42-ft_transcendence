@@ -12,6 +12,10 @@
   overflow: visible;
 }
 
+.SidebarAccordionItem {
+  border-bottom: 0 !important;
+}
+
 .SidebarAccordionContent {
   padding: 16px;
   background: var(--app-panel-bg);
@@ -28,10 +32,9 @@
   justify-content: space-between;
 
   background: rgba(111, 211, 255, 0.14);
-  color: var(--app-text-main);
+  color: var(--app-text-white);
 
   border: 0;
-  border-bottom: 1px solid var(--app-panel-border);
 
   cursor: pointer;
   font-family: var(--font-geist-mono), monospace;
@@ -70,7 +73,7 @@
 
   border: 0;
   background: transparent;
-  color: var(--app-text-main);
+  color: rgba(255, 255, 255, 0.82);
 
   font-family: var(--font-geist-mono), monospace;
   font-size: var(--dashboard-text-size);
@@ -85,6 +88,14 @@
 .SidebarGroup:hover,
 .SidebarFriend:hover {
   background: rgba(111, 211, 255, 0.08);
+}
+
+.SidebarGroup:focus-visible,
+.SidebarFriend:focus-visible,
+.SidebarAccordionTrigger:focus-visible,
+.SidebarEditButton:focus-visible {
+  outline: 2px solid var(--app-accent-yellow);
+  outline-offset: -2px;
 }
 
 .SidebarGroupActive {
@@ -103,7 +114,7 @@
 }
 
 .SidebarFriend span {
-  color: var(--app-text-main);
+  color: rgba(255, 255, 255, 0.82);
 }
 
 .FriendStatus {
@@ -122,14 +133,45 @@
 }
 
 .SidebarAddGroup {
-  display: flex;
-  justify-content: center;
-  padding: 12px 0 18px;
+  padding: 12px 0 16px;
 }
 
-.SidebarAddGroup button {
-  width: 48px;
-  height: 48px;
+.SidebarAddGroup .NewGroupButton {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 14px;
+  align-self: stretch;
+
+  display: flex;
+  align-items: center;
+  justify-content: stretch;
+  gap: 0;
+
+  border-color: rgba(111, 211, 255, 0.42);
+  background: rgba(111, 211, 255, 0.08);
+  color: var(--app-accent-neon);
+
+  box-shadow: none;
+}
+
+.SidebarAddGroup .NewGroupButton > span {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.SidebarAddGroup .NewGroupButton:hover:not(:disabled) {
+  border-color: var(--app-accent-neon);
+  background: rgba(111, 211, 255, 0.16);
+  color: var(--app-text-white);
+  box-shadow: none;
+}
+
+.SidebarAddGroup .NewGroupButton:focus-visible {
+  outline: 2px solid var(--app-accent-yellow);
+  outline-offset: 3px;
 }
 
 .SidebarActionMenu {
@@ -191,7 +233,7 @@
 
   border: 0;
   background: transparent;
-  color: var(--app-accent);
+  color: var(--app-accent-neon);
   cursor: pointer;
 }
 
@@ -203,15 +245,15 @@
     bottom: 0;
     left: 0;
 
-    width: 60vw;
+    width: min(320px, calc(100vw - 44px));
     height: auto;
 
     z-index: 30;
 
     background: rgb(14, 32, 65);
 
-    transform: translateX(calc(-100% - 30px));
-    transition: transform 0.2s ease;
+    transform: translateX(calc(-100% - 20px));
+    transition: transform 200ms var(--tt-transition-easing-quart);
   }
 
   .DashboardSidebarToggle {

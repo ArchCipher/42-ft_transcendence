@@ -2,11 +2,11 @@
 
 import "./DashboardSidebar.css";
 import { TechText } from "@/app/components/typography/Typography";
-import PlusButton from "@/app/components/ui/PlusButton";
+import Button from "@/app/components/ui/Button";
 import InputBox from "@/app/components/form/InputBox";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useEffect, useState } from "react";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Plus } from "lucide-react";
 
 type DashboardSidebarProps = {
   selectedGroup: {
@@ -102,10 +102,13 @@ export default function DashboardSidebar({
             />
 
             <div className="SidebarAddGroup">
-              <PlusButton
-                size="small"
-                aria-label="Create group"
-              />
+              <Button
+                variant="outline"
+                className="NewGroupButton"
+              >
+                New group
+                <Plus size={16} aria-hidden="true" />
+              </Button>
             </div>
 
             <div className="SidebarGroupList">

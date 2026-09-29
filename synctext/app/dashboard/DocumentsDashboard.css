@@ -2,66 +2,86 @@
   width: 100%;
   min-height: 100%;
 
-  padding: 16px;
+  padding: 4px;
 
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: clamp(24px, 3vw, 36px) clamp(16px, 2.5vw, 28px);
   justify-items: center;
-  row-gap: 32px;
   align-content: start;
 }
 
 .DashboardError {
   grid-column: 1 / -1;
   width: 100%;
-  margin: 20px 0;
+  margin: 24px 0;
   text-align: center;
 }
 
 .DashboardStatus {
   grid-column: 1 / -1;
   width: 100%;
-  margin: 20px 0;
+  margin: 24px 0;
   text-align: center;
 }
 
 .DocumentCard {
-  width: min(150px, 100%);
-  height: 150px;
+  width: min(160px, 100%);
+  min-height: 156px;
   position: relative;
+  --document-control-size: 104px;
 
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
 
-  gap: 8px;
+  gap: 10px;
 }
 
 .DocumentIcon {
-  width: 100px;
-  height: 100px;
-  object-fit: contain;
+  width: 68px;
+  height: 68px;
+
+  color: var(--app-accent-neon);
 }
 
 .DocumentOpen {
-  width: 100px;
-  height: 100px;
+  width: var(--document-control-size);
+  height: var(--document-control-size);
   padding: 0;
+  display: grid;
+  place-items: center;
   background: transparent;
   border: 0;
   cursor: pointer;
+  border-radius: 8px;
+  transition: transform 160ms ease, filter 160ms ease;
+}
+
+.DocumentOpen:hover {
+  filter: drop-shadow(0 0 6px rgba(111, 211, 255, 0.28));
+  transform: translateY(-2px);
+}
+
+.DocumentOpen:focus-visible,
+.DocumentTitle:focus-visible,
+.DeleteDoc:focus-visible {
+  outline: 2px solid var(--app-accent-yellow);
+  outline-offset: 3px;
 }
 
 .DocumentTitle {
-  width: 150px;
+  width: 100%;
 
   display: block;
   padding: 4px 0 0;
 
+  border: 0;
+  background: transparent;
   text-align: center;
-  cursor: text;
-  color: white;
+  cursor: pointer;
+  color: var(--app-text-white);
 
   font-size: var(--dashboard-titledoc-size);
   line-height: 22px;
@@ -69,8 +89,8 @@
 }
 
 .DocumentTitleInput {
-  width: 140px;
-  padding: 8px 4px;
+  width: 100%;
+  padding: 8px;
 
   color: white;
   background: transparent;
@@ -83,7 +103,7 @@
 }
 
 .DocumentTitleEdit {
-  width: 140px;
+  width: 100%;
   height: 42px;
 
   display: flex;
@@ -99,31 +119,73 @@
 }
 
 .DeleteDoc {
-  color: var(--app-text-main);
+  position: absolute;
+  top: 4px;
+  right: calc(50% - (var(--document-control-size) / 2) - 10px);
+  z-index: 1;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+
+  border: 0;
+  border-radius: 50%;
+  background: rgba(8, 25, 55, 0.82);
+  color: var(--app-text-white);
+  font-size: 18px;
+  line-height: 1;
+  opacity: 0.72;
+  cursor: pointer;
+  transition: opacity 160ms ease, background-color 160ms ease;
+}
+
+.DeleteDoc:hover {
+  background: rgba(120, 36, 56, 0.9);
+  opacity: 1;
+}
+
+.CreateDocumentTile {
+  width: min(150px, 100%);
+  height: 150px;
+  align-self: start;
+}
+
+.DashboardStatus,
+.DashboardError {
+  max-width: 42ch;
+  color: var(--app-text-white);
 }
 
 @media (max-width: 900px) {
   .Dashboard {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    justify-items: center;
-
-    column-gap: 12px;
-    row-gap: 32px;
-    padding: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+    gap: 28px 16px;
+    padding: 4px;
   }
 
   .DocumentCard {
     width: 140px;
     height: 140px;
+    --document-control-size: 92px;
   }
 
-  .DocumentOpen,
   .DocumentIcon {
-    width: 90px;
-    height: 90px;
+    width: 60px;
+    height: 60px;
   }
 
   .DocumentTitle {
-    width: 140px;
+    width: 100%;
+  }
+}
+
+@media (max-width: 360px) {
+  .Dashboard {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px 8px;
+  }
+
+  .DocumentCard,
+  .CreateDocumentTile {
+    width: 132px;
   }
 }
