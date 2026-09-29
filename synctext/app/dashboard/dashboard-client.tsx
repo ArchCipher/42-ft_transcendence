@@ -83,7 +83,6 @@ export default function DashboardClient({ username }: UserProps) {
             selectedGroup={selectedGroup}
             onSelectGroup={setSelectedGroup}
             isOpen={sidebarOpen}
-            onClose={() => setSidebarOpen(false)}
           />
 
           {sidebarOpen && (

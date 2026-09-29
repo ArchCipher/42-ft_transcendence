@@ -1,85 +1,90 @@
-.DashboardSidebar {
+.SidebarContent {
+  overflow: visible;
+}
+
+.SidebarAccordionItem [data-slot="accordion-content"][data-open] {
+  order: 0;
+  overflow: visible;
+}
+
+.SidebarAccordion {
   width: 100%;
-  min-width: 0;
-  height: 760px;
-  min-height: 0;
+  overflow: visible;
+}
 
-  display: flex;
-  flex-direction: column;
-
+.SidebarAccordionContent {
+  padding: 16px;
   background: var(--app-panel-bg);
-  border: 1px solid var(--app-panel-border);
-
-  overflow: hidden;
+  overflow: visible;
 }
 
-.SidebarGroups,
-.SidebarFriends {
-  min-height: 0;
-  padding: 20px 16px;
+.SidebarAccordionTrigger {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 16px;
 
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.SidebarGroups {
-  flex: 35;
-  padding: 0 16px 20px;
-}
-
-.SidebarGroups .SidebarSectionHeader {
-  height: 56px;
-  flex-shrink: 0;
-}
-
-.SidebarFriends {
-  flex: 65;
-  border-top: 1px solid var(--app-panel-border);
-}
-
-.SidebarSectionHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
 
-
-.FriendGroupAction {
-  border: 0;
-  background: transparent;
-  margin-left: auto;
-  font-size: 18px;
-
-  color: var(--app-accent-neon);
-  cursor: pointer;
-}
-
-.SidebarGroup {
-  width: 100%;
-  padding: 8px 10px;
-
-  text-align: left;
-
-  color: var(--app-text-white);
-  background: transparent;
+  background: rgba(111, 211, 255, 0.14);
+  color: var(--app-text-main);
 
   border: 0;
+  border-bottom: 1px solid var(--app-panel-border);
+
   cursor: pointer;
+  font-family: var(--font-geist-mono), monospace;
+  text-decoration: none;
+}
+
+.SidebarAccordionTrigger:hover {
+  background: rgba(111, 211, 255, 0.22);
+  text-decoration: none;
 }
 
 .SidebarGroupList,
 .SidebarFriendList {
-  min-height: 0;
-
   display: flex;
   flex-direction: column;
-
-  overflow-y: auto;
+  gap: 8px;
 }
 
-.SidebarFriendList {
-  gap: 10px;
+.SidebarActionRow {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.SidebarGroup,
+.SidebarFriend {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 12px;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+
+  border: 0;
+  background: transparent;
+  color: var(--app-text-main);
+
+  font-family: var(--font-geist-mono), monospace;
+  font-size: var(--dashboard-text-size);
+  text-align: left;
+  cursor: pointer;
+}
+
+.SidebarGroup {
+  flex: 1;
+}
+
+.SidebarGroup:hover,
+.SidebarFriend:hover {
+  background: rgba(111, 211, 255, 0.08);
 }
 
 .SidebarGroupActive {
@@ -97,15 +102,13 @@
   color: var(--app-text-white);
 }
 
-.SidebarFriendMember {
-  background: rgba(111, 211, 255, 0.08);
-  border-left: 2px solid var(--app-accent-neon);
+.SidebarFriend span {
+  color: var(--app-text-main);
 }
 
 .FriendStatus {
   width: 8px;
   height: 8px;
-
   flex-shrink: 0;
   border-radius: 50%;
 }
@@ -118,29 +121,83 @@
   background: #6b7280;
 }
 
-.SidebarContent {
-  height: 100%;
-  min-height: 0;
+.SidebarAddGroup {
+  display: flex;
+  justify-content: center;
+  padding: 12px 0 18px;
+}
+
+.SidebarAddGroup button {
+  width: 48px;
+  height: 48px;
+}
+
+.SidebarActionMenu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  left: auto;
+  z-index: 100;
+
+  min-width: 180px;
+  padding: 6px;
 
   display: flex;
   flex-direction: column;
+  gap: 4px;
+
+  background: rgba(220, 240, 255, 0.96);
+  border: 1px solid rgba(111, 211, 255, 0.8);
+
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.25),
+    0 0 10px rgba(111, 211, 255, 0.2);
+
+  backdrop-filter: blur(6px);
 }
 
-.SidebarSectionTitle {
-  font-size: var(--dashboard-title-size);
+.SidebarActionMenu button {
+  padding: 8px 10px;
+
+  border: 0;
+  background: transparent;
+
+  color: #10233d;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
 }
 
-.SidebarGroup,
-.SidebarFriend {
-  font-size: var(--dashboard-text-size);
+.SidebarActionMenu button:hover {
+  background: rgba(111, 211, 255, 0.16);
+}
+
+.SidebarActionMenu button:last-child {
+  color: #8b1e2d;
+}
+
+.SidebarEditButton {
+  position: relative;
+  z-index: 60;
+  flex-shrink: 0;
+
+  width: 32px;
+  height: 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 0;
+  background: transparent;
+  color: var(--app-accent);
+  cursor: pointer;
 }
 
 @media (max-width: 900px) {
   .DashboardSidebar {
     position: absolute;
-
-    grid-column: 1;
-    grid-row: 2;
 
     top: 0;
     bottom: 0;
@@ -157,11 +214,30 @@
     transition: transform 0.2s ease;
   }
 
+  .DashboardSidebarToggle {
+    margin-right: 10px;
+  }
+
   .DashboardSidebar.DashboardSidebarOpen {
     transform: translateX(0);
   }
 
   .SidebarContent {
-    display: flex;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .SidebarAccordionContent {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .DashboardSidebar {
+    overflow: visible;
+  }
+
+  .SidebarAccordion,
+  .SidebarAccordionItem {
+    overflow: visible;
   }
 }
