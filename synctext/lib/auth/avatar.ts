@@ -22,7 +22,7 @@ navigating to an SVG data URL executes its script in our origin. Nothing in
 the product needs it, and PNG/JPEG cover every real use case.
 
 Size is checked on the DECODED length, not the base64 string, so the limit
-means what it says (1 MB of pixels, not 1 MB of base64).
+means what it says (500 KB of pixels, not 500 KB of base64).
 */
 
 const MIME_TO_SIGNATURE: Record<string, (b: Uint8Array) => boolean> = {
@@ -48,11 +48,6 @@ export type AvatarCheck =
   | { ok: false; error: string };
 
 export function validateAvatarDataUrl(value: string): AvatarCheck {
-  if (value.length > Math.ceil(AVATAR_MAX_BYTES * 1.37) + 128) {
-    // cheap pre-check so we never base64-decode a huge payload
-    return { ok: false, error: "Image too large" };
-  }
-
   const match = DATA_URL.exec(value);
   if (!match) {
     return {

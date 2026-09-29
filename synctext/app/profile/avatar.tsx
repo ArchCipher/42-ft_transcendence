@@ -82,7 +82,7 @@ export default function Avatar({
     if (file.size > AVATAR_MAX_BYTES) {
       onStatus({
         kind: "error",
-        text: `Image too large (max ${Math.round(AVATAR_MAX_BYTES / 1024 / 1024)} MB).`,
+        text: `Image too large (max ${Math.round(AVATAR_MAX_BYTES / 1024)} KB).`,
       });
       return;
     }

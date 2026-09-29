@@ -89,7 +89,6 @@ skip() { printf '  %sSKIP%s %s\n' "$Y" "$N" "$1"; }
 
 section() { printf '\n%s%s%s\n' "$B" "$1" "$N"; }
 
-b64() { base64 | tr -d '\n'; }
 b64_str() { printf '%s' "$1" | base64 | tr -d '\n'; }
 
 # ---------------------------------------------------------------- preflight -
@@ -220,7 +219,7 @@ expect "1x1 PNG accepted" 200 '"ok":true'
 
 if [ "$STATUS" = "200" ]; then
   if printf '%s' "$BODY" | grep -q 'avatarUrl'; then
-    printf '  %sFAIL%s response echoes avatarUrl (~1 MB on a real upload)\n' "$R" "$N"
+    printf '  %sFAIL%s response echoes avatarUrl (~683 KB on a real upload)\n' "$R" "$N"
     FAIL=$((FAIL + 1))
   else
     printf '  %sPASS%s response does not echo avatarUrl\n' "$G" "$N"
@@ -234,21 +233,32 @@ fi
 
 section "6. Oversized body must not reach the DB"
 
-# NB: through NGINX (the Compose deployment) a body over 1 MB is rejected by
-# the proxy itself, before Next.js runs, so this asserts "refused" rather than
-# a specific status. Run against `next dev` to exercise the handler's 413.
-BIG="$(head -c 1400000 /dev/zero | b64)"
-call PUT /api/profile "{\"avatarUrl\":\"data:image/png;base64,$BIG\"}"
-if [ "$STATUS" = "200" ]; then
-  printf '  %sFAIL%s oversized upload was ACCEPTED (%s) and stored ~1.3 MB\n' "$R" "$N" "$STATUS"
-  FAIL=$((FAIL + 1))
-elif [ "$STATUS" = "000" ]; then
-  printf '  %sPASS%s oversized refused at the edge (000 = connection closed by proxy)\n' "$G" "$N"
-  printf '        %scheck services/nginx/conf.template has client_max_body_size%s\n' "$Y" "$N"
+# 6a. reaches the validator: real PNG, over the decoded limit, under the
+#     route's content-length guard. Proves the limit is actually enforced.
+call PUT /api/profile "$(printf '{"avatarUrl":"%s"}' "$(variant 175000)")"
+if [ "$STATUS" = "400" ] && printf '%s' "$BODY" | grep -qF 'Image too large'; then
+  printf '  %sPASS%s validator refused oversized payload %s(400)%s\n' \
+    "$G" "$N" "$B" "$N"
   PASS=$((PASS + 1))
 else
-  printf '  %sPASS%s oversized refused %s(%s)%s\n' "$G" "$N" "" "$STATUS" "$N"
+  printf '  %sFAIL%s validator case: got %s, wanted 400 "Image too large"\n' \
+    "$R" "$N" "$STATUS"
+  printf '        if this returned 200 the decoded-size limit is gone\n'
+  printf '        body: %s\n' "${BODY:0:200}"
+  FAIL=$((FAIL + 1))
+fi
+
+# 6b. caught earlier, on content-length, before the body is parsed.
+call PUT /api/profile "$(printf '{"avatarUrl":"%s"}' "$(variant 200000)")"
+if [ "$STATUS" = "413" ] && printf '%s' "$BODY" | grep -qF 'Image too large'; then
+  printf '  %sPASS%s content-length guard refused oversized body %s(413)%s\n' \
+    "$G" "$N" "$B" "$N"
   PASS=$((PASS + 1))
+else
+  printf '  %sFAIL%s content-length case: got %s, wanted 413 "Image too large"\n' \
+    "$R" "$N" "$STATUS"
+  printf '        body: %s\n' "${BODY:0:200}"
+  FAIL=$((FAIL + 1))
 fi
 
 # ------------------------------------------- 7. success must clear the limiter --

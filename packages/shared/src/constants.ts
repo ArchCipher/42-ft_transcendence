@@ -23,7 +23,7 @@ export const IDLE_TIMEOUT_MS = 2 * 60 * 60 * 1000; // 2hr
 export const SESSION_LAST_USED_UPDATE_THRESHOLD = 30 * 60 * 1000; // 30mins
 
 // Encoded as base-64 data URL, so N-byte image is a ~1.37 * N byte request body.
-export const AVATAR_MAX_BYTES = 700 * 1024;
+export const AVATAR_MAX_BYTES = 500 * 1024;
 
 // allow-listed avatar formats
 export const AVATAR_MIME_TYPES: readonly string[] = ["image/png", "image/jpeg"];

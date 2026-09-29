@@ -35,7 +35,7 @@ API Response contracts: /api/profile
 NOTE: Math.ceil(AVATAR_MAX_BYTES * 1.37) + 128
 Cheap string-length pre-filter.
 Base64 inflates (3bytes -> 4chars), and "data:image/png;base64," prefix
-dds 22 more, so a max size image is ~955,758 chars. 1.37 is deliberately loose
+adds 22 more, so a 500KB image is ~682,690 chars. 1.37 is deliberately loose
 */
 const avatarUrlSchema = z
   .string()
