@@ -51,7 +51,9 @@ export const REGISTER_LIMIT: RateLimitConfig = {
 /*
 Guest document creation quota. These requests allocate database rows without
 an authenticated identity, so they need their own small per-network budget.
-Like registration, successful creations are counted against this quota.
+Unlike registration, a slot is reserved before the DB write (tryAcquire), so
+attempts - success or rare DB failure count against budget, which also prevents
+hammering a failing endpoint.
 */
 export const GUEST_DOCUMENT_LIMIT: RateLimitConfig = {
   windowMs: ONE_HOUR,
@@ -109,6 +111,21 @@ export class MemoryRateLimiter {
     }
     bucket.lockedUntil = now + this.config.lockoutMs;
     bucket.failures = []; // window reset once locked
+    this.buckets.set(key, bucket);
+    return true;
+  }
+
+  // atomic check and count: reserves a slot synchronously (no internal await),
+  // so concurrent callers cannot both pass over budget check
+  async tryAcquire(key: string, now: number = Date.now()): Promise<boolean> {
+    this.sweep(now);
+    const bucket = this.buckets.get(key) ?? { failures: [], lockedUntil: 0 };
+    if (bucket.lockedUntil > now) return false;
+    bucket.failures = bucket.failures.filter(
+      (t) => now - t < this.config.windowMs,
+    );
+    if (bucket.failures.length >= this.config.maxFailures) return false;
+    bucket.failures.push(now);
     this.buckets.set(key, bucket);
     return true;
   }

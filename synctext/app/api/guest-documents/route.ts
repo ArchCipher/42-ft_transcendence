@@ -1,6 +1,6 @@
-import { prisma as db } from "@synctext/db"
-import { hashGuestSessionToken } from "@synctext/shared"
-import { NextResponse } from "next/server"
+import { prisma as db } from "@synctext/db";
+import { hashGuestSessionToken } from "@synctext/shared";
+import { NextResponse } from "next/server";
 
 import {
   generateGuestSessionToken,
@@ -10,32 +10,28 @@ import {
   guestSessionExpiresAt,
   setGuestSessionCookie,
   validateGuestSession,
-} from "@/lib/auth/guest-session"
-import {
-  clientIp,
-  guestDocumentLimiter,
-  ipKey,
-} from "@/lib/auth/rate-limit"
+} from "@/lib/auth/guest-session";
+import { clientIp, guestDocumentLimiter, ipKey } from "@/lib/auth/rate-limit";
 
-export const runtime = "nodejs"
+export const runtime = "nodejs";
 
 type GuestDocumentResponse = {
-  id: string
-  title: string
-  mode: "EDITABLE" | "READ_ONLY"
-  editExpiresAt: string
-  expiresAt: string
-}
+  id: string;
+  title: string;
+  mode: "EDITABLE" | "READ_ONLY";
+  editExpiresAt: string;
+  expiresAt: string;
+};
 
 function responseForGuestDocument(
   document: { id: string; title: string },
   session: { editExpiresAt: Date; expiresAt: Date },
 ): GuestDocumentResponse {
-  const mode = getGuestSessionStatus(session)
+  const mode = getGuestSessionStatus(session);
 
   // validateGuestSession filters expiration first; this narrow keeps the
   // route's public contract honest even if a boundary is crossed mid-request.
-  if (mode === "EXPIRED") throw new Error("Expired guest session")
+  if (mode === "EXPIRED") throw new Error("Expired guest session");
 
   return {
     id: document.id,
@@ -43,23 +39,17 @@ function responseForGuestDocument(
     mode,
     editExpiresAt: session.editExpiresAt.toISOString(),
     expiresAt: session.expiresAt.toISOString(),
-  }
+  };
 }
 
 // Starts one temporary document for this browser, or resumes its existing
 // unexpired guest document. The cookie itself remains opaque to JavaScript.
 export async function POST(request: Request) {
-  const existing = await validateGuestSession(await getGuestSessionToken())
+  const existing = await validateGuestSession(await getGuestSessionToken());
   if (existing?.document) {
-    return NextResponse.json(responseForGuestDocument(existing.document, existing))
-  }
-
-  const ip = clientIp(request)
-  if ((await guestDocumentLimiter.blockedRemaining(ipKey(ip))) > 0) {
     return NextResponse.json(
-      { error: "Too many temporary documents from this network" },
-      { status: 429 },
-    )
+      responseForGuestDocument(existing.document, existing),
+    );
   }
 
   // A valid session should normally always have a document. Recover the rare
@@ -72,14 +62,21 @@ export async function POST(request: Request) {
         guestSessionId: existing.id,
       },
       select: { id: true, title: true },
-    })
-    return NextResponse.json(responseForGuestDocument(document, existing))
+    });
+    return NextResponse.json(responseForGuestDocument(document, existing));
   }
 
-  const token = generateGuestSessionToken()
-  const now = new Date()
-  const editExpiresAt = guestEditExpiresAt(now)
-  const expiresAt = guestSessionExpiresAt(now)
+  const ip = clientIp(request);
+  if (!(await guestDocumentLimiter.tryAcquire(ipKey(ip))))
+    return NextResponse.json(
+      { error: "Too many temporary documents from this network" },
+      { status: 429 },
+    );
+
+  const token = generateGuestSessionToken();
+  const now = new Date();
+  const editExpiresAt = guestEditExpiresAt(now);
+  const expiresAt = guestSessionExpiresAt(now);
 
   const guestSession = await db.guestSession.create({
     data: {
@@ -95,15 +92,14 @@ export async function POST(request: Request) {
       expiresAt: true,
       document: { select: { id: true, title: true } },
     },
-  })
+  });
 
-  if (!guestSession.document) throw new Error("Guest document was not created")
+  if (!guestSession.document) throw new Error("Guest document was not created");
 
-  await setGuestSessionCookie(token)
-  await guestDocumentLimiter.recordFailure(ipKey(ip))
+  await setGuestSessionCookie(token);
 
   return NextResponse.json(
     responseForGuestDocument(guestSession.document, guestSession),
     { status: 201 },
-  )
+  );
 }

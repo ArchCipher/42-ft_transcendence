@@ -46,7 +46,11 @@ export default function LoginForm() {
         return;
       }
 
-      router.push(redirectTo ?? "/dashboard");
+      const safe =
+        redirectTo?.startsWith("/") && !redirectTo.startsWith("//")
+          ? redirectTo
+          : "/dashboard";
+      router.push(safe);
     } catch {
       setError(FALLBACK);
     } finally {

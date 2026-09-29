@@ -1,40 +1,28 @@
 import { isAuthorized } from "@/lib/auth/internal";
 import { checkSessionByHash } from "@/lib/auth/session";
 import { canEdit, requireDocRights } from "@/lib/permissions";
+import { internalVerifySchema } from "@/lib/auth/validation";
 import { prisma as db } from "@synctext/db";
 import { SESSION_LAST_USED_UPDATE_THRESHOLD } from "@synctext/shared";
-
-type VerifyRequest = {
-  tokenHash?: unknown;
-  guestTokenHash?: unknown;
-  documentName?: unknown;
-};
 
 // Verify a registered or guest connection and return its access for a document.
 // The raw cookie token never reaches this route: the collaboration service sends
 // its SHA-256 hash over the authenticated internal-service channel.
 export async function POST(request: Request) {
-  if (!isAuthorized(request)) {
+  if (!isAuthorized(request))
     return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
 
-  const body = (await request.json().catch(() => null)) as VerifyRequest | null;
-  const hasSessionToken = typeof body?.tokenHash === "string";
-  const hasGuestToken = typeof body?.guestTokenHash === "string";
-  if (
-    !body ||
-    typeof body.documentName !== "string" ||
-    body.documentName.length === 0 ||
-    hasSessionToken === hasGuestToken
-  ) {
+  const parsed = internalVerifySchema.safeParse(
+    await request.json().catch(() => null),
+  );
+  if (!parsed.success)
     return Response.json({ error: "Bad request" }, { status: 400 });
-  }
 
-  const { documentName } = body;
+  const { documentName, guestTokenHash } = parsed.data;
 
-  if (hasGuestToken) {
+  if (guestTokenHash) {
     const guestSession = await db.guestSession.findUnique({
-      where: { tokenHash: body.guestTokenHash as string },
+      where: { tokenHash: guestTokenHash },
       select: {
         id: true,
         editExpiresAt: true,
@@ -69,7 +57,7 @@ export async function POST(request: Request) {
     });
   }
 
-  const tokenHash = body.tokenHash as string;
+  const tokenHash = parsed.data.tokenHash!;
 
   const session = await checkSessionByHash(tokenHash);
   if (!session) return Response.json({ valid: false }, { status: 401 });
