@@ -23,6 +23,7 @@ const PUBLIC_PREFIXES = [
   "/privacy",
   "/cookies",
   "/accessibility",
+  "/status",
 ];
 
 export function proxy(request: NextRequest) {
