@@ -7,41 +7,54 @@ all: up
 
 # ---- setup -------------------------------------------------------------------
 
-# create the local environment and tls certificate
+# create missing local configuration and tls files
 setup: setup_env setup_cert
 	@echo "local environment and tls certificate ready"
 
-# create the local environment file from the committed template
+# create the local environment file from the committed template when missing
 setup_env:
-	@test ! -f .env || (echo ".env already exists"; exit 1)
-	cp .env.example .env
-ifdef DOMAIN_NAME
-	@tmp=$$(mktemp); \
-	sed "s/^DOMAIN_NAME=.*/DOMAIN_NAME=$(DOMAIN_NAME)/" .env > $$tmp && mv $$tmp .env
-endif
+	@if [ -f .env ]; then \
+		echo ".env already exists, keeping it"; \
+	else \
+		cp .env.example .env; \
+		DB_PASSWORD=$$(openssl rand -hex 32); \
+		INTERNAL_SERVICE_TOKEN=$$(openssl rand -hex 32); \
+		sed -i "s/^DB_PASSWORD=.*/DB_PASSWORD=$$DB_PASSWORD/" .env; \
+		sed -i "s/^INTERNAL_SERVICE_TOKEN=.*/INTERNAL_SERVICE_TOKEN=$$INTERNAL_SERVICE_TOKEN/" .env; \
+		if [ -n "$(DOMAIN_NAME)" ]; then \
+			sed -i "s/^DOMAIN_NAME=.*/DOMAIN_NAME=$(DOMAIN_NAME)/" .env; \
+		fi; \
+		echo "created .env with local credentials"; \
+	fi
 
-# create a self-signed tls certificate using DOMAIN_NAME from .env
-setup_cert:
-	@test -f .env || (echo "missing .env — run make setup_env first"; exit 1)
+# create the self-signed tls certificate when missing
+setup_cert: setup_env
 	@DOMAIN=$$(sed -n 's/^DOMAIN_NAME=//p' .env); \
 	test -n "$$DOMAIN" || (echo "DOMAIN_NAME empty in .env"; exit 1); \
-	mkdir -p secrets && \
-	openssl req \
-		-newkey rsa:2048 \
-		-x509 \
-		-sha256 \
-		-days 3650 \
-		-nodes \
-		-out secrets/$$DOMAIN.crt \
-		-keyout secrets/$$DOMAIN.key \
-		-subj "/C=DE/ST=Berlin/L=Berlin/O=42-Berlin/OU=IT/CN=$$DOMAIN" \
-		-addext "subjectAltName=DNS:$$DOMAIN"
+	CERT="secrets/$$DOMAIN.crt"; \
+	KEY="secrets/$$DOMAIN.key"; \
+	if [ -f "$$CERT" ] && [ -f "$$KEY" ]; then \
+		echo "tls certificate already exists, keeping it"; \
+	else \
+		mkdir -p secrets; \
+		openssl req \
+			-newkey rsa:2048 \
+			-x509 \
+			-sha256 \
+			-days 3650 \
+			-nodes \
+			-out "$$CERT" \
+			-keyout "$$KEY" \
+			-subj "/C=DE/ST=Berlin/L=Berlin/O=42-Berlin/OU=IT/CN=$$DOMAIN" \
+			-addext "subjectAltName=DNS:$$DOMAIN"; \
+		echo "created tls certificate for $$DOMAIN"; \
+	fi
 
 # ---- containers --------------------------------------------------------------
 
 # build and start containers
 
-up:
+up: setup
 	$(COMPOSE) up --build -d
 
 # stop containers
