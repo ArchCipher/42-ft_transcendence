@@ -17,6 +17,13 @@ server {
     ssl_certificate_key /run/secrets/server_key;
     ssl_protocols TLSv1.2 TLSv1.3;
 
+    # local endpoint used by the container health check
+    location = /health {
+        access_log off;
+        default_type text/plain;
+        return 200 "ok\n";
+    }
+
     # forward application traffic to next.js
     location / {
         proxy_pass http://web:3000;

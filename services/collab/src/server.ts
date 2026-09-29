@@ -166,7 +166,16 @@ const server = new Server({
   port: 1234,
 
   async onRequest(data: onRequestPayload) {
-    if (data.request.url?.split("?")[0] !== "/internal/restore") return;
+    const path = data.request.url?.split("?")[0];
+
+    if (path === "/health") {
+      data.response.writeHead(200, { "Content-Type": "text/plain" });
+      data.response.end("ok");
+      // prevent Hocuspocus from sending its default HTTP response
+      throw null;
+    }
+
+    if (path !== "/internal/restore") return;
 
     await handleRestoreRequest(data);
     // hocuspocus expects this rejection after we send our own http response
