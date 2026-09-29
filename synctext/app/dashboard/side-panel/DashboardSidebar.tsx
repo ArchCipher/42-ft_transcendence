@@ -88,7 +88,7 @@ export default function DashboardSidebar({
         >
         <AccordionItem value="groups" className="SidebarAccordionItem">
           <AccordionTrigger className="SidebarAccordionTrigger">
-            <TechText className="SidebarSectionTitle">
+            <TechText>
               Groups
             </TechText>
           </AccordionTrigger>
@@ -150,7 +150,7 @@ export default function DashboardSidebar({
 
         <AccordionItem value="members" className="SidebarAccordionItem">
           <AccordionTrigger className="SidebarAccordionTrigger">
-            <TechText className="SidebarSectionTitle">
+            <TechText>
               Members
             </TechText>
           </AccordionTrigger>
@@ -198,7 +198,7 @@ export default function DashboardSidebar({
 
         <AccordionItem value="friends" className="SidebarAccordionItem">
           <AccordionTrigger className="SidebarAccordionTrigger">
-            <TechText className="SidebarSectionTitle">
+            <TechText>
               Friends
             </TechText>
           </AccordionTrigger>

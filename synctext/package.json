@@ -39,7 +39,6 @@
     "@zxcvbn-ts/language-en": "^4.1.1",
     "argon2": "^0.45.1",
     "clsx": "^2.1.1",
-    "cn": "^0.4.0",
     "embla-carousel-react": "^8.6.0",
     "lodash.throttle": "^4.1.1",
     "lucide-react": "^1.35.0",
