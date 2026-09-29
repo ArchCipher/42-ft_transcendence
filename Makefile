@@ -90,6 +90,17 @@ migrate-dev:
 	migrate \
 	npx prisma migrate dev --name "$(NAME)"
 
+# create a PostgreSQL backup immediately
+backup-db: setup
+	$(COMPOSE) up -d --wait db
+	$(COMPOSE) build backup
+	$(COMPOSE) run --rm --no-deps backup once
+
+# list stored PostgreSQL backups
+backup-db-list: setup
+	$(COMPOSE) build backup
+	$(COMPOSE) run --rm --no-deps backup list
+
 # ---- code quality ------------------------------------------------------------
 
 lint:
@@ -111,4 +122,4 @@ fclean:
 # rebuild the project from a clean state
 re: fclean all
 
-.PHONY: all setup setup_env setup_cert up down logs ps test iprune migrate-dev clean fclean re
+.PHONY: all setup setup_env setup_cert up down logs ps test iprune migrate-dev backup-db backup-db-list clean fclean re

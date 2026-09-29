@@ -179,6 +179,33 @@ services:
       - frontend
       - backend
 
+  backup: # automated PostgreSQL backups
+    build:
+      context: .
+      dockerfile: services/backup/Dockerfile
+
+    container_name: synctext-backup
+
+    restart: unless-stopped
+
+    environment:
+      PGHOST: db
+      PGDATABASE: ${DB_NAME}
+      PGUSER: ${DB_USER}
+      PGPASSWORD: ${DB_PASSWORD}
+      BACKUP_INTERVAL_SECONDS: ${DB_BACKUP_INTERVAL_SECONDS:-86400}
+      BACKUP_RETENTION_COUNT: ${DB_BACKUP_RETENTION_COUNT:-7}
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+    volumes:
+      - db_backups:/backups
+
+    networks:
+      - backend
+
   guest-cleanup: # removes unclaimed guest sessions and their cascading docs
     image: alpine:3.20
 
@@ -217,6 +244,7 @@ secrets:
 
 volumes:
   db_data:
+  db_backups:
   mailpit_data:
 
 networks:
