@@ -5,10 +5,8 @@ import * as oauth from "oauth4webapi";
 export const PROVIDER = "google";
 
 // [Google's endpoints](https://accounts.google.com/.well-known/openid-configuration)
-const ISSUER = "https://accounts.google.com";
-const DISCOVERY_URL = new URL(`${ISSUER}/.well-known/openid-configuration`);
+const ISSUER = new URL("https://accounts.google.com");
 const MAX_SUBJECT_LENGTH = 255;
-const CLOCK_SKEW_SECONDS = 60;
 
 export type OAuthErrorCode =
   | "invalid_state"
@@ -34,26 +32,6 @@ export class OAuthError extends Error {
   }
 }
 
-/*
-export class OAuthError extends Error {
-  constructor(
-    readonly code:
-	  | "invalid_state"
-      | "invalid_code"
-      | "invalid_id_token"
-      | "denied"
-      | "account_exists"
-      | "link_conflict"
-      | "last_method"
-      | "not_enabled";
-    message: string,
-  ) {
-    super(message);
-    this.name = "OAuthError";
-  }
-}
-*/
-
 function requiredEnv(name: string): string {
   const value = process.env[name];
   if (!value) throw new Error(`Missing environment variable: ${name}`);
@@ -70,11 +48,11 @@ export function redirectUri(): string {
 }
 
 function client(): oauth.Client {
-	return {client_id: requiredEnv("GOOGLE_CLIENT_ID")};
+  return { client_id: requiredEnv("GOOGLE_CLIENT_ID") };
 }
 
 function clientAuth(): oauth.ClientAuth {
-	return oauth.ClientSecretPost(requiredEnv("GOOGLE_CLIENT_SECRET"));
+  return oauth.ClientSecretPost(requiredEnv("GOOGLE_CLIENT_SECRET"));
 }
 
 // ---- discovery -------------------------------------------------------------
@@ -88,9 +66,8 @@ export async function authorizationServer(): Promise<oauth.AuthorizationServer> 
   if (cachedServer && now - cachedServer.at < DISCOVERY_TTL_MS)
     return cachedServer.as;
 
-  const response = await fetch(DISCOVERY_URL, { redirect: "error" });
-  const as = await oauth.processDiscoveryResponse(DISCOVERY_URL, response);
-
+  const response = await oauth.discoveryRequest(ISSUER, { algorithm: "oidc" });
+  const as = await oauth.processDiscoveryResponse(ISSUER, response);
   cachedServer = { as, at: now };
   return as;
 }
@@ -128,7 +105,7 @@ export async function buildAuthorizationUrl(input: {
 
 export type VerifiedIdentity = {
   subject: string;
-  email: string | null;
+  email: string;
   emailVerified: boolean;
 };
 
@@ -146,37 +123,43 @@ export async function exchangeCode(input: {
   const c = client();
 
   // Re-check `state`, reject an `error` response, and require `code`
-  const params = oauth.validateAuthResponse(as, c, new URL(input.requestUrl), input.state);
+  const params = oauth.validateAuthResponse(
+    as,
+    c,
+    new URL(input.requestUrl),
+    input.state,
+  );
 
   // Build + send token request
   const response = await oauth.authorizationCodeGrantRequest(
     as,
     c,
-	clientAuth(),
+    clientAuth(),
     params,
     redirectUri(),
     input.codeVerifier,
   );
-  // verify signature 
-  const result = await oauth.processAuthorizationCodeResponse(
-	as, c, response, {
+  // verify signature
+  const result = await oauth.processAuthorizationCodeResponse(as, c, response, {
     expectedNonce: input.expectedNonce,
-	requireIdToken: true,
-	}
-  );
+    requireIdToken: true,
+  });
 
   const claims = oauth.getValidatedIdTokenClaims(result);
   if (!claims)
-	throw new OAuthError("invalid_id_token", "no id token in response");
+    throw new OAuthError("invalid_id_token", "no id token in response");
   if (typeof claims.sub !== "string" || claims.sub.length === 0)
-	throw new OAuthError("invalid_id_token", "token carries no subject");
+    throw new OAuthError("invalid_id_token", "token carries no subject");
   if (claims.sub.length > MAX_SUBJECT_LENGTH)
-	throw new OAuthError("invalid_id_token", "subject exceeds expected length");
+    throw new OAuthError("invalid_id_token", "subject exceeds expected length");
   if (typeof claims.email !== "string" || claims.email.length === 0)
-	throw new OAuthError("invalid_id_token", "provider supplied no email address");
+    throw new OAuthError(
+      "invalid_id_token",
+      "provider supplied no email address",
+    );
   return {
-	subject: claims.sub,
-	email: claims.email.trim().toLowerCase(),
-	emailVerified: claims.email_verified === true,
+    subject: claims.sub,
+    email: claims.email.trim().toLowerCase(),
+    emailVerified: claims.email_verified === true,
   };
 }

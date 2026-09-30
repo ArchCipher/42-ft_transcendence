@@ -26,7 +26,7 @@ export async function createTransaction(input: {
 }): Promise<{ state: string; nonce: string; codeChallenge: string }> {
   const state = oauth.generateRandomState();
   const nonce = oauth.generateRandomNonce();
-  const codeVerifier = oauth.generateRandomNonce();
+  const codeVerifier = oauth.generateRandomCodeVerifier();
   const codeChallenge = await oauth.calculatePKCECodeChallenge(codeVerifier);
 
   // Reclaim rows whose ten minutes are up.

@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { getSessionToken, validateSession } from "@/lib/auth/session";
 import { clientIp, ipKey, ipLimiter } from "@/lib/auth/rate-limit";
 import { oauthStartSchema } from "@/lib/auth/validation";

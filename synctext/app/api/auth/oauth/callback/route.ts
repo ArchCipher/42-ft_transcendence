@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import * as oauth from "oauth4webapi"
+import * as oauth from "oauth4webapi";
 import { createSessionForUser } from "@/lib/auth/session-create";
 import { OAuthError, exchangeCode, isEnabled } from "@/lib/auth/oauth/identity";
 import { consumeTransaction } from "@/lib/auth/oauth/transaction";
@@ -32,13 +32,6 @@ export async function GET(request: Request) {
   try {
     const transaction = await consumeTransaction(state);
 
-    // The user declined consent. The state is already spent, so this callback
-    // cannot be retried.
-    if (params.get("error")) return fail(request, "denied");
-
-	const code = params.get("code");
-    if (!code) return fail(request, "invalid_code");
-
 	const identity = await exchangeCode({
       requestUrl: request.url,
       state,
@@ -47,19 +40,19 @@ export async function GET(request: Request) {
     });
 	const linkUserId = transaction.userId;
 
-	if ((await accountLimiter.blockedRemaining(accountKey(identity.email)) > 0))
-	  return fail(request, "too many attempts");
+	if ((await accountLimiter.blockedRemaining(accountKey(identity.email))) > 0)
+	  return fail(request, "too_many_attempts");
 
 	if (transaction.purpose === "LINK") {
       if (!linkUserId) return fail(request, "invalid_state");
       await linkAccount(linkUserId, identity);
-      return NextResponse.redirect(new URL("/settings?linked=google", request.url));
+      return NextResponse.redirect(new URL("/profile?linked=google", request.url));
     }
 
     const userId = await signInOrCreate(identity);
 	await accountLimiter.clear(accountKey(identity.email));
     const redirectTo = await createSessionForUser(userId, {
-      ip: clientIp(request);
+      ip: clientIp(request),
       userAgent: request.headers.get("user-agent"),
     });
 

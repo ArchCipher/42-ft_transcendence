@@ -20,7 +20,7 @@ Build username from email, capped at 16 chars. The allowlist in usernameSchema
 is /^[a-zA-Z0-9_]+$/, so other chars are stripped.
 */
 function usernameSeed(identity: VerifiedIdentity): string {
-  const local = identity.email?.split("@")[0] ?? "user";
+  const local = identity.email.split("@")[0];
   const cleaned = local
     .toLowerCase()
     .replace(/[^a-z0-9_]/g, "")
@@ -61,9 +61,6 @@ export async function signInOrCreate(identity: VerifiedIdentity): Promise<string
   });
   if (existing) return existing.userId;
 
-  if (!identity.email)
-    throw new OAuthError("account_exists", "provider supplied no email address");
-
   const collision = await db.user.findUnique({
     where: { email: identity.email },
     select: { id: true },
@@ -98,7 +95,6 @@ export async function signInOrCreate(identity: VerifiedIdentity): Promise<string
 }
 
 /*
-TODO: check usage
 Attach a provider identity to an already authenticated user. The session is
 the proof: this is only reachable by presenting a valid session token.
 */

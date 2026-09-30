@@ -6,32 +6,36 @@ import UserNavbar from "../components/navigation/UserNavbar";
 import StatusNotice from "../components/form/StatusNotice";
 
 // NOTICES displayed in navtab
-const NOTICES: Record<string, string> = {
-  pending: "Verification email sent. Check your inbox.",
-  "reset-sent": "Password reset email sent. Check your inbox.",
-  "reset-done": "Password reset successful!",
-  "logged-out": "You have been logged out.",
+type Notice = { message: string, role: "status" | "alert" };
+
+const NOTICES: Record<string, Notice | undefined> = {
+  pending: {message: "Verification email sent. Check your inbox.", role: "status"},
+  "reset-sent": {message: "Password reset email sent. Check your inbox.", role: "status"},
+  "reset-done": {message: "Password reset successful!", role: "status"},
+  "logged-out": {message: "You have been logged out.", role: "status"},
   // OAuth callback failures. See OAuthErrorCode
-  denied: "Google login cancelled.",
-  invalid_state: "That login expired. Please try again.",
-  invalid_code: "Google login failed. Please try again.",
-  invalid_id_token: "Google login failed. Please try again.",
-  account_exists: "An account already uses that email. Log in with your password.",
-  link_conflict: "That google account is linked to another user.",
-  not_enabled: "Google login isn't available.",
-  too_many_attempts: "Too many attempts. Please try again later.",
+  denied: {message: "Google login cancelled.", role: "alert"},
+  invalid_state: {message: "That login expired. Please try again.", role: "alert"},
+  invalid_code: {message: "Google login failed. Please try again.", role: "alert"},
+  invalid_id_token: {message: "Google login failed. Please try again.", role: "alert"},
+  account_exists: {message: "An account already uses that email. Log in with your password.", role: "alert"},
+  link_conflict: {message: "That google account is linked to another user.", role: "alert"},
+  not_enabled: {message: "Google login isn't available.", role: "alert"},
+  last_method: {message: "Set a password before removing this sign-in method.", role: "alert"},
+  too_many_attempts: {message: "Too many attempts. Please try again later.", role: "alert"},
 };
 
 export default async function Login({
   searchParams,
 }: {
-  searchParams: Promise<{ verify?: string }>;
+  searchParams: Promise<{ verify?: string; error?: string }>;
 }) {
-  const { verify } = await searchParams;
+  const { verify, error } = await searchParams;
+  const notice = NOTICES[error ?? verify ?? ""];
   const session = await validateSession(await getSessionToken());
   return (
     <LoginPage
-      verify={verify}
+      notice={notice}
       navbar={
         session?.user ? (
           <UserNavbar username={session.user.username} avatarUrl={session.user.avatarUrl} />
@@ -42,18 +46,18 @@ export default async function Login({
 }
 
 function LoginPage({
-  verify,
+  notice,
   navbar,
 }: {
-  verify?: string;
+  notice?: Notice;
   navbar?: React.ReactNode;
 }) {
   return (
     <AuthPageShell
       navbar={navbar}
       notice={
-        verify && NOTICES[verify] ? (
-          <StatusNotice>{NOTICES[verify]}</StatusNotice>
+        notice ? (
+          <StatusNotice role={notice.role}>{notice.message}</StatusNotice>
         ) : undefined
       }
     >
