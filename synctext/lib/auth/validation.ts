@@ -11,6 +11,7 @@ References:
 
 import { z } from "zod";
 import { isPasswordStrong } from "./password-strength";
+import { USERNAME_MAX } from "@synctext/shared";
 
 // ---- email --------------------------------------------------------------
 // Syntactic validation only
@@ -62,7 +63,7 @@ export const usernameSchema = z
   .trim()
   .toLowerCase() // canonical form
   .min(3, "Username must be at least 3 characters")
-  .max(32, "Username must be at most 32 characters")
+  .max(USERNAME_MAX, `Username must be at most ${USERNAME_MAX} characters`)
   .regex(/^[a-zA-Z0-9_]+$/, "Only letters, numbers, and underscores");
 
 // ---- forms ---------------------------------------------------------------
