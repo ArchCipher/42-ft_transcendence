@@ -294,7 +294,7 @@ Major modules are worth 2 points and Minor modules 1 point. The selected module 
 | OAuth 2.0 | Minor | 1 | Selected to provide an alternative remote authentication method in addition to local email/password authentication | Kiruthika |
 | Custom design system | Minor | 1 | Reusable controls, shared visual rules, typography, icons, and component structure provide the basis for a consistent custom interface | Gianluca, Umberto |
 | Additional browsers | Minor | 1 | Selected to provide full application compatibility with at least two browsers in addition to Chrome | Harold |
-| Health checks, status, backups, and disaster recovery | Minor | 1 | Container health/readiness checks provide the operational foundation; the complete module also includes a status page, automated backups, and documented recovery procedures | Tom |
+| Health checks, status, backups, and disaster recovery | Minor | 1 | Docker health checks monitor the main services and `/status` shows their current availability. PostgreSQL is backed up automatically to a separate persistent volume with limited retention, and backups can be created, listed, and restored through the Makefile | Tom |
 
 ## Individual Contributions
 
