@@ -5,8 +5,11 @@ import { TechText } from "@/app/components/typography/Typography";
 import Button from "@/app/components/ui/Button";
 import InputBox from "@/app/components/form/InputBox";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { useEffect, useMemo, useState } from "react";
+import type { FriendUser, FriendsResponse } from "@/lib/friends/types";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { MoreHorizontal, Plus } from "lucide-react";
+import FriendIdentity from "./FriendIdentity";
+import FriendsManagerDialog from "./FriendsManagerDialog";
 
 type DashboardSidebarProps = {
   selectedGroup: { id: string; name: string } | null;
@@ -15,15 +18,28 @@ type DashboardSidebarProps = {
 };
 
 type Group = { id: string; name: string; isPrivateSpace: boolean };
-type Friend = { id: string; username: string; online: boolean };
 type GroupMember = { userId: string; username: string; online: boolean };
+type FriendFeedback = { kind: "success" | "error"; text: string } | null;
+
+const EMPTY_FRIENDS: FriendsResponse = {
+  friends: [],
+  incomingRequests: [],
+  outgoingRequests: [],
+};
 
 const PRESENCE_POLL_MS = 30_000;
 
-async function getJson<T>(url: string, signal: AbortSignal): Promise<T> {
+async function getJson<T>(url: string, signal?: AbortSignal): Promise<T> {
   const response = await fetch(url, { cache: "no-store", signal });
   if (!response.ok) throw new Error(`Request failed: ${response.status}`);
   return response.json() as Promise<T>;
+}
+
+async function getErrorMessage(response: Response) {
+  const body: unknown = await response.json().catch(() => null);
+  return typeof body === "object" && body !== null && "error" in body && typeof body.error === "string"
+    ? body.error
+    : "Something went wrong. Please try again.";
 }
 
 function PresenceLight({ online }: { online: boolean }) {
@@ -42,12 +58,31 @@ export default function DashboardSidebar({ selectedGroup, onSelectGroup, isOpen 
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [openSections, setOpenSections] = useState<string[]>(["groups"]);
   const [groups, setGroups] = useState<Group[]>([]);
-  const [friends, setFriends] = useState<Friend[]>([]);
+  const [friendsData, setFriendsData] = useState<FriendsResponse>(EMPTY_FRIENDS);
   const [members, setMembers] = useState<GroupMember[]>([]);
+  const [friendsSearch, setFriendsSearch] = useState("");
+  const [friendsManagerOpen, setFriendsManagerOpen] = useState(false);
+  const [friendsLoading, setFriendsLoading] = useState(false);
+  const [friendActionKey, setFriendActionKey] = useState<string | null>(null);
+  const [friendFeedback, setFriendFeedback] = useState<FriendFeedback>(null);
 
   const friendsOpen = openSections.includes("friends");
   const membersOpen = openSections.includes("members");
   const selectedGroupId = selectedGroup?.id ?? null;
+
+  const refreshFriends = useCallback(async (signal?: AbortSignal) => {
+    setFriendsLoading(true);
+    try {
+      const nextFriends = await getJson<FriendsResponse>("/api/friends", signal);
+      setFriendsData(nextFriends);
+    } catch (error) {
+      if (!(error instanceof DOMException && error.name === "AbortError")) {
+        console.error("Failed to load friends", error);
+      }
+    } finally {
+      if (!signal?.aborted) setFriendsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -80,11 +115,10 @@ export default function DashboardSidebar({ selectedGroup, onSelectGroup, isOpen 
     const refresh = () => {
       controller?.abort();
       controller = new AbortController();
-      const requests: Promise<void>[] = [];
+      const requests: Promise<unknown>[] = [];
 
       if (friendsOpen) {
-        requests.push(getJson<{ friends: Friend[] }>("/api/friends", controller.signal)
-          .then(({ friends: nextFriends }) => setFriends(nextFriends)));
+        requests.push(refreshFriends(controller.signal));
       }
       if (membersOpen && selectedGroupId) {
         requests.push(getJson<GroupMember[]>(
@@ -115,13 +149,87 @@ export default function DashboardSidebar({ selectedGroup, onSelectGroup, isOpen 
       window.clearInterval(intervalId);
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
-  }, [friendsOpen, membersOpen, selectedGroupId]);
+  }, [friendsOpen, membersOpen, refreshFriends, selectedGroupId]);
 
   const memberIds = useMemo(() => new Set(members.map(({ userId }) => userId)), [members]);
   const sortedFriends = useMemo(
-    () => [...friends].sort((a, b) => Number(memberIds.has(b.id)) - Number(memberIds.has(a.id))),
-    [friends, memberIds],
+    () => [...friendsData.friends]
+      .filter((friend) => friend.username.toLocaleLowerCase().includes(friendsSearch.trim().toLocaleLowerCase()))
+      .sort((a, b) => Number(memberIds.has(b.id)) - Number(memberIds.has(a.id))),
+    [friendsData.friends, friendsSearch, memberIds],
   );
+
+  async function mutateFriends(
+    actionKey: string,
+    request: () => Promise<Response>,
+    successMessage: string,
+  ) {
+    setFriendActionKey(actionKey);
+    setFriendFeedback(null);
+    try {
+      const response = await request();
+      if (!response.ok) throw new Error(await getErrorMessage(response));
+      await refreshFriends();
+      setFriendFeedback({ kind: "success", text: successMessage });
+      return true;
+    } catch (error) {
+      setFriendFeedback({
+        kind: "error",
+        text: error instanceof Error ? error.message : "Something went wrong. Please try again.",
+      });
+      return false;
+    } finally {
+      setFriendActionKey(null);
+    }
+  }
+
+  function sendFriendRequest(identifier: string) {
+    return mutateFriends(
+      "send",
+      () => fetch("/api/friends", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ identifier }),
+      }),
+      "Friend request sent.",
+    );
+  }
+
+  function respondToFriendRequest(friend: FriendUser, action: "accept" | "decline") {
+    return mutateFriends(
+      `respond-${friend.id}`,
+      () => fetch("/api/friends", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: friend.id, action }),
+      }),
+      action === "accept" ? `You are now friends with ${friend.username}.` : "Friend request declined.",
+    );
+  }
+
+  function cancelFriendRequest(friend: FriendUser) {
+    return mutateFriends(
+      `cancel-${friend.id}`,
+      () => fetch("/api/friends", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: friend.id }),
+      }),
+      "Friend request cancelled.",
+    );
+  }
+
+  function removeFriend(friend: FriendUser) {
+    return mutateFriends(
+      `remove-${friend.id}`,
+      () => fetch("/api/friends", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: friend.id }),
+      }),
+      `${friend.username} was removed from your friends.`,
+    );
+  }
 
   return (
     <aside className={`DashboardSidebar ${isOpen ? "DashboardSidebarOpen" : ""}`}>
@@ -213,26 +321,56 @@ export default function DashboardSidebar({ selectedGroup, onSelectGroup, isOpen 
           </AccordionItem>
 
           <AccordionItem value="friends" className="SidebarAccordionItem">
-            <AccordionTrigger className="SidebarAccordionTrigger"><TechText>Friends</TechText></AccordionTrigger>
+            <AccordionTrigger className="SidebarAccordionTrigger">
+              <TechText>Friends</TechText>
+              {friendsData.incomingRequests.length ? <span className="FriendsRequestBadge" aria-label={`${friendsData.incomingRequests.length} incoming friend requests`}>{friendsData.incomingRequests.length}</span> : null}
+            </AccordionTrigger>
             <AccordionContent className="SidebarAccordionContent">
-              <InputBox type="search" placeholder="Search friends..." aria-label="Search friends" />
+              <div className="FriendsSidebarActions">
+                <Button variant="outline" className="NewFriendButton" onClick={() => {
+                  setFriendsManagerOpen(true);
+                  void refreshFriends();
+                }}>
+                  Add friend
+                  <Plus size={16} aria-hidden="true" />
+                </Button>
+                <button type="button" className="FriendsManageButton" onClick={() => {
+                  setFriendsManagerOpen(true);
+                  void refreshFriends();
+                }}>
+                  Manage requests
+                </button>
+              </div>
+              <InputBox
+                type="search"
+                placeholder="Search friends..."
+                aria-label="Search friends"
+                value={friendsSearch}
+                onChange={(event) => setFriendsSearch(event.target.value)}
+              />
               <div className="SidebarFriendList">
-                {sortedFriends.map((friend) => (
-                  <div key={friend.id} className="SidebarActionRow">
-                    <div className="SidebarFriend"><PresenceLight online={friend.online} /><span>{friend.username}</span></div>
-                    <button type="button" className="SidebarEditButton" aria-label={`Actions for ${friend.username}`} onClick={(event) => {
-                      event.stopPropagation();
-                      setOpenMenu((current) => current === `friend-${friend.id}` ? null : `friend-${friend.id}`);
-                    }}><MoreHorizontal size={16} /></button>
-                    {openMenu === `friend-${friend.id}` ? <div className="SidebarActionMenu">
-                      <button type="button" onClick={() => setOpenMenu(null)}>Remove friend</button>
-                    </div> : null}
-                  </div>
-                ))}
+                {friendsLoading ? <p className="FriendsSidebarState">Refreshing friends…</p> : null}
+                {!friendsLoading && !sortedFriends.length ? <p className="FriendsSidebarState">{friendsSearch ? "No matching friends." : "No friends yet. Add a collaborator to get started."}</p> : null}
+                {sortedFriends.map((friend) => <FriendIdentity key={friend.id} friend={friend} compact />)}
               </div>
             </AccordionContent>
           </AccordionItem>
         </Accordion>
+        <FriendsManagerDialog
+          open={friendsManagerOpen}
+          onOpenChange={(open) => {
+            setFriendsManagerOpen(open);
+            if (open) void refreshFriends();
+          }}
+          friends={friendsData}
+          isLoading={friendsLoading}
+          actionKey={friendActionKey}
+          feedback={friendFeedback}
+          onSend={sendFriendRequest}
+          onRespond={respondToFriendRequest}
+          onCancel={cancelFriendRequest}
+          onRemove={removeFriend}
+        />
       </div>
     </aside>
   );
