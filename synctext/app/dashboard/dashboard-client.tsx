@@ -16,8 +16,9 @@ import { createDocument_api } from "./document/document";
 import { Menu } from "lucide-react";
 import UserNavbar from "../components/navigation/UserNavbar";
 
-export type UserProps = {
+type UserProps = {
   username: string;
+  avatarUrl: string | null;
 };
 
 type SelectedGroup = {
@@ -25,7 +26,7 @@ type SelectedGroup = {
     name: string;
   } | null;
 
-export default function DashboardClient({ username }: UserProps) {
+export default function DashboardClient({ username, avatarUrl }: UserProps) {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [order, setOrder] = useState("creation"); // to order by creation, name, modification
@@ -62,7 +63,7 @@ export default function DashboardClient({ username }: UserProps) {
 
   return (
     <AppBackground>
-	  <UserNavbar username={username}/>
+	  <UserNavbar username={username} avatarUrl={avatarUrl}/>
 
       <div className="DashboardPage">
         <div className="DashboardLayout">

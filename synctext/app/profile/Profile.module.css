@@ -1,0 +1,230 @@
+.profileBody {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  color: var(--app-text-white);
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.headerCopy {
+  flex: 1;
+  min-width: 0;
+}
+
+.kicker {
+  color: var(--app-accent-neon);
+  font-size: var(--app-text-label);
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--app-text-title);
+  color: var(--app-text-white);
+  font-weight: 400;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+}
+
+.avatarWrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.avatar {
+  position: relative;
+  display: grid;
+  flex-shrink: 0;
+  width: 4.5rem;
+  aspect-ratio: 1;
+  place-items: center;
+
+  padding: 0;
+  cursor: pointer;
+
+  border: 1px solid rgba(0, 243, 255, 0.45);
+  background:
+    radial-gradient(circle at 50% 30%, rgba(0, 243, 255, 0.18), transparent 62%),
+    #0a1128;
+
+  box-shadow: 0 0 1.2rem rgba(0, 243, 255, 0.22);
+}
+
+.avatar:hover:not(:disabled) .avatarOverlay,
+.avatar:focus-visible .avatarOverlay {
+  opacity: 1;
+}
+
+.avatar:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.avatarOverlay {
+  position: absolute;
+  inset: 0;
+
+  display: grid;
+  place-items: center;
+
+  background: rgba(5, 7, 10, 0.66);
+
+  color: var(--app-accent-neon);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: var(--app-text-label);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+
+.fileInput {
+  display: none;
+}
+
+.avatarImg {
+  object-fit: cover;
+}
+
+.avatarInitial {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--app-accent-neon);
+  text-shadow: 0 0 0.6rem rgba( 0, 243, 255, 0.8);
+}
+
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 0.75rem;
+}
+
+/* two badges split the row evenly: badge + badge + gap = one field width */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex: 1 1 0;
+  min-width: 0;
+
+  box-sizing: border-box;
+  padding: 0.3rem 0.6rem;
+
+  border: 1px solid var(--app-line-dim);
+  background: rgba(0, 243, 255, 0.07);
+
+  color: var(--app-muted);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: var(--app-text-meta);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.badge::before {
+  width: 0.45rem;
+  height: 0.45rem;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: oklch(0.7 0.16 145);
+  box-shadow: 0 0 0.5rem oklch(0.7 0.16 145 / 0.7);
+  content: "";
+}
+
+.badgeUnverified::before {
+  background: #ff6b6b;
+  box-shadow: 0 0 0.5rem rgba(255, 107, 107, 0.7);
+}
+
+@media (max-width: 480px) {
+  .metaRow{
+	flex-direction: column;
+	align-items: stretch;
+  }
+}
+
+.actionsRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.linkRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.passwordRow a {
+  color: var(--app-accent-neon);
+}
+
+.passwordRow a:hover{
+	text-decoration: underline;
+}
+
+.passwordRow {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.passLink {
+  margin-top: 1rem;
+  padding: 0;
+  border: 0;
+  background: none;
+
+  color: var(--app-accent-neon);
+  text-decoration: none;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+}
+
+.passLink:hover {
+  text-decoration: underline;
+}
+
+.passwordForm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.divider {
+  height: 1px;
+  border: 0;
+  background: oklch(0.78 0.05 270 / 0.22);
+  margin: 0.75rem 0 0;
+}
+
+.zoneRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.dangerButton {
+  box-shadow: 0 0 0.8rem rgba(255, 80, 80, 0.25) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .saveButton,
+  .saveButton:hover:not(:disabled) {
+    transition: none;
+    transform: none;
+  }
+}

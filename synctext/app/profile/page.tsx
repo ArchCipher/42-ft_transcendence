@@ -1,19 +1,26 @@
-import "./Profile.css";
-import ProfileForm from "./profile-form";
+import type { Metadata } from "next";
 
-import UserNavbar from "../components/navigation/UserNavbar";
+import ProfileClient from "./profile-client";
+
 import { requireSession } from "@/lib/auth/guard";
-import AuthPageShell from "../components/auth/AuthPageShell";
 import { SessionGuard } from "@/hooks/use-session-guard";
 
-export default async function Profile() {
-  const session = await requireSession();
+export const metadata: Metadata = { title: "Profile — SyncText" };
+
+export default async function ProfilePage() {
+  const { user } = await requireSession();
 
   return (
     <SessionGuard>
-      <AuthPageShell navbar={<UserNavbar username={session.user.username} />}>
-        <ProfileForm />
-      </AuthPageShell>
+      <ProfileClient
+        initial={{
+          username: user.username,
+          email: user.email,
+          avatarUrl: user.avatarUrl ?? null,
+          emailVerifiedAt: user.emailVerifiedAt?.toISOString() ?? null,
+          createdAt: user.createdAt.toISOString(),
+        }}
+      />
     </SessionGuard>
   );
 }

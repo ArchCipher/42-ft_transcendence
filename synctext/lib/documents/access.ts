@@ -7,6 +7,7 @@ export type UserDocumentActor = {
   kind: "user"
   userId: string
   username: string
+  avatarUrl: string | null;
 }
 
 export type GuestDocumentActor = {
@@ -38,6 +39,7 @@ export async function getCurrentDocumentActor(): Promise<DocumentActor | null> {
       kind: "user",
       userId: session.user.id,
       username: session.user.username,
+	  avatarUrl: session.user.avatarUrl ?? null,
     }
   }
 
