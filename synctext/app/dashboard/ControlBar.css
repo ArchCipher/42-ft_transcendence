@@ -3,18 +3,18 @@
   padding: 0;
 
   display: grid;
-  grid-template-columns: auto auto auto 190px;
+  grid-template-columns: 48px minmax(0, 1fr) minmax(0, 1fr) minmax(180px, 1.15fr);
   align-items: center;
   justify-content: space-between;
-  gap: 32px;
+  gap: clamp(12px, 2vw, 24px);
 }
 
 .FilterBox,
 .OrderBox {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  justify-content: center;
-  gap: 10px;
+  gap: 8px;
   padding: 0;
 }
 
@@ -34,17 +34,19 @@
 .ControlSelect {
   position: relative;
   z-index: 5;
-  width: 190px;
-  min-width: 190px;
+  width: 100%;
+  min-width: 0;
 }
 
 .ControlBarLabel {
   font-size: var(--dashboard-text-size);
+  letter-spacing: 0.03em;
+  white-space: nowrap;
 }
 
 .SearchBox {
-  width: 190px;
-  min-width: 190px;
+  width: 100%;
+  min-width: 0;
 }
 
 .ControlBar .ControlBarHome {
@@ -55,27 +57,22 @@
   padding: 0;
 }
 
-/* -----------------    Cellphone      -------------------*/
-
 @media (max-width: 900px) {
   .ControlBar {
-    grid-template-columns: 120px minmax(0, 1fr);
+    grid-template-columns: 112px minmax(0, 1fr);
     gap: 10px;
   }
 
   .FilterBox,
   .OrderBox {
     grid-column: 1 / -1;
-    position: relative;
-    display: grid;
-    grid-template-columns: 120px minmax(0, 1fr);
-    gap: 10px;
+    grid-template-columns: 112px minmax(0, 1fr);
   }
 
   .FilterBox {
-  grid-row: 1;
-  z-index: 30;
-}
+    grid-row: 1;
+    z-index: 30;
+  }
 
   .OrderBox {
     grid-row: 2;
@@ -91,17 +88,14 @@
   .SearchBox {
     grid-column: 2;
     grid-row: 3;
-
-    min-width: 0;
-    width: 100%;
-
     position: relative;
     z-index: 10;
   }
+}
 
-
-  .ControlSelect {
-    width: 100%;
-    min-width: 0;
+@media (max-width: 480px) {
+  .FilterBox,
+  .OrderBox {
+    grid-template-columns: 96px minmax(0, 1fr);
   }
 }

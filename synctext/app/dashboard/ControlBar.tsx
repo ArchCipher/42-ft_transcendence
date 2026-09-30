@@ -14,7 +14,7 @@ function FilterBox() {
   return (
     <div className="FilterBox">
       <TechText className="ControlBarLabel text-white/70">
-        Filtered by
+        Filter by:
       </TechText>
 
       <div className="ControlSelect">
@@ -42,7 +42,7 @@ function OrderBox({ orderBy, setOrderBy }: OrderBoxProps) {
   return (
     <div className="OrderBox">
       <TechText className="ControlBarLabel text-white/70">
-        Ordered by
+        Order by:
       </TechText>
 
       <div className="ControlSelect">
