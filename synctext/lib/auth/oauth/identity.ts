@@ -110,7 +110,6 @@ export type VerifiedIdentity = {
 };
 
 /*
-Redeems an authorization code and returns the verified identity.
 Exchange code for identity.
 */
 export async function exchangeCode(input: {

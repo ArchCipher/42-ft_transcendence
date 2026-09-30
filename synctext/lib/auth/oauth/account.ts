@@ -49,7 +49,9 @@ async function uniqueUsername(identity: VerifiedIdentity): Promise<string> {
 Resolve the sign-in subject to a local user, creating one only when no email
 collision exists.
 */
-export async function signInOrCreate(identity: VerifiedIdentity): Promise<string> {
+export async function signInOrCreate(
+  identity: VerifiedIdentity,
+): Promise<string> {
   const existing = await db.oAuthAccount.findUnique({
     where: {
       provider_providerAccountId: {
@@ -113,7 +115,10 @@ export async function linkAccount(
   });
 
   if (existing)
-    throw new OAuthError("link_conflict", "this identity is linked to another account");
+    throw new OAuthError(
+      "link_conflict",
+      "this identity is linked to another account",
+    );
 
   await db.oAuthAccount.create({
     data: {

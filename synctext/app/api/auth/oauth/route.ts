@@ -17,7 +17,7 @@ variant is protected by the session cookie, which is SameSite=strict
 
 export async function GET(request: Request) {
   if (!isEnabled())
-	return Response.json({ error: "Not enabled" }, { status: 404 });
+    return Response.json({ error: "Not enabled" }, { status: 404 });
 
   const ip = clientIp(request);
   if ((await ipLimiter.blockedRemaining(ipKey(ip))) > 0)

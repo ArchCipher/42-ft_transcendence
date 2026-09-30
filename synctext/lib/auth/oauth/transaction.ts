@@ -2,10 +2,8 @@ import "server-only";
 
 import { createHash } from "node:crypto";
 import { prisma as db } from "@synctext/db";
-import * as oauth from "oauth4webapi"
-import {
-  OAuthError,
-} from "./identity";
+import * as oauth from "oauth4webapi";
+import { OAuthError } from "./identity";
 
 /*
 Persistence for an auth request between `start` and `callback`.
@@ -34,7 +32,6 @@ export async function createTransaction(input: {
     where: { expiresAt: { lt: new Date() } },
   });
 
-  // mark successful transaction as used
   await db.oAuthTransaction.create({
     data: {
       stateHash: hashState(state),
@@ -55,9 +52,7 @@ Claim a transaction exactly once.
 Called before the authorization code is touched, on every path including the
 user cancelling consent, so a state can never be replayed even on failure.
 */
-export async function consumeTransaction(
-  state: string,
-): Promise<{
+export async function consumeTransaction(state: string): Promise<{
   codeVerifier: string;
   nonce: string;
   purpose: "SIGN_IN" | "LINK";

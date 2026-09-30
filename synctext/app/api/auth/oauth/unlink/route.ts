@@ -22,11 +22,11 @@ export async function POST(request: Request) {
     await unlinkAccount(session.user.id, result.data.provider);
     return Response.json({ ok: true });
   } catch (error) {
-    if (error instanceof OAuthError){
-	  if (error.code === "last_method")
-		return Response.json({ error: error.code }, { status: 409 });
+    if (error instanceof OAuthError) {
+      if (error.code === "last_method")
+        return Response.json({ error: error.code }, { status: 409 });
       return Response.json({ error: error.code }, { status: 400 });
-	}
+    }
     console.error("[oauth] unlink failed", error);
     return Response.json({ error: "Unlink failed" }, { status: 500 });
   }
