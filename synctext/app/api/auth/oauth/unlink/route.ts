@@ -3,6 +3,7 @@ import { parseRequest } from "@/lib/auth/parse-request";
 import { oauthUnlinkSchema } from "@/lib/auth/validation";
 import { OAuthError } from "@/lib/auth/oauth/identity";
 import { unlinkAccount } from "@/lib/auth/oauth/account";
+import { clientIp, ipKey, ipLimiter } from "@/lib/auth/rate-limit";
 
 /*
 POST /api/auth/oauth/unlink   body: { provider: "google" }
@@ -14,6 +15,9 @@ export async function POST(request: Request) {
   const session = await validateSession(await getSessionToken());
   if (!session)
     return Response.json({ error: "Not authenticated" }, { status: 401 });
+
+  if ((await ipLimiter.blockedRemaining(ipKey(clientIp(request)))) > 0)
+    return Response.json({ error: "last_method" }, { status: 429 });
 
   const result = await parseRequest(request, oauthUnlinkSchema);
   if (result.error) return result.error;

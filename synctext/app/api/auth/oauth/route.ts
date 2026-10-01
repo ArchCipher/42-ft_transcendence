@@ -7,12 +7,8 @@ import { createTransaction } from "@/lib/auth/oauth/transaction";
 /*
 GET /api/auth/oauth?purpose=signin|link
 
-Opens the authorization request and 302s to the provider. Nothing about the
-destination is caller-controlled.
-
-A GET is correct here: starting a flow changes no server state, and the `link`
-variant is protected by the session cookie, which is SameSite=strict
-(lib/auth/session.ts:46), so a cross-site request cannot carry it.
+Opens the authorization request and 302s to the provider.
+The caller only controlls `purpose`, which must be "sign-in" or "link".
 */
 
 export async function GET(request: Request) {

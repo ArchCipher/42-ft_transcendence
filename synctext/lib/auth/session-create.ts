@@ -40,10 +40,16 @@ export async function createSessionForUser(
       }); // keep MAX_SESSIONS and revoke other old sessions
   });
 
-  const guestToken = await getGuestSessionToken();
-  const guestClaim = await claimGuestDocumentForUser(guestToken, userId);
-  if (guestToken) await clearGuestSessionCookie();
   await setSessionCookie(token);
+  const guestToken = await getGuestSessionToken();
+  let guestClaim: Awaited<ReturnType<typeof claimGuestDocumentForUser>>;
+  try {
+    guestClaim = await claimGuestDocumentForUser(guestToken, userId);
+    if (guestToken) await clearGuestSessionCookie();
+  } catch (error) {
+    console.error("[session] guest claim failed", error);
+    return "/dashboard";
+  }
   if (guestClaim.status === "claimed")
     return `/doc/${encodeURIComponent(guestClaim.documentId)}`;
   return "/dashboard";

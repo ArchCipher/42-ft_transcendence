@@ -1,22 +1,13 @@
 import "server-only";
 
 import * as oauth from "oauth4webapi";
+import type { OAuthErrorCode } from "./errors";
 
 export const PROVIDER = "google";
 
 // [Google's endpoints](https://accounts.google.com/.well-known/openid-configuration)
 const ISSUER = new URL("https://accounts.google.com");
 const MAX_SUBJECT_LENGTH = 255;
-
-export type OAuthErrorCode =
-  | "invalid_state"
-  | "invalid_code"
-  | "invalid_id_token"
-  | "denied"
-  | "account_exists"
-  | "link_conflict"
-  | "last_method"
-  | "not_enabled";
 
 /*
 `code` is safe to hand a user as a query parameter.

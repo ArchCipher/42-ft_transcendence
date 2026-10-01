@@ -10,7 +10,7 @@ import Field from "@/app/components/form/Field";
 import ErrorNote from "../components/form/ErrorNote";
 import { loginSchema } from "@/lib/auth/validation";
 
-export default function LoginForm() {
+export default function LoginForm({ oauthEnabled }: { oauthEnabled: boolean }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -118,6 +118,19 @@ export default function LoginForm() {
       <Button className="AuthSubmitButton" type="submit" disabled={loading}>
         {loading ? "Accessing..." : "Login"}
       </Button>
+      {oauthEnabled && (
+        <Button
+          variant="outline"
+          onClick={() => {
+            window.location.assign(
+              new URL("/api/auth/oauth?purpose=signin", window.location.origin)
+                .href,
+            );
+          }}
+        >
+          Login with Google
+        </Button>
+      )}
       <div className="AuthLinks">
         <Link href="/register">
           <TechText className="text-xs text-[#6fd3ff]">Create account</TechText>

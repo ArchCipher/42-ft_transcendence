@@ -145,13 +145,13 @@ export const verifyEmailSchema = z
 
 export const oauthStartSchema = z
   .object({
-	purpose: z.enum(["signin", "link"]).default("signin"),
+    purpose: z.enum(["signin", "link"]).default("signin"),
   })
   .strict();
 
 export const oauthUnlinkSchema = z
   .object({
-	provider: z.enum(["google"]),
+    provider: z.enum(["google"]),
   })
   .strict();
 

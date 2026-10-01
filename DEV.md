@@ -68,3 +68,21 @@ Documents:
    5 snapshots on `test-document`.
 
 (The seed only inserts (no upsert), so it fails on a non-empty db.)
+
+## OAuth setup
+
+1. Go to https://console.cloud.google.com/apis/credentials
+2. Create project
+3. `configure consent screen`. Fill the form, select `audience` as external
+4. `Create credentials` > `OAuth client ID` > `Web application`
+5. Under `Authorised JavaScript Origins` add
+http://localhost:3000
+https://localhost:8443
+6. Under `Authorised redirect URIs` add
+http://localhost:3000/api/auth/oauth/callback
+https://localhost:8443/api/auth/oauth/callback
+7. In `.env` file set,
+GOOGLE_OAUTH_ENABLED=true
+GOOGLE_CLIENT_ID=<your_google_client_id>
+GOOGLE_CLIENT_SECRET=<your_google_client_secret>
+8. Confirm `APP_URL` in `.env` matches the browser origin exactly "http://localhost:3000" or "https://localhost:8443"

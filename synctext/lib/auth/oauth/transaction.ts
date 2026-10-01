@@ -66,7 +66,11 @@ export async function consumeTransaction(state: string): Promise<{
 
   if (row.usedAt !== null || row.expiresAt < new Date()) {
     // Delete once expired or spent
-    await db.oAuthTransaction.delete({ where: { stateHash } }).catch(() => {});
+    await db.oAuthTransaction
+      .delete({ where: { stateHash } })
+      .catch((error) =>
+        console.error("[oauth] transaction cleanup failed", error),
+      );
     throw new OAuthError("invalid_state", "transaction is spent or expired");
   }
 

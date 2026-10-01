@@ -4,26 +4,26 @@ import LoginForm from "./login-form";
 import AuthPageShell from "@/app/components/auth/AuthPageShell";
 import UserNavbar from "../components/navigation/UserNavbar";
 import StatusNotice from "../components/form/StatusNotice";
+import { isEnabled } from "@/lib/auth/oauth/identity";
+import { OAUTH_ERROR_MESSAGES, type OAuthErrorCode } from "@/lib/auth/oauth/errors";
 
-// NOTICES displayed in navtab
-type Notice = { message: string, role: "status" | "alert" };
-
-const NOTICES: Record<string, Notice | undefined> = {
-  pending: {message: "Verification email sent. Check your inbox.", role: "status"},
-  "reset-sent": {message: "Password reset email sent. Check your inbox.", role: "status"},
-  "reset-done": {message: "Password reset successful!", role: "status"},
-  "logged-out": {message: "You have been logged out.", role: "status"},
-  // OAuth callback failures. See OAuthErrorCode
-  denied: {message: "Google login cancelled.", role: "alert"},
-  invalid_state: {message: "That login expired. Please try again.", role: "alert"},
-  invalid_code: {message: "Google login failed. Please try again.", role: "alert"},
-  invalid_id_token: {message: "Google login failed. Please try again.", role: "alert"},
-  account_exists: {message: "An account already uses that email. Log in with your password.", role: "alert"},
-  link_conflict: {message: "That google account is linked to another user.", role: "alert"},
-  not_enabled: {message: "Google login isn't available.", role: "alert"},
-  last_method: {message: "Set a password before removing this sign-in method.", role: "alert"},
-  too_many_attempts: {message: "Too many attempts. Please try again later.", role: "alert"},
+const NOTICES: Record<string, string> = {
+  pending: "Verification email sent. Check your inbox.",
+  "reset-sent": "Password reset email sent. Check your inbox.",
+  "reset-done": "Password reset successful!",
+  "logged-out": "You have been logged out.",
 };
+
+type Notice = { message: string; role: "status" | "alert" };
+
+function resolveNotice(error?: string, verify?: string): Notice | undefined {
+  const message = error
+    ? OAUTH_ERROR_MESSAGES[error as OAuthErrorCode]
+    : undefined;
+  if (typeof message === "string") return { message, role: "alert" };
+  const text = NOTICES[error ?? verify ?? ""];
+  return text ? { message: text, role: "status" } : undefined;
+}
 
 export default async function Login({
   searchParams,
@@ -31,14 +31,18 @@ export default async function Login({
   searchParams: Promise<{ verify?: string; error?: string }>;
 }) {
   const { verify, error } = await searchParams;
-  const notice = NOTICES[error ?? verify ?? ""];
+  const notice = resolveNotice(error, verify);
   const session = await validateSession(await getSessionToken());
   return (
     <LoginPage
       notice={notice}
+      oauthEnabled={isEnabled()}
       navbar={
         session?.user ? (
-          <UserNavbar username={session.user.username} avatarUrl={session.user.avatarUrl} />
+          <UserNavbar
+            username={session.user.username}
+            avatarUrl={session.user.avatarUrl}
+          />
         ) : undefined
       }
     />
@@ -48,9 +52,11 @@ export default async function Login({
 function LoginPage({
   notice,
   navbar,
+  oauthEnabled,
 }: {
   notice?: Notice;
   navbar?: React.ReactNode;
+  oauthEnabled: boolean;
 }) {
   return (
     <AuthPageShell
@@ -61,7 +67,7 @@ function LoginPage({
         ) : undefined
       }
     >
-      <LoginForm />
+      <LoginForm oauthEnabled={oauthEnabled} />
     </AuthPageShell>
   );
 }

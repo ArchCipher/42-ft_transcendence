@@ -7,11 +7,12 @@ import Field from "@/app/components/form/Field";
 import Avatar from "./avatar";
 import DangerZone from "./danger-zone";
 import PasswordForm from "./password-form";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AuthPageShell from "../components/auth/AuthPageShell";
 import UserNavbar from "../components/navigation/UserNavbar";
 import StatusNotice from "../components/form/StatusNotice";
 import { usernameSchema } from "@/lib/auth/validation";
+import ConnectedAccounts from "./connected-accounts";
 
 const FALLBACK = "Something went wrong. Please try again.";
 
@@ -21,20 +22,40 @@ type ProfileInput = {
   avatarUrl: string | null;
   emailVerifiedAt: string | null;
   createdAt: string;
+  hasPassword: boolean;
 };
 
 export type Status = { kind: "error" | "saved"; text: string } | null;
 
 type FieldErrors = { username?: string };
 
-export default function ProfileClient({ initial }: { initial: ProfileInput }) {
+export default function ProfileClient({
+  initial,
+  oauthEnabled,
+  googleLinked,
+  initialNotice,
+}: {
+  initial: ProfileInput;
+  oauthEnabled: boolean;
+  googleLinked: boolean;
+  initialNotice: { text: string; kind: "saved" | "error" } | null;
+}) {
   const [username, setUsername] = useState(initial.username);
   const [saved, setSaved] = useState({
     username: initial.username,
   });
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-  const [status, setStatus] = useState<Status>(null);
+  const [status, setStatus] = useState<Status>(initialNotice);
   const [saving, setSaving] = useState(false);
+  const noticeRef = useRef<HTMLDivElement>(null);
+  const lastStatus = useRef<Status>(initialNotice);
+
+  useEffect(() => {
+    if (!status || status === lastStatus.current) return;
+    lastStatus.current = status;
+    noticeRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    noticeRef.current?.focus({ preventScroll: true });
+  }, [status]);
 
   function isRealEdit(value: string, saved: string): boolean {
     return value.trim().toLowerCase() !== saved.trim().toLowerCase();
@@ -101,12 +122,16 @@ export default function ProfileClient({ initial }: { initial: ProfileInput }) {
   }
   return (
     <AuthPageShell
-      navbar={<UserNavbar username={initial.username} avatarUrl={initial.avatarUrl} />}
+      navbar={
+        <UserNavbar username={initial.username} avatarUrl={initial.avatarUrl} />
+      }
       notice={
         status && (
-          <StatusNotice role={status.kind === "error" ? "alert" : "status"}>
-            {status.text}
-          </StatusNotice>
+          <div ref={noticeRef} tabIndex={-1}>
+            <StatusNotice role={status.kind === "error" ? "alert" : "status"}>
+              {status.text}
+            </StatusNotice>
+          </div>
         )
       }
     >
@@ -169,6 +194,7 @@ export default function ProfileClient({ initial }: { initial: ProfileInput }) {
           onStatus={setStatus}
           username={saved.username}
           email={initial.email}
+		  hasPassword={initial.hasPassword}
         />
 
         <div className={styles.actionsRow}>
@@ -187,6 +213,11 @@ export default function ProfileClient({ initial }: { initial: ProfileInput }) {
 
         <hr className={styles.divider} />
 
+        <ConnectedAccounts
+          enabled={oauthEnabled}
+          linked={googleLinked}
+          onStatus={setStatus}
+        />
         <DangerZone onStatus={setStatus} />
       </div>
     </AuthPageShell>
