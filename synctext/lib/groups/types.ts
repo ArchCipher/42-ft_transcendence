@@ -26,6 +26,7 @@ export type GroupMemberSummary = {
   userId: string;
   username: string;
   avatarUrl: string | null;
+  online: boolean;
   role: GroupRole;
   joinedAt: string;
 };

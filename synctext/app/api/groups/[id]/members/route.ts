@@ -11,6 +11,7 @@ import {
 import { canAdminGroup, requireGroupRole } from "@/lib/permissions";
 import { addMember } from "@/lib/groups/groups";
 import { ROLE_RANK, type GroupMemberSummary } from "@/lib/groups/types";
+import { isOnline } from "@/lib/presence";
 import { NextResponse } from "next/server";
 
 /*
@@ -48,7 +49,7 @@ export async function GET(
     select: {
       role: true,
       joinedAt: true,
-      user: { select: { id: true, username: true, avatarUrl: true } },
+      user: { select: { id: true, username: true, avatarUrl: true, lastSeenAt: true } },
     },
     // Ordered here, then ranked below; Array.sort is stable, so the oldest
     // member stays first inside each rank.
@@ -60,6 +61,7 @@ export async function GET(
       userId: user.id,
       username: user.username,
       avatarUrl: user.avatarUrl,
+      online: isOnline(user.lastSeenAt),
       role,
       joinedAt: joinedAt.toISOString(),
     }))

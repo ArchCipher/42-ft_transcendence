@@ -1,18 +1,25 @@
 import { getSessionToken, validateSession } from "@/lib/auth/session";
+import { prisma as db } from "@synctext/db";
 
 /*
 POST api/session/activity
 
-Refresh lastUsedAt (via validateSession) for any REAL user activity.
+Refresh session activity and presence for any REAL user activity.
 
-SessionGuard sends this only on deliberate gestures (pointerdown / keydown).
-The read-only GET /api/session poll never touches, so an open-but-idle tab
-(or a background one) still expires after IDLE_TIMEOUT_MS.
+SessionGuard sends this when an authenticated page becomes visible and on
+deliberate gestures. The read-only GET /api/session poll never touches, so an
+open-but-idle tab (or a background one) still expires after IDLE_TIMEOUT_MS.
 */
 export async function POST() {
   const token = await getSessionToken();
   if (!token) return Response.json({ signedIn: false });
 
   const session = await validateSession(token);
+  if (session) {
+    await db.user.update({
+      where: { id: session.userId },
+      data: { lastSeenAt: new Date() },
+    });
+  }
   return Response.json({ signedIn: session !== null });
 }
