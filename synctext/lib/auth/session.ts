@@ -105,17 +105,15 @@ export async function touchSession(session: {
   }
 }
 
-// Validate token from request cookie: on every use update `lastUsedAt`, so that
-// `online status` and `idle-timeout` works
+// Validate token from request cookie. Read-only: polled API calls must not keep an
+// idle session alive, so only POST /api/session/activity calls touchSession.
 // Note: this takes raw session token
 export async function validateSession(
   token: string | null,
 ): Promise<(Session & { user: User }) | null> {
   if (!token) return null;
 
-  const session = await checkSessionByHash(hashSessionToken(token));
-  if (session) await touchSession(session);
-  return session;
+  return checkSessionByHash(hashSessionToken(token));
 }
 
 /*
