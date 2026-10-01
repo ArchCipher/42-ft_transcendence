@@ -9,6 +9,7 @@ export default async function DashboardPage() {
   return (
     <SessionGuard>
       <DashboardClient
+        userId={session.user.id}
         username={session.user.username}
         avatarUrl={session.user.avatarUrl}
       />

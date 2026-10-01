@@ -6,18 +6,22 @@ import Button from "@/app/components/ui/Button";
 import InputBox from "@/app/components/form/InputBox";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { FriendUser, FriendsResponse } from "@/lib/friends/types";
+import type { GroupSummary } from "@/lib/groups/types";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { MoreHorizontal, Plus } from "lucide-react";
 import FriendIdentity from "./FriendIdentity";
 import FriendsManagerDialog from "./FriendsManagerDialog";
+import { request } from "../request";
+import { groupLabel } from "../group/group";
 
 type DashboardSidebarProps = {
-  selectedGroup: { id: string; name: string } | null;
-  onSelectGroup: (group: { id: string; name: string } | null) => void;
+  userId: string;
+  groups: GroupSummary[];
+  selectedGroupId: string | null;
+  onSelectGroup: (groupId: string) => void;
   isOpen: boolean;
 };
 
-type Group = { id: string; name: string; isPrivateSpace: boolean };
 type GroupMember = { userId: string; username: string; online: boolean };
 type FriendFeedback = { kind: "success" | "error"; text: string } | null;
 
@@ -28,19 +32,6 @@ const EMPTY_FRIENDS: FriendsResponse = {
 };
 
 const PRESENCE_POLL_MS = 30_000;
-
-async function getJson<T>(url: string, signal?: AbortSignal): Promise<T> {
-  const response = await fetch(url, { cache: "no-store", signal });
-  if (!response.ok) throw new Error(`Request failed: ${response.status}`);
-  return response.json() as Promise<T>;
-}
-
-async function getErrorMessage(response: Response) {
-  const body: unknown = await response.json().catch(() => null);
-  return typeof body === "object" && body !== null && "error" in body && typeof body.error === "string"
-    ? body.error
-    : "Something went wrong. Please try again.";
-}
 
 function PresenceLight({ online }: { online: boolean }) {
   const label = online ? "Online" : "Offline";
@@ -54,10 +45,9 @@ function PresenceLight({ online }: { online: boolean }) {
   );
 }
 
-export default function DashboardSidebar({ selectedGroup, onSelectGroup, isOpen }: DashboardSidebarProps) {
+export default function DashboardSidebar({ userId, groups, selectedGroupId, onSelectGroup, isOpen }: DashboardSidebarProps) {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [openSections, setOpenSections] = useState<string[]>(["groups"]);
-  const [groups, setGroups] = useState<Group[]>([]);
   const [friendsData, setFriendsData] = useState<FriendsResponse>(EMPTY_FRIENDS);
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [friendsSearch, setFriendsSearch] = useState("");
@@ -68,12 +58,11 @@ export default function DashboardSidebar({ selectedGroup, onSelectGroup, isOpen 
 
   const friendsOpen = openSections.includes("friends");
   const membersOpen = openSections.includes("members");
-  const selectedGroupId = selectedGroup?.id ?? null;
 
   const refreshFriends = useCallback(async (signal?: AbortSignal) => {
     setFriendsLoading(true);
     try {
-      const nextFriends = await getJson<FriendsResponse>("/api/friends", signal);
+      const nextFriends = await request<FriendsResponse>("/api/friends", { signal });
       setFriendsData(nextFriends);
     } catch (error) {
       if (!(error instanceof DOMException && error.name === "AbortError")) {
@@ -82,18 +71,6 @@ export default function DashboardSidebar({ selectedGroup, onSelectGroup, isOpen 
     } finally {
       if (!signal?.aborted) setFriendsLoading(false);
     }
-  }, []);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    void getJson<Group[]>("/api/groups", controller.signal)
-      .then(setGroups)
-      .catch((error: unknown) => {
-        if (!(error instanceof DOMException && error.name === "AbortError")) {
-          console.error("Failed to load groups", error);
-        }
-      });
-    return () => controller.abort();
   }, []);
 
   useEffect(() => {
@@ -121,9 +98,9 @@ export default function DashboardSidebar({ selectedGroup, onSelectGroup, isOpen 
         requests.push(refreshFriends(controller.signal));
       }
       if (membersOpen && selectedGroupId) {
-        requests.push(getJson<GroupMember[]>(
+        requests.push(request<GroupMember[]>(
           `/api/groups/${encodeURIComponent(selectedGroupId)}/members`,
-          controller.signal,
+          { signal: controller.signal },
         ).then(setMembers));
       }
 
@@ -161,14 +138,13 @@ export default function DashboardSidebar({ selectedGroup, onSelectGroup, isOpen 
 
   async function mutateFriends(
     actionKey: string,
-    request: () => Promise<Response>,
+    sendRequest: () => Promise<unknown>,
     successMessage: string,
   ) {
     setFriendActionKey(actionKey);
     setFriendFeedback(null);
     try {
-      const response = await request();
-      if (!response.ok) throw new Error(await getErrorMessage(response));
+      await sendRequest();
       await refreshFriends();
       setFriendFeedback({ kind: "success", text: successMessage });
       return true;
@@ -186,9 +162,8 @@ export default function DashboardSidebar({ selectedGroup, onSelectGroup, isOpen 
   function sendFriendRequest(identifier: string) {
     return mutateFriends(
       "send",
-      () => fetch("/api/friends", {
+      () => request("/api/friends", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ identifier }),
       }),
       "Friend request sent.",
@@ -198,9 +173,8 @@ export default function DashboardSidebar({ selectedGroup, onSelectGroup, isOpen 
   function respondToFriendRequest(friend: FriendUser, action: "accept" | "decline") {
     return mutateFriends(
       `respond-${friend.id}`,
-      () => fetch("/api/friends", {
+      () => request("/api/friends", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: friend.id, action }),
       }),
       action === "accept" ? `You are now friends with ${friend.username}.` : "Friend request declined.",
@@ -210,9 +184,8 @@ export default function DashboardSidebar({ selectedGroup, onSelectGroup, isOpen 
   function cancelFriendRequest(friend: FriendUser) {
     return mutateFriends(
       `cancel-${friend.id}`,
-      () => fetch("/api/friends", {
+      () => request("/api/friends", {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: friend.id }),
       }),
       "Friend request cancelled.",
@@ -222,9 +195,8 @@ export default function DashboardSidebar({ selectedGroup, onSelectGroup, isOpen 
   function removeFriend(friend: FriendUser) {
     return mutateFriends(
       `remove-${friend.id}`,
-      () => fetch("/api/friends", {
+      () => request("/api/friends", {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: friend.id }),
       }),
       `${friend.username} was removed from your friends.`,
@@ -266,11 +238,11 @@ export default function DashboardSidebar({ selectedGroup, onSelectGroup, isOpen 
                   <button
                     type="button"
                     className={`SidebarGroup ${
-                      selectedGroup?.id === group.id ? "SidebarGroupActive" : ""
+                      selectedGroupId === group.id ? "SidebarGroupActive" : ""
                     }`}
-                    onClick={() => onSelectGroup(group)}
+                    onClick={() => onSelectGroup(group.id)}
                   >
-                    <span>{group.name}</span>
+                    <span>{groupLabel(group)}</span>
                   </button>
 
                   <button
@@ -304,7 +276,7 @@ export default function DashboardSidebar({ selectedGroup, onSelectGroup, isOpen 
             <AccordionTrigger className="SidebarAccordionTrigger"><TechText>Members</TechText></AccordionTrigger>
             <AccordionContent className="SidebarAccordionContent">
               <div className="SidebarFriendList">
-                {members.map((member) => (
+                {members.filter((member) => member.userId !== userId).map((member) => (
                   <div key={member.userId} className="SidebarActionRow">
                     <div className="SidebarFriend"><PresenceLight online={member.online} /><span>{member.username}</span></div>
                     <button type="button" className="SidebarEditButton" aria-label={`Actions for ${member.username}`} onClick={(event) => {

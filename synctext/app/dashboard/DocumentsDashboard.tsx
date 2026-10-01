@@ -1,10 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { FileText } from "lucide-react";
 import type { DocumentSummary } from "@/lib/documents/documents";
-import { deleteDocument_api, listDocuments_api, renameDocument_api } from "./document/document";
+import { deleteDocument_api, renameDocument_api } from "./document/document";
 import "./DocumentsDashboard.css";
 import { BodyText, SupportText } from "@/app/components/typography/Typography";
 import ConfirmWindow from "@/app/components/feedback/ConfirmWindow";
@@ -17,6 +17,10 @@ function truncateTitle(title: string, limit = 18) {
 }
 
 type DashboardProps = {
+  documents: DocumentSummary[];
+  setDocuments: Dispatch<SetStateAction<DocumentSummary[]>>;
+  isLoading: boolean;
+  loadError: string;
   search: string;
   order: string;
   createError: string;
@@ -24,15 +28,15 @@ type DashboardProps = {
   isCreatingDocument: boolean;
 };
 
-export default function DocumentsDashboard({ search,
+export default function DocumentsDashboard({ documents,
+                                              setDocuments,
+                                              isLoading,
+                                              loadError,
+                                              search,
                                               order,
                                               onCreateDocument,
                                               isCreatingDocument,
                                               createError }: DashboardProps) {
-
-  const [documents, setDocuments] = useState<DocumentSummary[]>([]);
-  const [isLoadingDocuments, setIsLoadingDocuments] = useState(true);
-  const [documentsError, setDocumentsError] = useState("");
 
   const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);// for deleting docs
 
@@ -40,36 +44,7 @@ export default function DocumentsDashboard({ search,
   const [editTitle, setEditTitle] = useState("");
   const [editError, setEditError] = useState("");
   const router = useRouter();
-  const dashboardError = documentsError || createError;
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function loadDocuments() {
-      try {
-        setIsLoadingDocuments(true);
-        setDocumentsError("");
-
-        const listedDocuments = await listDocuments_api(controller.signal);
-        setDocuments(listedDocuments);
-      } catch {
-        if (!controller.signal.aborted) {
-          setDocumentsError("Failed to load your documents. Please try again.");
-        }
-      } finally {
-        if (!controller.signal.aborted) {
-          setIsLoadingDocuments(false);
-        }
-      }
-    }
-
-    void loadDocuments();
-
-    return () => {
-      controller.abort();
-    };
-  }, []);
-
+  const dashboardError = loadError || createError;
 
 
   async function deleteDocument(id: string) {
@@ -145,7 +120,7 @@ async function saveRename(): Promise<boolean> {
         onClick={onCreateDocument}
       />
 
-      {isLoadingDocuments ? (
+      {isLoading ? (
         <p className="DashboardStatus">
           <SupportText>Loading documents...</SupportText>
         </p>
@@ -159,13 +134,13 @@ async function saveRename(): Promise<boolean> {
         </p>
       ) : null}
 
-      {!isLoadingDocuments && !documentsError && documents.length === 0 ? (
+      {!isLoading && !loadError && documents.length === 0 ? (
         <p className="DashboardStatus">
-          <BodyText>You do not have any documents yet.</BodyText>
+          <BodyText>No documents here yet.</BodyText>
         </p>
       ) : null}
 
-      {!isLoadingDocuments && !documentsError ? documents.filter((doc) =>
+      {!isLoading && !loadError ? documents.filter((doc) =>
           doc.title.toLowerCase().includes(search.toLowerCase()))
         .sort((a, b) => {
         if (order == "name")

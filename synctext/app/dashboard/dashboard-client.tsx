@@ -12,37 +12,63 @@ import DocumentsDashboard from "./DocumentsDashboard";
 import DashboardSidebar from "./side-panel/DashboardSidebar";
 import { TechText } from "@/app/components/typography/Typography";
 import Button from "@/app/components/ui/Button";
-import { createDocument_api } from "./document/document";
+import { createDocument_api, listDocuments_api } from "./document/document";
+import { groupLabel, listGroups_api } from "./group/group";
 import { Menu } from "lucide-react";
 import UserNavbar from "../components/navigation/UserNavbar";
+import type { DocumentSummary } from "@/lib/documents/documents";
+import type { GroupSummary } from "@/lib/groups/types";
 
 type UserProps = {
+  userId: string;
   username: string;
   avatarUrl: string | null;
 };
 
-type SelectedGroup = {
-    id: string;
-    name: string;
-  } | null;
-
-export default function DashboardClient({ username, avatarUrl }: UserProps) {
+export default function DashboardClient({ userId, username, avatarUrl }: UserProps) {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [order, setOrder] = useState("creation"); // to order by creation, name, modification
-  const [selectedGroup, setSelectedGroup] = useState<SelectedGroup>(null);
+  const [groups, setGroups] = useState<GroupSummary[]>([]);
+  const [documents, setDocuments] = useState<DocumentSummary[]>([]);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [isCreatingDocument, setIsCreatingDocument] = useState(false);
   const [createError, setCreateError] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // The private space comes first from the API: shown by default, and once the
+  // selected group is gone.
+  const selectedGroup = groups.find((group) => group.id === selectedGroupId) ?? groups.at(0);
+
+  // Groups and documents load together; documents are then filtered by group.
+  useEffect(() => {
+    const controller = new AbortController();
+
+    Promise.all([listGroups_api(controller.signal), listDocuments_api(controller.signal)])
+      .then(([groupList, documentList]) => {
+        setGroups(groupList);
+        setDocuments(documentList);
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setLoadError("Failed to load your documents. Please try again.");
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setIsLoading(false);
+      });
+
+    return () => controller.abort();
+  }, []);
+
   async function createDocument() {
-    if (isCreatingDocument) return;
+    if (isCreatingDocument || !selectedGroup) return;
 
     setCreateError("");
     setIsCreatingDocument(true);
 
     try {
-      const createdDocument = await createDocument_api();
+      const createdDocument = await createDocument_api(selectedGroup.id);
       router.push(`/doc/${encodeURIComponent(createdDocument.id)}`);
     } catch {
       setCreateError("Failed to create the document. Please try again.");
@@ -75,14 +101,16 @@ export default function DashboardClient({ username, avatarUrl }: UserProps) {
                 setSearch={setSearch}
                 order={order}
                 setOrder={setOrder}
-                onHome={() => setSelectedGroup(null)}
+                onHome={() => setSelectedGroupId(null)}
               />
             </AppPanel>
           </div>
 
           <DashboardSidebar
-            selectedGroup={selectedGroup}
-            onSelectGroup={setSelectedGroup}
+            userId={userId}
+            groups={groups}
+            selectedGroupId={selectedGroup?.id ?? null}
+            onSelectGroup={setSelectedGroupId}
             isOpen={sidebarOpen}
           />
 
@@ -101,7 +129,7 @@ export default function DashboardClient({ username, avatarUrl }: UserProps) {
               <div className="DashboardFixedBarInner">
 
                 <TechText className="DashboardViewTitle">
-                  {selectedGroup?.name ?? "Mother Ship"}
+                  {selectedGroup ? groupLabel(selectedGroup) : ""}
                 </TechText>
 
                 <Button
@@ -118,6 +146,10 @@ export default function DashboardClient({ username, avatarUrl }: UserProps) {
 
             <div className="DashboardScrollArea">
               <DocumentsDashboard
+                documents={documents.filter((doc) => doc.groupId === selectedGroup?.id)}
+                setDocuments={setDocuments}
+                isLoading={isLoading}
+                loadError={loadError}
                 search={search}
                 order={order}
                 createError={createError}

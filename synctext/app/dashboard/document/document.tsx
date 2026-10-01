@@ -1,15 +1,11 @@
 import type { DocumentSummary } from "@/lib/documents/documents";
+import { request } from "../request";
 
-export async function createDocument_api(): Promise<DocumentSummary> {
-  const response = await fetch("/api/documents", {
+export function createDocument_api(groupId: string): Promise<DocumentSummary> {
+  return request<DocumentSummary>("/api/documents", {
     method: "POST",
+    body: JSON.stringify({ groupId }),
   });
-
-  if (!response.ok) {
-    throw new Error("Failed to create document");
-  }
-
-  return response.json();
 }
 
 export async function listDocuments_api(
