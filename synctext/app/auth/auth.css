@@ -121,3 +121,10 @@
 @media (prefers-reduced-motion: reduce) {
   .AuthLinks a { transition: none; }
 }
+
+.PasswordStrength {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  color: var(--app-muted);
+}
