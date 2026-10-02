@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { logoutCurrentSession } from "@/lib/auth/session";
-import { appUrl } from "@/lib/app-url";
+import { appUrl } from "@/lib/env";
 
 /*
 API Response contracts: /api/auth/logout

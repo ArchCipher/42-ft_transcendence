@@ -10,7 +10,7 @@ import {
   ipKey,
   ipLimiter,
 } from "@/lib/auth/rate-limit";
-import { appUrl } from "@/lib/app-url";
+import { appUrl } from "@/lib/env";
 
 /*
 GET /api/auth/oauth/callback

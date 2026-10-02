@@ -2,6 +2,7 @@ import "server-only";
 
 import * as oauth from "oauth4webapi";
 import type { OAuthErrorCode } from "./errors";
+import { appUrl, requiredEnv } from "@/lib/env";
 
 export const PROVIDER = "google";
 
@@ -23,19 +24,13 @@ export class OAuthError extends Error {
   }
 }
 
-function requiredEnv(name: string): string {
-  const value = process.env[name];
-  if (!value) throw new Error(`Missing environment variable: ${name}`);
-  return value;
-}
-
 export function isEnabled(): boolean {
   return process.env.GOOGLE_OAUTH_ENABLED === "true";
 }
 
 // Must match a registered redirect URI byte for byte.
 export function redirectUri(): string {
-  return new URL("/api/auth/oauth/callback", requiredEnv("APP_URL")).toString();
+  return appUrl("/api/auth/oauth/callback");
 }
 
 function client(): oauth.Client {

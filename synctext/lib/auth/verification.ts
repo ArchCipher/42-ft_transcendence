@@ -1,4 +1,5 @@
 import { createHash, randomBytes } from "node:crypto";
+import { appUrl } from "@/lib/env";
 
 export const VERIFICATION_TTL_SECONDS = 24 * 60 * 60; // 1 day
 
@@ -23,6 +24,5 @@ export function verificationExpiresAt(): Date {
 }
 
 export function verificationUrl(token: string) {
-  const url = process.env.APP_URL ?? "https://localhost:8443";
-  return `${url}/verify-email?token=${encodeURIComponent(token)}`;
+  return appUrl(`/verify-email?token=${encodeURIComponent(token)}`);
 }
