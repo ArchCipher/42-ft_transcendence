@@ -61,6 +61,12 @@ export default function DashboardClient({ userId, username, avatarUrl }: UserPro
     return () => controller.abort();
   }, []);
 
+  // After a group action: a deleted or left group drops out, and the selection
+  // falls back to the private space on its own.
+  async function refreshGroups() {
+    setGroups(await listGroups_api());
+  }
+
   async function createDocument() {
     if (isCreatingDocument || !selectedGroup) return;
 
@@ -111,6 +117,7 @@ export default function DashboardClient({ userId, username, avatarUrl }: UserPro
             groups={groups}
             selectedGroupId={selectedGroup?.id ?? null}
             onSelectGroup={setSelectedGroupId}
+            onGroupsChanged={refreshGroups}
             isOpen={sidebarOpen}
           />
 

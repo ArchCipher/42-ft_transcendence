@@ -6,23 +6,37 @@ import Button from "@/app/components/ui/Button";
 import InputBox from "@/app/components/form/InputBox";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { FriendUser, FriendsResponse } from "@/lib/friends/types";
-import type { GroupSummary } from "@/lib/groups/types";
+import type { GroupMemberSummary, GroupSummary } from "@/lib/groups/types";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { MoreHorizontal, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
+import ConfirmWindow from "@/app/components/feedback/ConfirmWindow";
 import FriendIdentity from "./FriendIdentity";
 import FriendsManagerDialog from "./FriendsManagerDialog";
+import GroupNameDialog from "./GroupNameDialog";
+import AddMemberDialog from "./AddMemberDialog";
+import ActionMenu, { type ActionItem } from "../ActionMenu";
 import { request } from "../request";
-import { groupLabel } from "../group/group";
+import {
+  createGroup_api,
+  deleteGroup_api,
+  groupLabel,
+  listMembers_api,
+  removeMember_api,
+  renameGroup_api,
+  setMemberRole_api,
+} from "../group/group";
 
 type DashboardSidebarProps = {
   userId: string;
   groups: GroupSummary[];
   selectedGroupId: string | null;
   onSelectGroup: (groupId: string) => void;
+  onGroupsChanged: () => Promise<void>;
   isOpen: boolean;
 };
 
-type GroupMember = { userId: string; username: string; online: boolean };
+// A Delete / Leave / Remove waiting for the user's confirmation.
+type PendingConfirm = { title: string; message: string; confirmLabel: string; run: () => Promise<void> };
 type FriendFeedback = { kind: "success" | "error"; text: string } | null;
 
 const EMPTY_FRIENDS: FriendsResponse = {
@@ -45,11 +59,14 @@ function PresenceLight({ online }: { online: boolean }) {
   );
 }
 
-export default function DashboardSidebar({ userId, groups, selectedGroupId, onSelectGroup, isOpen }: DashboardSidebarProps) {
-  const [openMenu, setOpenMenu] = useState<string | null>(null);
+export default function DashboardSidebar({ userId, groups, selectedGroupId, onSelectGroup, onGroupsChanged, isOpen }: DashboardSidebarProps) {
   const [openSections, setOpenSections] = useState<string[]>(["groups"]);
   const [friendsData, setFriendsData] = useState<FriendsResponse>(EMPTY_FRIENDS);
-  const [members, setMembers] = useState<GroupMember[]>([]);
+  const [members, setMembers] = useState<GroupMemberSummary[]>([]);
+  const [nameDialog, setNameDialog] = useState<{ group?: GroupSummary } | null>(null); // no group: New group
+  const [addMemberGroup, setAddMemberGroup] = useState<GroupSummary | null>(null);
+  const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm | null>(null);
+  const [groupError, setGroupError] = useState("");
   const [friendsSearch, setFriendsSearch] = useState("");
   const [friendsManagerOpen, setFriendsManagerOpen] = useState(false);
   const [friendsLoading, setFriendsLoading] = useState(false);
@@ -73,17 +90,9 @@ export default function DashboardSidebar({ userId, groups, selectedGroupId, onSe
     }
   }, []);
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      const target = event.target as HTMLElement;
-      if (!target.closest(".SidebarActionMenu") && !target.closest(".SidebarEditButton")) {
-        setOpenMenu(null);
-      }
-    }
-
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, []);
+  const refreshMembers = useCallback(async (signal?: AbortSignal) => {
+    if (selectedGroupId) setMembers(await listMembers_api(selectedGroupId, signal));
+  }, [selectedGroupId]);
 
   useEffect(() => {
     if ((!friendsOpen && !(membersOpen && selectedGroupId)) || document.visibilityState !== "visible") return;
@@ -98,10 +107,7 @@ export default function DashboardSidebar({ userId, groups, selectedGroupId, onSe
         requests.push(refreshFriends(controller.signal));
       }
       if (membersOpen && selectedGroupId) {
-        requests.push(request<GroupMember[]>(
-          `/api/groups/${encodeURIComponent(selectedGroupId)}/members`,
-          { signal: controller.signal },
-        ).then(setMembers));
+        requests.push(refreshMembers(controller.signal));
       }
 
       void Promise.allSettled(requests).then((results) => {
@@ -126,7 +132,7 @@ export default function DashboardSidebar({ userId, groups, selectedGroupId, onSe
       window.clearInterval(intervalId);
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
-  }, [friendsOpen, membersOpen, refreshFriends, selectedGroupId]);
+  }, [friendsOpen, membersOpen, refreshFriends, refreshMembers, selectedGroupId]);
 
   const memberIds = useMemo(() => new Set(members.map(({ userId }) => userId)), [members]);
   const sortedFriends = useMemo(
@@ -203,9 +209,102 @@ export default function DashboardSidebar({ userId, groups, selectedGroupId, onSe
     );
   }
 
+  const myRole = groups.find((group) => group.id === selectedGroupId)?.myRole;
+
+  // Run a group or member action, then reload what it changed.
+  async function runAction(action: () => Promise<unknown>, reload: () => Promise<unknown>) {
+    setGroupError("");
+    try {
+      await action();
+      await reload();
+    } catch (error) {
+      setGroupError(error instanceof Error ? error.message : "Something went wrong. Please try again.");
+    }
+  }
+
+  async function createGroup(name: string) {
+    const group = await createGroup_api(name);
+    await onGroupsChanged();
+    onSelectGroup(group.id);
+  }
+
+  async function renameGroup(group: GroupSummary, name: string) {
+    await renameGroup_api(group.id, name);
+    await onGroupsChanged();
+  }
+
+  // A group's "…" menu, by the caller's role. A private space has none.
+  function groupActions(group: GroupSummary): ActionItem[] {
+    if (group.isPrivateSpace) return [];
+    const isOwner = group.myRole === "OWNER";
+    const items: ActionItem[] = [];
+
+    if (isOwner) {
+      items.push({ label: "Rename group", onSelect: () => setNameDialog({ group }) });
+    }
+    if (group.myRole !== "MEMBER") {
+      items.push({ label: "Add member", onSelect: () => { setAddMemberGroup(group); void refreshFriends(); } });
+    }
+    items.push({
+      label: "Leave group",
+      danger: true,
+      onSelect: () => setPendingConfirm({
+        title: `Leave ${group.name}?`,
+        message: isOwner
+          ? "Ownership passes to the oldest admin, else the oldest member. If you are the last member, the group and its documents are deleted."
+          : "You will lose access to its documents.",
+        confirmLabel: "Leave",
+        run: () => runAction(() => removeMember_api(group.id, userId), onGroupsChanged),
+      }),
+    });
+    if (isOwner) {
+      items.push({
+        label: "Delete group",
+        danger: true,
+        onSelect: () => setPendingConfirm({
+          title: `Delete ${group.name}?`,
+          message: "Its documents are deleted with it. This action cannot be undone.",
+          confirmLabel: "Delete",
+          run: () => runAction(() => deleteGroup_api(group.id), onGroupsChanged),
+        }),
+      });
+    }
+    return items;
+  }
+
+  // A member's "…" menu: the owner promotes, demotes and removes anyone; an admin
+  // removes plain members. Nobody acts on the owner.
+  function memberActions(member: GroupMemberSummary): ActionItem[] {
+    const groupId = selectedGroupId;
+    if (!groupId || member.role === "OWNER") return [];
+    const items: ActionItem[] = [];
+
+    if (myRole === "OWNER") {
+      const role = member.role === "ADMIN" ? "MEMBER" : "ADMIN";
+      items.push({
+        label: role === "ADMIN" ? "Make admin" : "Revoke admin",
+        onSelect: () => void runAction(() => setMemberRole_api(groupId, member.userId, role), refreshMembers),
+      });
+    }
+    if (myRole === "OWNER" || (myRole === "ADMIN" && member.role === "MEMBER")) {
+      items.push({
+        label: "Remove member",
+        danger: true,
+        onSelect: () => setPendingConfirm({
+          title: `Remove ${member.username}?`,
+          message: "They lose access to the group and its documents.",
+          confirmLabel: "Remove",
+          run: () => runAction(() => removeMember_api(groupId, member.userId), refreshMembers),
+        }),
+      });
+    }
+    return items;
+  }
+
   return (
     <aside className={`DashboardSidebar ${isOpen ? "DashboardSidebarOpen" : ""}`}>
       <div className="SidebarContent">
+        {groupError ? <p className="FriendsFeedback FriendsFeedbackError" role="alert">{groupError}</p> : null}
         <Accordion value={openSections} onValueChange={setOpenSections} className="SidebarAccordion">
         <AccordionItem value="groups" className="SidebarAccordionItem">
           <AccordionTrigger className="SidebarAccordionTrigger">
@@ -226,6 +325,7 @@ export default function DashboardSidebar({ userId, groups, selectedGroupId, onSe
               <Button
                 variant="outline"
                 className="NewGroupButton"
+                onClick={() => setNameDialog({})}
               >
                 New group
                 <Plus size={16} aria-hidden="true" />
@@ -245,27 +345,11 @@ export default function DashboardSidebar({ userId, groups, selectedGroupId, onSe
                     <span>{groupLabel(group)}</span>
                   </button>
 
-                  <button
-                    type="button"
+                  <ActionMenu
+                    label={`Actions for ${groupLabel(group)}`}
+                    items={groupActions(group)}
                     className="SidebarEditButton"
-                    aria-label={`Edit ${group.name}`}
-                    onClick={(e) => { e.stopPropagation();
-                                      setOpenMenu((current) =>
-                                    current === `group-${group.id}`
-                                    ? null
-                                    : `group-${group.id}` ); }}
-                  >
-                    <MoreHorizontal size={16} />
-                  </button>
-
-                  {openMenu === `group-${group.id}` && (
-                    <div className="SidebarActionMenu">
-                      <button type="button" onClick={() => setOpenMenu(null)}>Rename group</button>
-                      <button type="button" onClick={() => setOpenMenu(null)}>Add member</button>
-                      <button type="button" onClick={() => setOpenMenu(null)}>Leave group</button>
-                      <button type="button" onClick={() => setOpenMenu(null)}>Delete group</button>
-                    </div>
-                  )}
+                  />
                   </div>
                 ))}
               </div>
@@ -279,13 +363,11 @@ export default function DashboardSidebar({ userId, groups, selectedGroupId, onSe
                 {members.filter((member) => member.userId !== userId).map((member) => (
                   <div key={member.userId} className="SidebarActionRow">
                     <div className="SidebarFriend"><PresenceLight online={member.online} /><span>{member.username}</span></div>
-                    <button type="button" className="SidebarEditButton" aria-label={`Actions for ${member.username}`} onClick={(event) => {
-                      event.stopPropagation();
-                      setOpenMenu((current) => current === `member-${member.userId}` ? null : `member-${member.userId}`);
-                    }}><MoreHorizontal size={16} /></button>
-                    {openMenu === `member-${member.userId}` ? <div className="SidebarActionMenu">
-                      <button type="button" onClick={() => setOpenMenu(null)}>Remove member</button>
-                    </div> : null}
+                    <ActionMenu
+                      label={`Actions for ${member.username}`}
+                      items={memberActions(member)}
+                      className="SidebarEditButton"
+                    />
                   </div>
                 ))}
               </div>
@@ -343,6 +425,35 @@ export default function DashboardSidebar({ userId, groups, selectedGroupId, onSe
           onCancel={cancelFriendRequest}
           onRemove={removeFriend}
         />
+        {nameDialog && (
+          <GroupNameDialog
+            title={nameDialog.group ? "Rename group" : "New group"}
+            submitLabel={nameDialog.group ? "Rename" : "Create"}
+            initialName={nameDialog.group?.name}
+            onSubmit={(name) => (nameDialog.group ? renameGroup(nameDialog.group, name) : createGroup(name))}
+            onClose={() => setNameDialog(null)}
+          />
+        )}
+        {addMemberGroup && (
+          <AddMemberDialog
+            group={addMemberGroup}
+            friends={friendsData.friends}
+            onClose={() => setAddMemberGroup(null)}
+            onAdded={() => void refreshMembers().catch(console.error)}
+          />
+        )}
+        {pendingConfirm && (
+          <ConfirmWindow
+            title={pendingConfirm.title}
+            message={pendingConfirm.message}
+            confirmLabel={pendingConfirm.confirmLabel}
+            onCancel={() => setPendingConfirm(null)}
+            onConfirm={() => {
+              setPendingConfirm(null);
+              void pendingConfirm.run();
+            }}
+          />
+        )}
       </div>
     </aside>
   );
