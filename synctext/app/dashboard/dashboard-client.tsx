@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { usePoll } from "@/hooks/use-poll";
 
 import "./Dashboard.css";
 import { useRouter } from "next/navigation";
@@ -42,30 +43,34 @@ export default function DashboardClient({ userId, username, avatarUrl }: UserPro
   // selected group is gone.
   const selectedGroup = groups.find((group) => group.id === selectedGroupId) ?? groups.at(0);
 
-  // Groups and documents load together; documents are then filtered by group.
-  useEffect(() => {
-    const controller = new AbortController();
-
-    Promise.all([listGroups_api(controller.signal), listDocuments_api(controller.signal)])
-      .then(([groupList, documentList]) => {
-        setGroups(groupList);
-        setDocuments(documentList);
-      })
-      .catch(() => {
-        if (!controller.signal.aborted) setLoadError("Failed to load your documents. Please try again.");
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setIsLoading(false);
-      });
-
-    return () => controller.abort();
+  // Groups and documents load together, then every 30 s; documents are filtered
+  // by group. A failed load shows an error until the next one succeeds.
+  const loadLists = useCallback(async (signal: AbortSignal) => {
+    try {
+      const [groupList, documentList] = await Promise.all([listGroups_api(signal), listDocuments_api(signal)]);
+      setGroups(groupList);
+      setDocuments(documentList);
+      setLoadError("");
+    } catch {
+      if (!signal.aborted) setLoadError("Failed to load your documents. Please try again.");
+    } finally {
+      if (!signal.aborted) setIsLoading(false);
+    }
   }, []);
+  const cancelPoll = usePoll(loadLists);
 
   // After a group action: a deleted or left group drops out, and the selection
   // falls back to the private space on its own.
   async function refreshGroups() {
+    cancelPoll();
     setGroups(await listGroups_api());
   }
+
+  // A local change to the documents wins over a poll answer that left before it.
+  const updateDocuments: typeof setDocuments = (update) => {
+    cancelPoll();
+    setDocuments(update);
+  };
 
   async function createDocument() {
     if (isCreatingDocument || !selectedGroup) return;
@@ -156,7 +161,7 @@ export default function DashboardClient({ userId, username, avatarUrl }: UserPro
                 userId={userId}
                 isPrivateSpace={selectedGroup?.isPrivateSpace ?? true}
                 documents={documents.filter((doc) => doc.groupId === selectedGroup?.id)}
-                setDocuments={setDocuments}
+                setDocuments={updateDocuments}
                 isLoading={isLoading}
                 loadError={loadError}
                 search={search}

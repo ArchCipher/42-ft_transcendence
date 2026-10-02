@@ -7,7 +7,8 @@ import InputBox from "@/app/components/form/InputBox";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { FriendUser, FriendsResponse } from "@/lib/friends/types";
 import type { GroupMemberSummary, GroupSummary } from "@/lib/groups/types";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { usePoll } from "@/hooks/use-poll";
 import { Plus } from "lucide-react";
 import ConfirmWindow from "@/app/components/feedback/ConfirmWindow";
 import FriendIdentity from "./FriendIdentity";
@@ -44,8 +45,6 @@ const EMPTY_FRIENDS: FriendsResponse = {
   incomingRequests: [],
   outgoingRequests: [],
 };
-
-const PRESENCE_POLL_MS = 30_000;
 
 function PresenceLight({ online }: { online: boolean }) {
   const label = online ? "Online" : "Offline";
@@ -93,43 +92,9 @@ export default function DashboardSidebar({ userId, groups, selectedGroupId, onSe
     if (selectedGroupId) setMembers(await listMembers_api(selectedGroupId, signal));
   }, [selectedGroupId]);
 
-  useEffect(() => {
-    if (document.visibilityState !== "visible") return;
-
-    let controller: AbortController | null = null;
-    const refresh = () => {
-      controller?.abort();
-      controller = new AbortController();
-      // Friends always, even folded: the incoming-requests badge depends on them.
-      const requests: Promise<unknown>[] = [refreshFriends(controller.signal)];
-
-      if (membersOpen && selectedGroupId) {
-        requests.push(refreshMembers(controller.signal));
-      }
-
-      void Promise.allSettled(requests).then((results) => {
-        for (const result of results) {
-          if (result.status === "rejected" &&
-            !(result.reason instanceof DOMException && result.reason.name === "AbortError")) {
-            console.error("Failed to refresh presence", result.reason);
-          }
-        }
-      });
-    };
-
-    refresh();
-    const intervalId = window.setInterval(refresh, PRESENCE_POLL_MS);
-    const onVisibilityChange = () => {
-      if (document.visibilityState === "visible") refresh();
-    };
-    document.addEventListener("visibilitychange", onVisibilityChange);
-
-    return () => {
-      controller?.abort();
-      window.clearInterval(intervalId);
-      document.removeEventListener("visibilitychange", onVisibilityChange);
-    };
-  }, [membersOpen, refreshFriends, refreshMembers, selectedGroupId]);
+  // Friends always, even folded: the incoming-requests badge depends on them.
+  usePoll(refreshFriends);
+  usePoll(refreshMembers, membersOpen && selectedGroupId !== null);
 
   const memberIds = useMemo(() => new Set(members.map(({ userId }) => userId)), [members]);
   const sortedFriends = useMemo(
