@@ -1,4 +1,4 @@
-import type { DocumentSummary } from "@/lib/documents/documents";
+import type { DocumentEditorSummary, DocumentSummary } from "@/lib/documents/documents";
 import { request } from "../request";
 
 export function createDocument_api(groupId: string): Promise<DocumentSummary> {
@@ -8,53 +8,21 @@ export function createDocument_api(groupId: string): Promise<DocumentSummary> {
   });
 }
 
-export async function listDocuments_api(
-  signal?: AbortSignal,
-): Promise<DocumentSummary[]> {
-  const response = await fetch("/api/documents", {
-    cache: "no-store",
-    signal,
-  });
+const documentUrl = (id: string) => `/api/documents/${encodeURIComponent(id)}`;
 
-  if (!response.ok) {
-    throw new Error("Failed to list documents");
-  }
-
-  return response.json();
+export function listDocuments_api(signal?: AbortSignal): Promise<DocumentSummary[]> {
+  return request<DocumentSummary[]>("/api/documents", { signal });
 }
 
-export async function getDocument_api(id: string): Promise<DocumentSummary> {
-  const response = await fetch(`/api/documents/${encodeURIComponent(id)}`, {
-    cache: "no-store",
-  });
-  if (!response.ok) {
-    throw new Error("Failed to fetch document");
-  }
-
-  return response.json();
-}
-
-export async function renameDocument_api(
-  id: string,
-  title: string,
-): Promise<DocumentSummary> {
-  const response = await fetch(`/api/documents/${encodeURIComponent(id)}`, {
+export function renameDocument_api(id: string, title: string): Promise<DocumentSummary> {
+  return request<DocumentSummary>(documentUrl(id), {
     method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
     body: JSON.stringify({ title }),
   });
-
-  if (!response.ok) {
-    throw new Error("Failed to rename document");
-  }
-
-  return response.json();
 }
 
 export async function deleteDocument_api(id: string): Promise<void> {
-  const response = await fetch(`/api/documents/${encodeURIComponent(id)}`, {
+  const response = await fetch(documentUrl(id), {
     method: "DELETE",
   });
 
@@ -62,4 +30,15 @@ export async function deleteDocument_api(id: string): Promise<void> {
   if (!response.ok && response.status !== 404) {
     throw new Error("Failed to delete document");
   }
+}
+
+export function listEditors_api(id: string): Promise<DocumentEditorSummary[]> {
+  return request<DocumentEditorSummary[]>(`${documentUrl(id)}/grants`);
+}
+
+// Grant (PUT) or revoke (DELETE) edit rights on one document.
+export function setEditor_api(id: string, userId: string, canEdit: boolean): Promise<void> {
+  return request(`${documentUrl(id)}/grants/${encodeURIComponent(userId)}`, {
+    method: canEdit ? "PUT" : "DELETE",
+  });
 }

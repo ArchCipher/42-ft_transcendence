@@ -13,10 +13,8 @@ export type DocumentSummary = {
     id: string;
     username: string;
   } | null;
-  // Both are canEdit today: an editor may rename and delete. Kept as two
-  // fields so the dashboard's props do not change.
-  canRename: boolean;
-  canDelete: boolean;
+  // An editor may write, rename, delete, and change the document's editors.
+  canEdit: boolean;
 };
 
 /** One member of a document's group, and whether they may edit it. */
@@ -56,8 +54,6 @@ export function toDocumentSummary(
   document: SummaryDocument,
   rights: Rights,
 ): DocumentSummary {
-  const editable = canEdit(rights);
-
   return {
     id: document.id,
     title: document.title,
@@ -65,7 +61,6 @@ export function toDocumentSummary(
     updatedAt: document.updatedAt.toISOString(),
     groupId: rights.groupId,
     createdBy: document.createdBy,
-    canRename: editable,
-    canDelete: editable,
+    canEdit: canEdit(rights),
   };
 }

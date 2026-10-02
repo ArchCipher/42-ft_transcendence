@@ -146,6 +146,8 @@ export default function DashboardClient({ userId, username, avatarUrl }: UserPro
 
             <div className="DashboardScrollArea">
               <DocumentsDashboard
+                userId={userId}
+                isPrivateSpace={selectedGroup?.isPrivateSpace ?? true}
                 documents={documents.filter((doc) => doc.groupId === selectedGroup?.id)}
                 setDocuments={setDocuments}
                 isLoading={isLoading}

@@ -1,7 +1,8 @@
 import type { FriendUser } from "@/lib/friends/types";
 
 type FriendIdentityProps = {
-  friend: FriendUser;
+  // No presence light when online is unknown, as for document editors.
+  friend: Pick<FriendUser, "username" | "avatarUrl"> & { online?: boolean };
   compact?: boolean;
 };
 
@@ -17,7 +18,9 @@ export default function FriendIdentity({ friend, compact = false }: FriendIdenti
           <img src={friend.avatarUrl} alt="" />
         ) : initial}
       </span>
-      <span className={`FriendStatus ${friend.online ? "FriendOnline" : "FriendOffline"}`} aria-label={friend.online ? "Online" : "Offline"} role="img" />
+      {friend.online !== undefined && (
+        <span className={`FriendStatus ${friend.online ? "FriendOnline" : "FriendOffline"}`} aria-label={friend.online ? "Online" : "Offline"} role="img" />
+      )}
       <span className="FriendIdentityName">{friend.username}</span>
     </div>
   );
