@@ -73,7 +73,6 @@ export default function DashboardSidebar({ userId, groups, selectedGroupId, onSe
   const [friendActionKey, setFriendActionKey] = useState<string | null>(null);
   const [friendFeedback, setFriendFeedback] = useState<FriendFeedback>(null);
 
-  const friendsOpen = openSections.includes("friends");
   const membersOpen = openSections.includes("members");
 
   const refreshFriends = useCallback(async (signal?: AbortSignal) => {
@@ -95,17 +94,15 @@ export default function DashboardSidebar({ userId, groups, selectedGroupId, onSe
   }, [selectedGroupId]);
 
   useEffect(() => {
-    if ((!friendsOpen && !(membersOpen && selectedGroupId)) || document.visibilityState !== "visible") return;
+    if (document.visibilityState !== "visible") return;
 
     let controller: AbortController | null = null;
     const refresh = () => {
       controller?.abort();
       controller = new AbortController();
-      const requests: Promise<unknown>[] = [];
+      // Friends always, even folded: the incoming-requests badge depends on them.
+      const requests: Promise<unknown>[] = [refreshFriends(controller.signal)];
 
-      if (friendsOpen) {
-        requests.push(refreshFriends(controller.signal));
-      }
       if (membersOpen && selectedGroupId) {
         requests.push(refreshMembers(controller.signal));
       }
@@ -132,7 +129,7 @@ export default function DashboardSidebar({ userId, groups, selectedGroupId, onSe
       window.clearInterval(intervalId);
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
-  }, [friendsOpen, membersOpen, refreshFriends, refreshMembers, selectedGroupId]);
+  }, [membersOpen, refreshFriends, refreshMembers, selectedGroupId]);
 
   const memberIds = useMemo(() => new Set(members.map(({ userId }) => userId)), [members]);
   const sortedFriends = useMemo(
