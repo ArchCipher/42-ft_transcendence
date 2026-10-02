@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 import { SESSION_COOKIE_NAME } from "@synctext/shared/constants";
+import { appUrl } from "./lib/app-url";
 
 /*
 Default-deny proxy
@@ -37,11 +38,8 @@ export function proxy(request: NextRequest) {
   if (isPublic) return NextResponse.next();
 
   const session = request.cookies.has(SESSION_COOKIE_NAME);
-  if (!session) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/auth";
-    return NextResponse.redirect(url);
-  }
+  if (!session)
+    return NextResponse.redirect(appUrl("/auth"));
 
   return NextResponse.next();
 }

@@ -10,6 +10,7 @@ import {
   ipKey,
   ipLimiter,
 } from "@/lib/auth/rate-limit";
+import { appUrl } from "@/lib/app-url";
 
 /*
 GET /api/auth/oauth/callback
@@ -22,11 +23,11 @@ The order of operations below IS the security property:
 */
 
 function fail(
-  request: Request,
   code: string,
-  path: "/auth" | "/profile" = "/auth",
+  purpose?: "SIGN_IN" | "LINK" | null,
 ): Response {
-  return Response.redirect(new URL(`${path}?error=${code}`, request.url));
+  const path = purpose === "LINK" ? "/profile" : "/auth";
+  return Response.redirect(appUrl(`${path}?error=${code}`));
 }
 
 export async function GET(request: Request) {
@@ -36,7 +37,7 @@ export async function GET(request: Request) {
   const params = new URL(request.url).searchParams;
 
   const state = params.get("state");
-  if (!state) return fail(request, "invalid_state");
+  if (!state) return fail("invalid_state");
 
   let purpose: "SIGN_IN" | "LINK" | null = null;
   try {
@@ -45,7 +46,7 @@ export async function GET(request: Request) {
 
     const clientAddress = clientIp(request);
     if ((await ipLimiter.blockedRemaining(ipKey(clientAddress))) > 0)
-      return fail(request, "too_many_attempts");
+      return fail("too_many_attempts", purpose);
 
     const identity = await exchangeCode({
       requestUrl: request.url,
@@ -57,12 +58,12 @@ export async function GET(request: Request) {
     const emailKey = accountKey(identity.email);
 
     if ((await accountLimiter.blockedRemaining(emailKey)) > 0)
-      return fail(request, "too_many_attempts");
+      return fail("too_many_attempts", purpose);
 
     if (transaction.purpose === "LINK") {
-      if (!linkUserId) return fail(request, "invalid_state");
+      if (!linkUserId) return fail("invalid_state", purpose);
       await linkAccount(linkUserId, identity);
-      return Response.redirect(new URL("/profile?linked=google", request.url));
+      return Response.redirect(appUrl("/profile?linked=google"));
     }
 
     const userId = await signInOrCreate(identity);
@@ -72,21 +73,17 @@ export async function GET(request: Request) {
       userAgent: request.headers.get("user-agent"),
     });
 
-    return Response.redirect(new URL(redirectTo, request.url));
+    return Response.redirect(appUrl(redirectTo));
   } catch (error) {
     if (error instanceof oauth.AuthorizationResponseError) {
-      return fail(request, "denied");
+      return fail("denied", purpose);
     }
     if (error instanceof OAuthError) {
       console.error("[oauth] callback failed", error.code, error.message);
-      return fail(
-        request,
-        error.code,
-        purpose === "LINK" ? "/profile" : "/auth",
-      );
+      return fail(error.code, purpose);
     }
 
     console.error("[oauth] callback failed", error);
-    return fail(request, "invalid_code");
+    return fail("invalid_code", purpose);
   }
 }

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { logoutCurrentSession } from "@/lib/auth/session";
+import { appUrl } from "@/lib/app-url";
 
 /*
 API Response contracts: /api/auth/logout
@@ -20,10 +21,7 @@ export async function POST() {
   return Response.json({ ok: true }, { status: 200 });
 }
 
-export async function GET(request: Request) {
+export async function GET() {
   await logoutCurrentSession();
-  return NextResponse.redirect(
-    new URL("/auth?verify=logged-out", request.url),
-    303,
-  );
+  return NextResponse.redirect(appUrl("/auth?verify=logged-out"), 303);
 }

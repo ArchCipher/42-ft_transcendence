@@ -4,6 +4,7 @@ import { randomBytes } from "node:crypto";
 import { prisma as db } from "@synctext/db";
 import { OAuthError, PROVIDER, type VerifiedIdentity } from "./identity";
 import { USERNAME_MAX } from "@synctext/shared";
+import { createUserWithPrivateSpace } from "../create-user";
 
 /*
 Account resolution and the provider-linking policy.
@@ -75,8 +76,8 @@ export async function signInOrCreate(
 
   const username = await uniqueUsername(identity);
 
-  const user = await db.user.create({
-    data: {
+  return await db.$transaction(async (tx) => {
+    return createUserWithPrivateSpace(tx, {
       email: identity.email,
       username,
       passwordHash: null,
@@ -89,11 +90,8 @@ export async function signInOrCreate(
           emailAtLinkTime: identity.email,
         },
       },
-    },
-    select: { id: true },
+    });
   });
-
-  return user.id;
 }
 
 /*

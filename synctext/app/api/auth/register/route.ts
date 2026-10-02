@@ -8,7 +8,7 @@ import {
   registerLimiter,
 } from "@/lib/auth/rate-limit";
 import { hashPassword } from "@/lib/auth/password";
-import { prisma as db, Prisma, createPrivateSpace } from "@synctext/db";
+import { prisma as db, Prisma } from "@synctext/db";
 import {
   generateVerificationToken,
   hashVerificationToken,
@@ -16,6 +16,7 @@ import {
 } from "@/lib/auth/verification";
 import { sendVerificationEmail } from "@/lib/auth/email";
 import { parseRequest } from "@/lib/auth/parse-request";
+import { createUserWithPrivateSpace } from "@/lib/auth/create-user";
 
 /*
 Register Handler: validation -> rate limit -> create user -> verification email
@@ -67,13 +68,14 @@ export async function POST(request: Request) {
   const token = generateVerificationToken();
   try {
     await db.$transaction(async (tx) => {
-      const user = await tx.user.create({
-        data: { email: input.email, username: input.username, passwordHash },
+      const userId = await createUserWithPrivateSpace(tx, {
+        email: input.email,
+        username: input.username,
+        passwordHash,
       });
-      await createPrivateSpace(tx, user.id);
       await tx.emailVerificationToken.create({
         data: {
-          userId: user.id,
+          userId,
           tokenHash: hashVerificationToken(token),
           expiresAt: verificationExpiresAt(),
         },
