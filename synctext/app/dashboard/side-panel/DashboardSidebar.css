@@ -117,6 +117,11 @@
   color: rgba(255, 255, 255, 0.82);
 }
 
+.SidebarFriend .SidebarRole {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+}
+
 .FriendStatus {
   width: 8px;
   height: 8px;

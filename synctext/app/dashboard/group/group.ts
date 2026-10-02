@@ -33,7 +33,8 @@ export function addMember_api(id: string, userId: string): Promise<void> {
   return request(`${groupUrl(id)}/members`, { method: "POST", body: JSON.stringify({ userId }) });
 }
 
-export function setMemberRole_api(id: string, userId: string, role: "ADMIN" | "MEMBER"): Promise<void> {
+// OWNER hands the group over: the caller becomes an admin.
+export function setMemberRole_api(id: string, userId: string, role: "OWNER" | "ADMIN" | "MEMBER"): Promise<void> {
   return request(memberUrl(id, userId), { method: "PATCH", body: JSON.stringify({ role }) });
 }
 

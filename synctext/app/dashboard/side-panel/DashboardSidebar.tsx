@@ -248,7 +248,7 @@ export default function DashboardSidebar({ userId, groups, selectedGroupId, onSe
       onSelect: () => setPendingConfirm({
         title: `Leave ${group.name}?`,
         message: isOwner
-          ? "Ownership passes to the oldest admin, else the oldest member. If you are the last member, the group and its documents are deleted."
+          ? "Ownership passes to the oldest admin, else the oldest member. If you are the last member, the group and its documents are deleted. To choose the next owner, use Make owner in the members list first."
           : "You will lose access to its documents.",
         confirmLabel: "Leave",
         run: () => runAction(() => removeMember_api(group.id, userId), onGroupsChanged),
@@ -269,8 +269,8 @@ export default function DashboardSidebar({ userId, groups, selectedGroupId, onSe
     return items;
   }
 
-  // A member's "…" menu: the owner promotes, demotes and removes anyone; an admin
-  // removes plain members. Nobody acts on the owner.
+  // A member's "…" menu: the owner promotes, demotes, hands the group over and
+  // removes anyone; an admin removes plain members. Nobody acts on the owner.
   function memberActions(member: GroupMemberSummary): ActionItem[] {
     const groupId = selectedGroupId;
     if (!groupId || member.role === "OWNER") return [];
@@ -281,6 +281,18 @@ export default function DashboardSidebar({ userId, groups, selectedGroupId, onSe
       items.push({
         label: role === "ADMIN" ? "Make admin" : "Revoke admin",
         onSelect: () => void runAction(() => setMemberRole_api(groupId, member.userId, role), refreshMembers),
+      });
+      items.push({
+        label: "Make owner",
+        onSelect: () => setPendingConfirm({
+          title: `Make ${member.username} the owner?`,
+          message: "You become an admin and can no longer rename or delete the group.",
+          confirmLabel: "Make owner",
+          run: () => runAction(
+            () => setMemberRole_api(groupId, member.userId, "OWNER"),
+            () => Promise.all([onGroupsChanged(), refreshMembers()]),
+          ),
+        }),
       });
     }
     if (myRole === "OWNER" || (myRole === "ADMIN" && member.role === "MEMBER")) {
@@ -359,7 +371,11 @@ export default function DashboardSidebar({ userId, groups, selectedGroupId, onSe
               <div className="SidebarFriendList">
                 {members.filter((member) => member.userId !== userId).map((member) => (
                   <div key={member.userId} className="SidebarActionRow">
-                    <div className="SidebarFriend"><PresenceLight online={member.online} /><span>{member.username}</span></div>
+                    <div className="SidebarFriend">
+                      <PresenceLight online={member.online} />
+                      <span>{member.username}</span>
+                      {member.role !== "MEMBER" && <span className="SidebarRole">{member.role.toLowerCase()}</span>}
+                    </div>
                     <ActionMenu
                       label={`Actions for ${member.username}`}
                       items={memberActions(member)}

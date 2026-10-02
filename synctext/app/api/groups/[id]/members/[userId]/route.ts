@@ -10,14 +10,17 @@ import {
 } from "@/lib/api/responses";
 import { canAdminGroup, canOwnGroup, requireGroupRole } from "@/lib/permissions";
 import { leaveGroup, removeMember, setMemberRole } from "@/lib/groups/groups";
+import { transferOwnership } from "@/lib/groups/ownership";
 import { NextResponse } from "next/server";
 
 /*
 API Response contracts: /api/groups/[id]/members/[userId]
 
-  PATCH { role: "ADMIN" | "MEMBER" } canOwnGroup
+  PATCH { role: "OWNER" | "ADMIN" | "MEMBER" }
+                                     canOwnGroup. OWNER transfers the group:
+                                     the caller becomes an ADMIN.
         -> 200 { userId, role }
-        -> 400 { error }             role is neither ADMIN nor MEMBER
+        -> 400 { error }             role is not OWNER, ADMIN or MEMBER
         -> 401 { error }
         -> 403 { error }             member, but not the owner
         -> 404 { error }             caller or target not a member of this group
@@ -35,7 +38,7 @@ API Response contracts: /api/groups/[id]/members/[userId]
                                      space cannot be left
 */
 
-// Promote a member to admin, or demote an admin. Owner only.
+// Promote a member to admin, demote an admin, or hand the group over. Owner only.
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string; userId: string }> },
@@ -48,9 +51,9 @@ export async function PATCH(
     typeof body !== "object" ||
     body === null ||
     !("role" in body) ||
-    (body.role !== GroupRole.ADMIN && body.role !== GroupRole.MEMBER)
+    (body.role !== GroupRole.OWNER && body.role !== GroupRole.ADMIN && body.role !== GroupRole.MEMBER)
   ) {
-    return badRequest("role must be ADMIN or MEMBER");
+    return badRequest("role must be OWNER, ADMIN or MEMBER");
   }
   const role = body.role;
 
@@ -62,6 +65,13 @@ export async function PATCH(
   const targetRole = await requireGroupRole(db, userId, id);
   if (!targetRole) return notFound("Member");
   if (targetRole === GroupRole.OWNER) return conflict("The owner's role cannot be changed");
+
+  if (role === GroupRole.OWNER) {
+    const result = await transferOwnership(db, id, session.user.id, userId);
+    if (result === "not_member") return notFound("Member");
+    if (result === "not_owner") return forbidden();
+    return NextResponse.json({ userId, role });
+  }
 
   if (!(await setMemberRole(db, id, userId, role))) return notFound("Member");
 
