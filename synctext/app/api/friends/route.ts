@@ -7,6 +7,7 @@ import {
   unauthorized,
 } from "@/lib/api/responses";
 import type { FriendUser, FriendsResponse } from "@/lib/friends/types";
+import { isOnline } from "@/lib/presence";
 import { NextResponse } from "next/server";
 
 export async function GET() {
@@ -23,8 +24,8 @@ export async function GET() {
     select: {
       status: true,
       requestedById: true,
-      userA: { select: { id: true, username: true, avatarUrl: true } },
-      userB: { select: { id: true, username: true, avatarUrl: true } },
+      userA: { select: { id: true, username: true, avatarUrl: true, lastSeenAt: true } },
+      userB: { select: { id: true, username: true, avatarUrl: true, lastSeenAt: true } },
     },
   });
 
@@ -35,9 +36,15 @@ export async function GET() {
   };
 
   for (const friendship of friendships) {
-    const otherUser = friendship.userA.id === userId
+    const other = friendship.userA.id === userId
       ? friendship.userB
       : friendship.userA;
+    const otherUser: FriendUser = {
+      id: other.id,
+      username: other.username,
+      avatarUrl: other.avatarUrl,
+      online: isOnline(other.lastSeenAt),
+    };
 
     if (friendship.status === "ACCEPTED") {
       response.friends.push(otherUser);
@@ -85,6 +92,7 @@ export async function POST(request: Request) {
       id: true,
       username: true,
       avatarUrl: true,
+      lastSeenAt: true,
     },
     take: 2,
   });
@@ -152,7 +160,7 @@ export async function POST(request: Request) {
       return badRequest("Friendship changed, please try again");
     }
 
-    return NextResponse.json(otherUser, { status: 201 });
+    return NextResponse.json(toFriendUser(otherUser), { status: 201 });
   }
 
   try {
@@ -173,7 +181,7 @@ export async function POST(request: Request) {
     throw error;
   }
 
-  return NextResponse.json(otherUser, { status: 201 });
+  return NextResponse.json(toFriendUser(otherUser), { status: 201 });
 }
 
 export async function PATCH(request: Request) {
@@ -275,4 +283,18 @@ function isPrismaErrorCode(error: unknown, code: string) {
 
 function compareUsernames(firstUser: FriendUser, secondUser: FriendUser) {
   return firstUser.username.localeCompare(secondUser.username);
+}
+
+function toFriendUser(user: {
+  id: string;
+  username: string;
+  avatarUrl: string | null;
+  lastSeenAt: Date | null;
+}): FriendUser {
+  return {
+    id: user.id,
+    username: user.username,
+    avatarUrl: user.avatarUrl,
+    online: isOnline(user.lastSeenAt),
+  };
 }

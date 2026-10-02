@@ -31,9 +31,9 @@ doc editor etc).
 1. Server-side authority: polls GET /api/session every POLL_MS and re-checks on
    visibilitychange / focus / pageshow. This is READ-ONLY, it detects idle
    sessions but never refreshes them.
-2. Real presence: pointerdown / keydown gestures ping POST /api/session/activity.
-   This refreshes lastUsedAt server-side, so a user doing client-side-only
-   activity stays logged in.
+2. Real presence: a visible page and pointerdown / keydown gestures ping
+   POST /api/session/activity. This refreshes session activity and the
+   user's presence timestamp, so client-side-only activity stays visible.
 3. Cross-tab sync via BroadcastChannel: another tab's session event is broadcast
    (sender lives in lib/auth/session-state.ts). A signed-out event clears state
    + redirects to login page.
@@ -78,16 +78,27 @@ export function SessionGuard({ children }: { children: ReactNode }) {
       if (message.action === "signed-out") router.replace(LOGGED_OUT_URL);
     };
 
-    // ask the server every POLL_MS, on focus / visibility.
+    // Announce a newly visible protected page, then ask the server about
+    // session validity every POLL_MS. The GET is deliberately read-only.
+    touchSession();
     void checkSession();
     const id = setInterval(() => void checkSession(), POLL_MS);
 
     const onVisibility = () => {
-      if (document.visibilityState === "visible") void checkSession();
+      if (document.visibilityState === "visible") {
+        touchSession();
+        void checkSession();
+      }
     };
-    const onFocus = () => void checkSession();
+    const onFocus = () => {
+      touchSession();
+      void checkSession();
+    };
     const onPageShow = (e: PageTransitionEvent) => {
-      if (e.persisted) void checkSession();
+      if (e.persisted) {
+        touchSession();
+        void checkSession();
+      }
     };
 
     const onPointerDown = () => touchSession();
