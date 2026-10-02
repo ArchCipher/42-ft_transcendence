@@ -132,6 +132,341 @@
   background: #6b7280;
 }
 
+.FriendIdentity {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--app-text-white);
+}
+
+.FriendIdentityCompact {
+  width: 100%;
+  min-height: 40px;
+  padding: 6px;
+}
+
+.FriendAvatar {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(111, 211, 255, 0.45);
+  border-radius: 50%;
+  background: rgba(111, 211, 255, 0.1);
+  color: var(--app-accent-neon);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.FriendAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.FriendIdentity .FriendStatus {
+  box-shadow: 0 0 0 2px var(--app-panel-bg);
+}
+
+.FriendIdentityName {
+  min-width: 0;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.88);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: var(--dashboard-text-size);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.FriendsRequestBadge {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--app-accent-yellow);
+  color: #10233d;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.FriendsSidebarActions {
+  display: grid;
+  gap: 8px;
+  padding: 0 0 14px;
+}
+
+.FriendsSidebarActions .NewFriendButton {
+  width: 100%;
+  min-height: 40px;
+  display: flex;
+  justify-content: stretch;
+  border-color: rgba(111, 211, 255, 0.42);
+}
+
+.FriendsSidebarActions .NewFriendButton > span {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.FriendsManageButton {
+  justify-self: start;
+  padding: 2px 0;
+  border: 0;
+  background: transparent;
+  color: rgba(111, 211, 255, 0.86);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.FriendsManageButton:hover {
+  color: var(--app-text-white);
+}
+
+.FriendsManageButton:focus-visible {
+  outline: 2px solid var(--app-accent-yellow);
+  outline-offset: 3px;
+}
+
+.FriendsSidebarState,
+.FriendsEmpty {
+  margin: 4px 0;
+  color: rgba(255, 255, 255, 0.58);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.FriendsManagerDialog {
+  max-height: min(720px, calc(100dvh - 32px));
+  max-width: min(680px, calc(100vw - 32px));
+  overflow-y: auto;
+  background: rgb(14, 32, 65);
+  color: var(--app-text-white);
+  border: 1px solid rgba(111, 211, 255, 0.48);
+  border-radius: 0;
+  box-shadow: 0 18px 52px rgba(0, 0, 0, 0.48);
+}
+
+.FriendsManagerDialog [data-slot="dialog-title"] {
+  color: var(--app-text-white);
+  font-family: var(--font-geist-mono), monospace;
+  letter-spacing: 0.06em;
+}
+
+.FriendsManagerDialog [data-slot="dialog-description"] {
+  color: rgba(255, 255, 255, 0.64);
+}
+
+.FriendsInviteForm {
+  display: grid;
+  gap: 8px;
+}
+
+.FriendsInviteForm label,
+.FriendsSectionHeading h3 {
+  color: rgba(255, 255, 255, 0.82);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.FriendsInviteControls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.FriendsInviteControls input {
+  min-width: 0;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid rgba(111, 211, 255, 0.42);
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--app-text-white);
+  font-family: var(--font-geist-mono), monospace;
+  outline: none;
+}
+
+.FriendsInviteControls input:focus-visible {
+  border-color: var(--app-accent-yellow);
+  box-shadow: 0 0 0 2px rgba(255, 221, 104, 0.26);
+}
+
+.FriendsManagerDialog .FriendsDialogPrimary {
+  border-color: var(--app-accent-yellow);
+  background: var(--app-accent-yellow);
+  color: #10233d;
+}
+
+.FriendsManagerDialog .FriendsDialogPrimary:hover:not(:disabled) {
+  background: #ffe36e;
+}
+
+.FriendsManagerDialog .FriendsDialogQuiet {
+  border: 1px solid rgba(111, 211, 255, 0.32);
+  color: rgba(220, 246, 255, 0.8);
+}
+
+.FriendsManagerDialog .FriendsDialogQuiet:hover:not(:disabled) {
+  background: rgba(111, 211, 255, 0.12);
+  color: var(--app-text-white);
+}
+
+.FriendsManagerDialog .FriendsDialogDanger {
+  border: 1px solid rgba(255, 142, 142, 0.45);
+  background: rgba(255, 90, 90, 0.1);
+  color: #ffb0b0;
+}
+
+.FriendsManagerDialog .FriendsDialogDanger:hover:not(:disabled) {
+  background: rgba(255, 90, 90, 0.2);
+  color: #ffd4d4;
+}
+
+.FriendsFeedback {
+  margin: 0;
+  padding: 9px 10px;
+  border: 1px solid currentColor;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12px;
+}
+
+.FriendsFeedbackSuccess { color: #99e2bd; background: rgba(74, 222, 128, 0.1); }
+.FriendsFeedbackError { color: #ffadad; background: rgba(255, 90, 90, 0.1); }
+
+.FriendsManagerSections {
+  display: grid;
+  gap: 18px;
+}
+
+.FriendsManagerSections section {
+  display: grid;
+  gap: 8px;
+}
+
+.FriendsManagerSections section + section {
+  padding-top: 16px;
+  border-top: 1px solid rgba(111, 211, 255, 0.16);
+}
+
+.FriendsSectionHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.FriendsSectionHeading h3 { margin: 0; }
+
+.FriendsSectionHeading span {
+  color: var(--app-accent-neon);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12px;
+}
+
+.FriendsManagerList {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.FriendsManagerRow {
+  min-height: 44px;
+  padding: 7px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid rgba(111, 211, 255, 0.16);
+  background: rgba(255, 255, 255, 0.02);
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
+
+.FriendsManagerRow:hover {
+  border-color: rgba(111, 211, 255, 0.32);
+  background: rgba(111, 211, 255, 0.06);
+}
+
+.FriendsManagerRowActions {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.FriendsRemoveDialog {
+  background: rgb(14, 32, 65);
+  color: var(--app-text-white);
+  border: 1px solid rgba(255, 142, 142, 0.38);
+  border-radius: 0;
+}
+
+.FriendsRemoveDialog [data-slot="alert-dialog-title"] {
+  color: var(--app-text-white);
+  font-family: var(--font-geist-mono), monospace;
+  letter-spacing: 0.04em;
+}
+
+.FriendsRemoveDialog [data-slot="alert-dialog-description"] {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.FriendsRemoveDialog [data-slot="alert-dialog-footer"] {
+  border-color: rgba(111, 211, 255, 0.18);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.FriendsRemoveDialog .FriendsRemoveCancel {
+  border-color: rgba(111, 211, 255, 0.38);
+  background: transparent;
+  color: rgba(220, 246, 255, 0.86);
+}
+
+.FriendsRemoveDialog .FriendsRemoveAction {
+  border: 1px solid rgba(255, 142, 142, 0.45);
+  background: rgba(255, 90, 90, 0.16);
+  color: #ffd4d4;
+}
+
+@media (max-width: 600px) {
+  .FriendsManagerDialog {
+    width: 100%;
+    max-width: 100%;
+    max-height: 100dvh;
+    min-height: 100dvh;
+    border-right: 0;
+    border-left: 0;
+  }
+
+  .FriendsInviteControls { grid-template-columns: 1fr; }
+
+  .FriendsManagerRow {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .FriendsManagerRowActions { width: 100%; justify-content: flex-start; }
+}
+
 .SidebarAddGroup {
   padding: 12px 0 16px;
 }
