@@ -22,29 +22,24 @@ export async function GET(request: Request) {
       { status: 400 },
     );
 
-  const tokenHash = hashVerificationToken(parsed.data.token);
   const now = new Date();
 
-  // Claim the token and mark the account verified in one transaction.
+  // Claim the token and verify the account atomically
+  const tokenHash = hashVerificationToken(parsed.data.token);
   const verified = await db.$transaction(async (tx) => {
-    const rows = await tx.$queryRaw<
-      { id: string; userId: string; usedAt: Date | null; expiresAt: Date }[]
-    >`
-      SELECT "id", "userId", "usedAt", "expiresAt"
-      FROM "EmailVerificationToken"
-      WHERE "tokenHash" = ${tokenHash}
-      FOR UPDATE
-    `;
-
-    const record = rows[0];
-
+    const record = await tx.emailVerificationToken.findUnique({
+      where: { tokenHash },
+      select: { id: true, userId: true, usedAt: true, expiresAt: true },
+    });
     if (!record || record.usedAt !== null || record.expiresAt <= now)
       return false;
 
-    await tx.emailVerificationToken.update({
-      where: { id: record.id },
+    // atomic conditional claim: only one concurrent request gets count === 1
+    const claim = await tx.emailVerificationToken.updateMany({
+      where: { id: record.id, usedAt: null },
       data: { usedAt: now },
-    });
+    }); // update token
+    if (claim.count === 0) return false;
 
     await tx.user.update({
       where: { id: record.userId },

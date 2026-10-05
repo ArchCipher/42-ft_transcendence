@@ -47,7 +47,7 @@ export async function POST(request: Request) {
     },
   });
 
-  // Accounts whose last verification link is gone. 
+  // Accounts whose last verification link is gone.
   const unverified = await db.user.findMany({
     where: {
       emailVerifiedAt: null,
