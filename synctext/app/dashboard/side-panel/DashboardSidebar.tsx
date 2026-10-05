@@ -279,7 +279,7 @@ export default function DashboardSidebar({ userId, groups, selectedGroupId, onSe
     <aside className={`DashboardSidebar ${isOpen ? "DashboardSidebarOpen" : ""}`}>
       <div className="SidebarContent">
         {groupError ? <p className="FriendsFeedback FriendsFeedbackError" role="alert">{groupError}</p> : null}
-        <Accordion value={openSections} onValueChange={setOpenSections} className="SidebarAccordion">
+        <Accordion multiple value={openSections} onValueChange={setOpenSections} className="SidebarAccordion">
         <AccordionItem value="groups" className="SidebarAccordionItem">
           <AccordionTrigger className="SidebarAccordionTrigger">
             <TechText>
