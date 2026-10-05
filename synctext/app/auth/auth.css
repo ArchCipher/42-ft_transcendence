@@ -122,6 +122,21 @@
   .AuthLinks a { transition: none; }
 }
 
+.PasswordStrengthBar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+
+.PasswordStrengthSegment {
+  height: 4px;
+  background: var(--app-line-dim);
+}
+
+.PasswordStrengthSegmentActive {
+  background: var(--auth-signal);
+}
+
 .PasswordStrength {
   display: flex;
   flex-direction: column;

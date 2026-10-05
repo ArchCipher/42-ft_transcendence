@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ChangeEvent } from "react";
+import { useMemo, useState, type ChangeEvent } from "react";
 import Link from "next/link";
 
 import styles from "./Profile.module.css";
@@ -9,6 +9,8 @@ import Button from "@/app/components/ui/Button";
 import Field from "@/app/components/form/Field";
 import type { Status } from "./profile-client";
 import ErrorNote from "../components/form/ErrorNote";
+
+import { isPasswordStrong } from "@/lib/auth/password-strength";
 
 const FALLBACK = "Something went wrong. Please try again.";
 
@@ -20,8 +22,12 @@ type PasswordFieldErrors = {
 
 export default function PasswordForm({
   onStatus,
+  username,
+  email,
 }: {
   onStatus: (status: Status) => void;
+  username: string;
+  email: string;
 }) {
   const [showForm, setShowForm] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -31,6 +37,13 @@ export default function PasswordForm({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<PasswordFieldErrors>({});
+
+  const passwordStrength = useMemo(
+    () => newPassword
+        ? isPasswordStrong(newPassword, [email, username])
+        : null,
+        [newPassword, email, username]
+  );
 
   async function handleChangePassword() {
     setError(null);
@@ -143,6 +156,36 @@ export default function PasswordForm({
             onChange={onFieldChange(setNewPassword, "newPassword")}
             autoComplete="new-password"
           />
+
+          {passwordStrength && (
+            <div className="PasswordStrength">
+              <TechText className="text-xs">
+                Password strength: {passwordStrength.score}/4
+              </TechText>
+
+              <div
+                className="PasswordStrengthBar"
+                aria-label={`Password strength ${passwordStrength.score} out of 4`}
+              >
+                {[1, 2, 3, 4].map((level) => (
+                  <span
+                    key={level}
+                    className={
+                      level <= passwordStrength.score
+                        ? "PasswordStrengthSegment PasswordStrengthSegmentActive"
+                        : "PasswordStrengthSegment"
+                    }
+                  />
+                ))}
+              </div>
+
+              {passwordStrength.feedback && (
+                <TechText className="text-xs">
+                  {passwordStrength.feedback}
+                </TechText>
+              )}
+            </div>
+          )}
 
           <Field
             id="profile-confirm-password"

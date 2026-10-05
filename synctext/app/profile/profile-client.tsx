@@ -153,7 +153,11 @@ export default function ProfileClient({ initial }: { initial: ProfileInput }) {
           tabIndex={-1}
           autoComplete="off"
         />
-        <PasswordForm onStatus={setStatus} />
+        <PasswordForm
+          onStatus={setStatus}
+          username={saved.username}
+          email={initial.email}
+        />
 
         <div className={styles.actionsRow}>
           <Button
