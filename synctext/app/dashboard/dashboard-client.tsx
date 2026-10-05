@@ -45,18 +45,20 @@ export default function DashboardClient({ userId, username, avatarUrl }: UserPro
   const selectedGroup = groups.find((group) => group.id === selectedGroupId) ?? groups.at(0);
 
   // Groups and documents load together, then every 30 s; documents are filtered
-  // by group. A failed load shows an error until the next one succeeds.
+  // by group. Each answer applies on its own; a failure shows an error until the
+  // next poll succeeds, over the lists already loaded.
   const loadLists = useCallback(async (signal: AbortSignal) => {
-    try {
-      const [groupList, documentList] = await Promise.all([listGroups_api(signal), listDocuments_api(signal)]);
-      setGroups(groupList);
-      setDocuments(documentList);
-      setLoadError("");
-    } catch {
-      if (!signal.aborted) setLoadError("Failed to load your documents. Please try again.");
-    } finally {
-      if (!signal.aborted) setIsLoading(false);
-    }
+    const [groupResult, documentResult] = await Promise.allSettled([
+      listGroups_api(signal),
+      listDocuments_api(signal),
+    ]);
+    if (signal.aborted) return;
+
+    if (groupResult.status === "fulfilled") setGroups(groupResult.value);
+    if (documentResult.status === "fulfilled") setDocuments(documentResult.value);
+    const failed = groupResult.status === "rejected" || documentResult.status === "rejected";
+    setLoadError(failed ? "Failed to refresh your groups and documents." : "");
+    setIsLoading(false);
   }, []);
   const cancelPoll = usePoll(loadLists);
 

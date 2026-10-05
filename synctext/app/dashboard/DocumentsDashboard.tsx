@@ -157,7 +157,7 @@ async function saveRename(): Promise<boolean> {
         </p>
       ) : null}
 
-      {!isLoading && !loadError ? documents.filter((doc) =>
+      {!isLoading ? documents.filter((doc) =>
           doc.title.toLowerCase().includes(search.toLowerCase()))
         .sort((a, b) => {
         if (order == "name")
