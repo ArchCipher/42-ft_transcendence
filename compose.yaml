@@ -229,6 +229,10 @@ services:
             --post-data='' \
             --header="x-internal-service-token: $${INTERNAL_SERVICE_TOKEN}" \
             http://web:3000/api/internal/guest-sessions/cleanup >/dev/null || true
+          wget -qO- \
+            --post-data='' \
+            --header="x-internal-service-token: $${INTERNAL_SERVICE_TOKEN}" \
+            http://web:3000/api/internal/auth/cleanup >/dev/null || true
           sleep 300
         done
 

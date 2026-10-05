@@ -104,7 +104,8 @@ export const registerSchema = z
     }
   });
 
-export const forgotPasswordSchema = z
+// used by forgot-password and resend-verification
+export const emailRequestSchema = z
   .object({
     email: emailSchema,
   })
@@ -180,7 +181,7 @@ export const internalVerifySchema = z
 
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
-export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+export type EmailRequestInput = z.infer<typeof emailRequestSchema>;
 export type PasswordResetInput = z.infer<typeof passwordResetSchema>;
 export type VerifyEmailInput = z.infer<typeof verifyEmailSchema>;
 export type OauthStartInput = z.infer<typeof oauthStartSchema>;

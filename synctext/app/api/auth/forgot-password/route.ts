@@ -1,4 +1,4 @@
-import { forgotPasswordSchema } from "@/lib/auth/validation";
+import { emailRequestSchema } from "@/lib/auth/validation";
 import {
   clientIp,
   ipLimiter,
@@ -28,7 +28,7 @@ API Response contracts: POST /api/auth/forgot-password
 */
 
 export async function POST(request: Request) {
-  const result = await parseRequest(request, forgotPasswordSchema);
+  const result = await parseRequest(request, emailRequestSchema);
   if (result.error) return result.error;
 
   const input = result.data;
@@ -74,8 +74,9 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("[email] forgot password send fail error:", error);
   }
-
-  // TODO: resend email endpoint for email send failure
+  // Count real send against account budget. Per-IP doesn't stop a caller who
+  // rotates IPs
+  await accountLimiter.recordFailure(accountKey(input.email));
 
   return Response.json(
     { ok: "Check your email to reset password" },

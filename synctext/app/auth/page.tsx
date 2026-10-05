@@ -10,6 +10,7 @@ import { OAUTH_ERROR_MESSAGES, type OAuthErrorCode } from "@/lib/auth/oauth/erro
 const NOTICES: Record<string, string> = {
   pending: "Verification email sent. Check your inbox.",
   "reset-sent": "Password reset email sent. Check your inbox.",
+  "resend-sent": "If that address needs verification, we sent a fresh link.",
   "reset-done": "Password reset successful!",
   "logged-out": "You have been logged out.",
 };

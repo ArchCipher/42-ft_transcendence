@@ -22,32 +22,43 @@ export async function GET(request: Request) {
       { status: 400 },
     );
 
-  const record = await db.emailVerificationToken.findUnique({
-    where: { tokenHash: hashVerificationToken(parsed.data.token) },
+  const tokenHash = hashVerificationToken(parsed.data.token);
+  const now = new Date();
+
+  // Claim the token and mark the account verified in one transaction.
+  const verified = await db.$transaction(async (tx) => {
+    const rows = await tx.$queryRaw<
+      { id: string; userId: string; usedAt: Date | null; expiresAt: Date }[]
+    >`
+      SELECT "id", "userId", "usedAt", "expiresAt"
+      FROM "EmailVerificationToken"
+      WHERE "tokenHash" = ${tokenHash}
+      FOR UPDATE
+    `;
+
+    const record = rows[0];
+
+    if (!record || record.usedAt !== null || record.expiresAt <= now)
+      return false;
+
+    await tx.emailVerificationToken.update({
+      where: { id: record.id },
+      data: { usedAt: now },
+    });
+
+    await tx.user.update({
+      where: { id: record.userId },
+      data: { emailVerifiedAt: now },
+    });
+
+    return true;
   });
 
-  if (!record || record.usedAt !== null || record.expiresAt < new Date())
+  if (!verified)
     return Response.json(
       { error: "Invalid or expired verification link" },
       { status: 400 },
     );
-
-  // revoke verification token
-  const claim = await db.emailVerificationToken.updateMany({
-    where: { id: record.id, usedAt: null },
-    data: { usedAt: new Date() },
-  }); // update token
-  if (claim.count === 0)
-    return Response.json(
-      { error: "Invalid or expired verification link" },
-      { status: 400 },
-    );
-
-  // record email verification
-  await db.user.update({
-    where: { id: record.userId },
-    data: { emailVerifiedAt: new Date() },
-  }); // update user row
 
   return Response.json({ ok: true }, { status: 200 });
 }
