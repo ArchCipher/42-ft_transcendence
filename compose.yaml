@@ -107,6 +107,19 @@ services:
     depends_on:
       web:
         condition: service_healthy
+      collab:
+        condition: service_healthy
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -qO- --no-check-certificate https://127.0.0.1/health >/dev/null"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
     networks:
       - frontend
@@ -149,8 +162,48 @@ services:
       web:
         condition: service_healthy
 
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:1234/health').then(r=>process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
     networks:
       - frontend
+      - backend
+
+  backup: # automated PostgreSQL backups
+    build:
+      context: .
+      dockerfile: services/backup/Dockerfile
+
+    container_name: synctext-backup
+
+    restart: unless-stopped
+
+    environment:
+      PGHOST: db
+      PGDATABASE: ${DB_NAME}
+      PGUSER: ${DB_USER}
+      PGPASSWORD: ${DB_PASSWORD}
+      BACKUP_INTERVAL_SECONDS: ${DB_BACKUP_INTERVAL_SECONDS:-86400}
+      BACKUP_RETENTION_COUNT: ${DB_BACKUP_RETENTION_COUNT:-7}
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+    volumes:
+      - db_backups:/backups
+
+    networks:
       - backend
 
   guest-cleanup: # removes unclaimed guest sessions and their cascading docs
@@ -191,6 +244,7 @@ secrets:
 
 volumes:
   db_data:
+  db_backups:
   mailpit_data:
 
 networks:

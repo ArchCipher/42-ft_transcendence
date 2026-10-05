@@ -90,6 +90,37 @@ migrate-dev:
 	migrate \
 	npx prisma migrate dev --name "$(NAME)"
 
+# create a PostgreSQL backup immediately
+backup-db: setup
+	$(COMPOSE) up -d --wait db
+	$(COMPOSE) build backup
+	$(COMPOSE) run --rm --no-deps backup once
+
+# list stored PostgreSQL backups
+backup-db-list: setup
+	$(COMPOSE) build backup
+	$(COMPOSE) run --rm --no-deps backup list
+
+# restore the selected PostgreSQL backup into the application database
+backup-db-restore: setup
+	@test -n "$(BACKUP)" || (echo "Usage: make backup-db-restore BACKUP=<filename>"; exit 1)
+	$(COMPOSE) up -d --wait db
+	$(COMPOSE) build backup migrate
+	$(COMPOSE) run --rm --no-deps --entrypoint /usr/local/bin/restore.sh backup validate "$(BACKUP)"
+	$(COMPOSE) stop nginx collab web guest-cleanup backup
+	@if $(COMPOSE) run --rm --no-deps --entrypoint /usr/local/bin/restore.sh backup restore "$(BACKUP)"; then \
+		if $(COMPOSE) run --rm --no-deps migrate; then \
+			$(COMPOSE) up -d; \
+			echo "database restore workflow complete"; \
+		else \
+			echo "database restored, but migrations failed; application services remain stopped"; \
+			exit 1; \
+		fi; \
+	else \
+		echo "database restore failed; application services remain stopped"; \
+		exit 1; \
+	fi
+
 # ---- code quality ------------------------------------------------------------
 
 lint:
@@ -111,4 +142,4 @@ fclean:
 # rebuild the project from a clean state
 re: fclean all
 
-.PHONY: all setup setup_env setup_cert up down logs ps test iprune migrate-dev clean fclean re
+.PHONY: all setup setup_env setup_cert up down logs ps test iprune migrate-dev backup-db backup-db-list backup-db-restore clean fclean re

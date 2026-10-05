@@ -24,7 +24,7 @@ jobs:
 
       - name: Verify Compose services are ready
         run: |
-          expected='{"db":"healthy","web":"healthy","nginx":"running","migrate":"exited","collab":"running"}'
+          expected='{"db":"healthy","web":"healthy","nginx":"healthy","migrate":"exited","collab":"healthy"}'
           for attempt in {1..30}; do
             services="$(docker compose -f compose.yaml ps --all --format json)"
             printf '%s\n' "$services"
