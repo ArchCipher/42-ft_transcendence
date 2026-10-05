@@ -4,7 +4,8 @@ import { removeFromGroup, type RemovalResult } from "@/lib/groups/ownership";
 // Group mutations. They hold the product rules that bind everyone; who may call
 // them is decided by the routes, with lib/permissions.ts.
 
-// OWNER is never assigned directly: ownership only moves through removeFromGroup.
+// OWNER is never assigned directly: ownership only moves through removeFromGroup
+// and transferOwnership, which keep exactly one owner.
 export type AssignableRole = typeof GroupRole.ADMIN | typeof GroupRole.MEMBER;
 
 // Create a shared group owned by its creator.

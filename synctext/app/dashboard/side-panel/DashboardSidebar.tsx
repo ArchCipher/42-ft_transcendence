@@ -6,19 +6,38 @@ import Button from "@/app/components/ui/Button";
 import InputBox from "@/app/components/form/InputBox";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { FriendUser, FriendsResponse } from "@/lib/friends/types";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { MoreHorizontal, Plus } from "lucide-react";
+import type { GroupMemberSummary, GroupSummary } from "@/lib/groups/types";
+import { useCallback, useMemo, useState } from "react";
+import { usePoll } from "@/hooks/use-poll";
+import { Plus } from "lucide-react";
+import ConfirmWindow from "@/app/components/feedback/ConfirmWindow";
 import FriendIdentity from "./FriendIdentity";
 import FriendsManagerDialog from "./FriendsManagerDialog";
+import GroupNameDialog from "./GroupNameDialog";
+import AddMemberDialog from "./AddMemberDialog";
+import ActionMenu, { type ActionItem } from "../ActionMenu";
+import { request } from "../request";
+import {
+  createGroup_api,
+  deleteGroup_api,
+  groupLabel,
+  listMembers_api,
+  removeMember_api,
+  renameGroup_api,
+  setMemberRole_api,
+} from "../group/group";
 
 type DashboardSidebarProps = {
-  selectedGroup: { id: string; name: string } | null;
-  onSelectGroup: (group: { id: string; name: string } | null) => void;
+  userId: string;
+  groups: GroupSummary[];
+  selectedGroupId: string | null;
+  onSelectGroup: (groupId: string) => void;
+  onGroupsChanged: () => Promise<void>;
   isOpen: boolean;
 };
 
-type Group = { id: string; name: string; isPrivateSpace: boolean };
-type GroupMember = { userId: string; username: string; online: boolean };
+// A Delete / Leave / Remove waiting for the user's confirmation.
+type PendingConfirm = { title: string; message: string; confirmLabel: string; run: () => Promise<void> };
 type FriendFeedback = { kind: "success" | "error"; text: string } | null;
 
 const EMPTY_FRIENDS: FriendsResponse = {
@@ -26,21 +45,6 @@ const EMPTY_FRIENDS: FriendsResponse = {
   incomingRequests: [],
   outgoingRequests: [],
 };
-
-const PRESENCE_POLL_MS = 30_000;
-
-async function getJson<T>(url: string, signal?: AbortSignal): Promise<T> {
-  const response = await fetch(url, { cache: "no-store", signal });
-  if (!response.ok) throw new Error(`Request failed: ${response.status}`);
-  return response.json() as Promise<T>;
-}
-
-async function getErrorMessage(response: Response) {
-  const body: unknown = await response.json().catch(() => null);
-  return typeof body === "object" && body !== null && "error" in body && typeof body.error === "string"
-    ? body.error
-    : "Something went wrong. Please try again.";
-}
 
 function PresenceLight({ online }: { online: boolean }) {
   const label = online ? "Online" : "Offline";
@@ -54,26 +58,26 @@ function PresenceLight({ online }: { online: boolean }) {
   );
 }
 
-export default function DashboardSidebar({ selectedGroup, onSelectGroup, isOpen }: DashboardSidebarProps) {
-  const [openMenu, setOpenMenu] = useState<string | null>(null);
+export default function DashboardSidebar({ userId, groups, selectedGroupId, onSelectGroup, onGroupsChanged, isOpen }: DashboardSidebarProps) {
   const [openSections, setOpenSections] = useState<string[]>(["groups"]);
-  const [groups, setGroups] = useState<Group[]>([]);
   const [friendsData, setFriendsData] = useState<FriendsResponse>(EMPTY_FRIENDS);
-  const [members, setMembers] = useState<GroupMember[]>([]);
+  const [members, setMembers] = useState<GroupMemberSummary[]>([]);
+  const [nameDialog, setNameDialog] = useState<{ group?: GroupSummary } | null>(null); // no group: New group
+  const [addMemberGroup, setAddMemberGroup] = useState<GroupSummary | null>(null);
+  const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm | null>(null);
+  const [groupError, setGroupError] = useState("");
   const [friendsSearch, setFriendsSearch] = useState("");
   const [friendsManagerOpen, setFriendsManagerOpen] = useState(false);
   const [friendsLoading, setFriendsLoading] = useState(false);
   const [friendActionKey, setFriendActionKey] = useState<string | null>(null);
   const [friendFeedback, setFriendFeedback] = useState<FriendFeedback>(null);
 
-  const friendsOpen = openSections.includes("friends");
   const membersOpen = openSections.includes("members");
-  const selectedGroupId = selectedGroup?.id ?? null;
 
   const refreshFriends = useCallback(async (signal?: AbortSignal) => {
     setFriendsLoading(true);
     try {
-      const nextFriends = await getJson<FriendsResponse>("/api/friends", signal);
+      const nextFriends = await request<FriendsResponse>("/api/friends", { signal });
       setFriendsData(nextFriends);
     } catch (error) {
       if (!(error instanceof DOMException && error.name === "AbortError")) {
@@ -84,72 +88,13 @@ export default function DashboardSidebar({ selectedGroup, onSelectGroup, isOpen 
     }
   }, []);
 
-  useEffect(() => {
-    const controller = new AbortController();
-    void getJson<Group[]>("/api/groups", controller.signal)
-      .then(setGroups)
-      .catch((error: unknown) => {
-        if (!(error instanceof DOMException && error.name === "AbortError")) {
-          console.error("Failed to load groups", error);
-        }
-      });
-    return () => controller.abort();
-  }, []);
+  const refreshMembers = useCallback(async (signal?: AbortSignal) => {
+    if (selectedGroupId) setMembers(await listMembers_api(selectedGroupId, signal));
+  }, [selectedGroupId]);
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      const target = event.target as HTMLElement;
-      if (!target.closest(".SidebarActionMenu") && !target.closest(".SidebarEditButton")) {
-        setOpenMenu(null);
-      }
-    }
-
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, []);
-
-  useEffect(() => {
-    if ((!friendsOpen && !(membersOpen && selectedGroupId)) || document.visibilityState !== "visible") return;
-
-    let controller: AbortController | null = null;
-    const refresh = () => {
-      controller?.abort();
-      controller = new AbortController();
-      const requests: Promise<unknown>[] = [];
-
-      if (friendsOpen) {
-        requests.push(refreshFriends(controller.signal));
-      }
-      if (membersOpen && selectedGroupId) {
-        requests.push(getJson<GroupMember[]>(
-          `/api/groups/${encodeURIComponent(selectedGroupId)}/members`,
-          controller.signal,
-        ).then(setMembers));
-      }
-
-      void Promise.allSettled(requests).then((results) => {
-        for (const result of results) {
-          if (result.status === "rejected" &&
-            !(result.reason instanceof DOMException && result.reason.name === "AbortError")) {
-            console.error("Failed to refresh presence", result.reason);
-          }
-        }
-      });
-    };
-
-    refresh();
-    const intervalId = window.setInterval(refresh, PRESENCE_POLL_MS);
-    const onVisibilityChange = () => {
-      if (document.visibilityState === "visible") refresh();
-    };
-    document.addEventListener("visibilitychange", onVisibilityChange);
-
-    return () => {
-      controller?.abort();
-      window.clearInterval(intervalId);
-      document.removeEventListener("visibilitychange", onVisibilityChange);
-    };
-  }, [friendsOpen, membersOpen, refreshFriends, selectedGroupId]);
+  // Friends always, even folded: the incoming-requests badge depends on them.
+  usePoll(refreshFriends);
+  usePoll(refreshMembers, membersOpen && selectedGroupId !== null);
 
   const memberIds = useMemo(() => new Set(members.map(({ userId }) => userId)), [members]);
   const sortedFriends = useMemo(
@@ -161,14 +106,13 @@ export default function DashboardSidebar({ selectedGroup, onSelectGroup, isOpen 
 
   async function mutateFriends(
     actionKey: string,
-    request: () => Promise<Response>,
+    sendRequest: () => Promise<unknown>,
     successMessage: string,
   ) {
     setFriendActionKey(actionKey);
     setFriendFeedback(null);
     try {
-      const response = await request();
-      if (!response.ok) throw new Error(await getErrorMessage(response));
+      await sendRequest();
       await refreshFriends();
       setFriendFeedback({ kind: "success", text: successMessage });
       return true;
@@ -186,9 +130,8 @@ export default function DashboardSidebar({ selectedGroup, onSelectGroup, isOpen 
   function sendFriendRequest(identifier: string) {
     return mutateFriends(
       "send",
-      () => fetch("/api/friends", {
+      () => request("/api/friends", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ identifier }),
       }),
       "Friend request sent.",
@@ -198,9 +141,8 @@ export default function DashboardSidebar({ selectedGroup, onSelectGroup, isOpen 
   function respondToFriendRequest(friend: FriendUser, action: "accept" | "decline") {
     return mutateFriends(
       `respond-${friend.id}`,
-      () => fetch("/api/friends", {
+      () => request("/api/friends", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: friend.id, action }),
       }),
       action === "accept" ? `You are now friends with ${friend.username}.` : "Friend request declined.",
@@ -210,9 +152,8 @@ export default function DashboardSidebar({ selectedGroup, onSelectGroup, isOpen 
   function cancelFriendRequest(friend: FriendUser) {
     return mutateFriends(
       `cancel-${friend.id}`,
-      () => fetch("/api/friends", {
+      () => request("/api/friends", {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: friend.id }),
       }),
       "Friend request cancelled.",
@@ -222,18 +163,122 @@ export default function DashboardSidebar({ selectedGroup, onSelectGroup, isOpen 
   function removeFriend(friend: FriendUser) {
     return mutateFriends(
       `remove-${friend.id}`,
-      () => fetch("/api/friends", {
+      () => request("/api/friends", {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: friend.id }),
       }),
       `${friend.username} was removed from your friends.`,
     );
   }
 
+  const myRole = groups.find((group) => group.id === selectedGroupId)?.myRole;
+
+  // Run a group or member action, then reload what it changed.
+  async function runAction(action: () => Promise<unknown>, reload: () => Promise<unknown>) {
+    setGroupError("");
+    try {
+      await action();
+      await reload();
+    } catch (error) {
+      setGroupError(error instanceof Error ? error.message : "Something went wrong. Please try again.");
+    }
+  }
+
+  async function createGroup(name: string) {
+    const group = await createGroup_api(name);
+    await onGroupsChanged();
+    onSelectGroup(group.id);
+  }
+
+  async function renameGroup(group: GroupSummary, name: string) {
+    await renameGroup_api(group.id, name);
+    await onGroupsChanged();
+  }
+
+  // A group's "…" menu, by the caller's role. A private space has none.
+  function groupActions(group: GroupSummary): ActionItem[] {
+    if (group.isPrivateSpace) return [];
+    const isOwner = group.myRole === "OWNER";
+    const items: ActionItem[] = [];
+
+    if (isOwner) {
+      items.push({ label: "Rename group", onSelect: () => setNameDialog({ group }) });
+    }
+    if (group.myRole !== "MEMBER") {
+      items.push({ label: "Add member", onSelect: () => { setAddMemberGroup(group); void refreshFriends(); } });
+    }
+    items.push({
+      label: "Leave group",
+      danger: true,
+      onSelect: () => setPendingConfirm({
+        title: `Leave ${group.name}?`,
+        message: isOwner
+          ? "Ownership passes to the oldest admin, else the oldest member. If you are the last member, the group and its documents are deleted. To choose the next owner, use Make owner in the members list first."
+          : "You will lose access to its documents.",
+        confirmLabel: "Leave",
+        run: () => runAction(() => removeMember_api(group.id, userId), onGroupsChanged),
+      }),
+    });
+    if (isOwner) {
+      items.push({
+        label: "Delete group",
+        danger: true,
+        onSelect: () => setPendingConfirm({
+          title: `Delete ${group.name}?`,
+          message: "Its documents are deleted with it. This action cannot be undone.",
+          confirmLabel: "Delete",
+          run: () => runAction(() => deleteGroup_api(group.id), onGroupsChanged),
+        }),
+      });
+    }
+    return items;
+  }
+
+  // A member's "…" menu: the owner promotes, demotes, hands the group over and
+  // removes anyone; an admin removes plain members. Nobody acts on the owner.
+  function memberActions(member: GroupMemberSummary): ActionItem[] {
+    const groupId = selectedGroupId;
+    if (!groupId || member.role === "OWNER") return [];
+    const items: ActionItem[] = [];
+
+    if (myRole === "OWNER") {
+      const role = member.role === "ADMIN" ? "MEMBER" : "ADMIN";
+      items.push({
+        label: role === "ADMIN" ? "Make admin" : "Revoke admin",
+        onSelect: () => void runAction(() => setMemberRole_api(groupId, member.userId, role), refreshMembers),
+      });
+      items.push({
+        label: "Make owner",
+        onSelect: () => setPendingConfirm({
+          title: `Make ${member.username} the owner?`,
+          message: "You become an admin and can no longer rename or delete the group.",
+          confirmLabel: "Make owner",
+          run: () => runAction(
+            () => setMemberRole_api(groupId, member.userId, "OWNER"),
+            () => Promise.all([onGroupsChanged(), refreshMembers()]),
+          ),
+        }),
+      });
+    }
+    if (myRole === "OWNER" || (myRole === "ADMIN" && member.role === "MEMBER")) {
+      items.push({
+        label: "Remove member",
+        danger: true,
+        onSelect: () => setPendingConfirm({
+          title: `Remove ${member.username}?`,
+          message: "They lose access to the group and its documents.",
+          confirmLabel: "Remove",
+          run: () => runAction(() => removeMember_api(groupId, member.userId), refreshMembers),
+        }),
+      });
+    }
+    return items;
+  }
+
   return (
     <aside className={`DashboardSidebar ${isOpen ? "DashboardSidebarOpen" : ""}`}>
       <div className="SidebarContent">
+        {groupError ? <p className="FriendsFeedback FriendsFeedbackError" role="alert">{groupError}</p> : null}
         <Accordion value={openSections} onValueChange={setOpenSections} className="SidebarAccordion">
         <AccordionItem value="groups" className="SidebarAccordionItem">
           <AccordionTrigger className="SidebarAccordionTrigger">
@@ -254,6 +299,7 @@ export default function DashboardSidebar({ selectedGroup, onSelectGroup, isOpen 
               <Button
                 variant="outline"
                 className="NewGroupButton"
+                onClick={() => setNameDialog({})}
               >
                 New group
                 <Plus size={16} aria-hidden="true" />
@@ -266,34 +312,18 @@ export default function DashboardSidebar({ selectedGroup, onSelectGroup, isOpen 
                   <button
                     type="button"
                     className={`SidebarGroup ${
-                      selectedGroup?.id === group.id ? "SidebarGroupActive" : ""
+                      selectedGroupId === group.id ? "SidebarGroupActive" : ""
                     }`}
-                    onClick={() => onSelectGroup(group)}
+                    onClick={() => onSelectGroup(group.id)}
                   >
-                    <span>{group.name}</span>
+                    <span>{groupLabel(group)}</span>
                   </button>
 
-                  <button
-                    type="button"
+                  <ActionMenu
+                    label={`Actions for ${groupLabel(group)}`}
+                    items={groupActions(group)}
                     className="SidebarEditButton"
-                    aria-label={`Edit ${group.name}`}
-                    onClick={(e) => { e.stopPropagation();
-                                      setOpenMenu((current) =>
-                                    current === `group-${group.id}`
-                                    ? null
-                                    : `group-${group.id}` ); }}
-                  >
-                    <MoreHorizontal size={16} />
-                  </button>
-
-                  {openMenu === `group-${group.id}` && (
-                    <div className="SidebarActionMenu">
-                      <button type="button" onClick={() => setOpenMenu(null)}>Rename group</button>
-                      <button type="button" onClick={() => setOpenMenu(null)}>Add member</button>
-                      <button type="button" onClick={() => setOpenMenu(null)}>Leave group</button>
-                      <button type="button" onClick={() => setOpenMenu(null)}>Delete group</button>
-                    </div>
-                  )}
+                  />
                   </div>
                 ))}
               </div>
@@ -304,16 +334,18 @@ export default function DashboardSidebar({ selectedGroup, onSelectGroup, isOpen 
             <AccordionTrigger className="SidebarAccordionTrigger"><TechText>Members</TechText></AccordionTrigger>
             <AccordionContent className="SidebarAccordionContent">
               <div className="SidebarFriendList">
-                {members.map((member) => (
+                {members.filter((member) => member.userId !== userId).map((member) => (
                   <div key={member.userId} className="SidebarActionRow">
-                    <div className="SidebarFriend"><PresenceLight online={member.online} /><span>{member.username}</span></div>
-                    <button type="button" className="SidebarEditButton" aria-label={`Actions for ${member.username}`} onClick={(event) => {
-                      event.stopPropagation();
-                      setOpenMenu((current) => current === `member-${member.userId}` ? null : `member-${member.userId}`);
-                    }}><MoreHorizontal size={16} /></button>
-                    {openMenu === `member-${member.userId}` ? <div className="SidebarActionMenu">
-                      <button type="button" onClick={() => setOpenMenu(null)}>Remove member</button>
-                    </div> : null}
+                    <div className="SidebarFriend">
+                      <PresenceLight online={member.online} />
+                      <span>{member.username}</span>
+                      {member.role !== "MEMBER" && <span className="SidebarRole">{member.role.toLowerCase()}</span>}
+                    </div>
+                    <ActionMenu
+                      label={`Actions for ${member.username}`}
+                      items={memberActions(member)}
+                      className="SidebarEditButton"
+                    />
                   </div>
                 ))}
               </div>
@@ -371,6 +403,35 @@ export default function DashboardSidebar({ selectedGroup, onSelectGroup, isOpen 
           onCancel={cancelFriendRequest}
           onRemove={removeFriend}
         />
+        {nameDialog && (
+          <GroupNameDialog
+            title={nameDialog.group ? "Rename group" : "New group"}
+            submitLabel={nameDialog.group ? "Rename" : "Create"}
+            initialName={nameDialog.group?.name}
+            onSubmit={(name) => (nameDialog.group ? renameGroup(nameDialog.group, name) : createGroup(name))}
+            onClose={() => setNameDialog(null)}
+          />
+        )}
+        {addMemberGroup && (
+          <AddMemberDialog
+            group={addMemberGroup}
+            friends={friendsData.friends}
+            onClose={() => setAddMemberGroup(null)}
+            onAdded={() => void refreshMembers().catch(console.error)}
+          />
+        )}
+        {pendingConfirm && (
+          <ConfirmWindow
+            title={pendingConfirm.title}
+            message={pendingConfirm.message}
+            confirmLabel={pendingConfirm.confirmLabel}
+            onCancel={() => setPendingConfirm(null)}
+            onConfirm={() => {
+              setPendingConfirm(null);
+              void pendingConfirm.run();
+            }}
+          />
+        )}
       </div>
     </aside>
   );

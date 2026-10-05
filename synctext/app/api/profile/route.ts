@@ -4,7 +4,6 @@ import { prisma as db, Prisma } from "@synctext/db";
 import {
   getSessionToken,
   validateSession,
-  logoutCurrentSession,
 } from "@/lib/auth/session";
 import { usernameSchema } from "@/lib/auth/validation";
 import { parseRequest } from "@/lib/auth/parse-request";
@@ -25,10 +24,8 @@ API Response contracts: /api/profile
 		  401 → { error: "Unauthorized" }
 		  409 → { error: "Email or username already exists" }
 		  500 → { error } (unhandled server error)
-	DELETE — requires an active session; no body
-		  200 → { ok: true }
-		  401 → { error: "Unauthorized" }
-		  500 → { error } (unhandled server error)
+
+	Deleting the account is DELETE /api/account, which hands owned groups on.
 */
 
 /*
@@ -137,31 +134,4 @@ export async function PUT(request: Request) {
     }
     throw error;
   }
-}
-
-// Remove the account and everything owned by it, resolving every shared group
-// this user solely owns.
-// TODO: this currently only handles private space
-// Shared group the user is the SOLE owner of it is left with no owner now.
-export async function DELETE() {
-  const auth = await requireApiSession();
-  if (auth.error) return auth.error;
-
-  const user = auth.session!.user;
-
-  await db.$transaction([
-    // The private space holds the user's own documents and cascades away.
-    db.group.deleteMany({
-      where: { isPrivateSpace: true, members: { some: { userId: user.id } } },
-    }),
-    // GroupMember.user is onDelete: Restrict, so memberships have to go first.
-    db.groupMember.deleteMany({ where: { userId: user.id } }),
-    // Sessions, tokens and friendships cascade; createdById on documents other
-    // people still hold is set to null.
-    db.user.delete({ where: { id: user.id } }),
-  ]);
-
-  await logoutCurrentSession();
-
-  return Response.json({ ok: true });
 }

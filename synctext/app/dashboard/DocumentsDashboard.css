@@ -66,7 +66,7 @@
 
 .DocumentOpen:focus-visible,
 .DocumentTitle:focus-visible,
-.DeleteDoc:focus-visible {
+.DocumentMenuButton:focus-visible {
   outline: 2px solid var(--app-accent-yellow);
   outline-offset: 3px;
 }
@@ -118,7 +118,7 @@
   text-align: center;
 }
 
-.DeleteDoc {
+.DocumentMenuButton {
   position: absolute;
   top: 4px;
   right: calc(50% - (var(--document-control-size) / 2) - 10px);
@@ -127,19 +127,21 @@
   height: 28px;
   padding: 0;
 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
   border: 0;
   border-radius: 50%;
   background: rgba(8, 25, 55, 0.82);
   color: var(--app-text-white);
-  font-size: 18px;
-  line-height: 1;
   opacity: 0.72;
   cursor: pointer;
-  transition: opacity 160ms ease, background-color 160ms ease;
+  transition: opacity 160ms ease;
 }
 
-.DeleteDoc:hover {
-  background: rgba(120, 36, 56, 0.9);
+.DocumentMenuButton:hover,
+.DocumentMenuButton[data-state="open"] {
   opacity: 1;
 }
 

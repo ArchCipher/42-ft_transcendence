@@ -1,14 +1,16 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { FileText } from "lucide-react";
 import type { DocumentSummary } from "@/lib/documents/documents";
-import { deleteDocument_api, listDocuments_api, renameDocument_api } from "./document/document";
+import { deleteDocument_api, renameDocument_api } from "./document/document";
 import "./DocumentsDashboard.css";
 import { BodyText, SupportText } from "@/app/components/typography/Typography";
 import ConfirmWindow from "@/app/components/feedback/ConfirmWindow";
 import PlusButton from "@/app/components/ui/PlusButton";
+import ActionMenu, { type ActionItem } from "./ActionMenu";
+import EditorsDialog from "./document/EditorsDialog";
 
 function truncateTitle(title: string, limit = 18) {
   return title.length > limit
@@ -17,6 +19,12 @@ function truncateTitle(title: string, limit = 18) {
 }
 
 type DashboardProps = {
+  userId: string;
+  isPrivateSpace: boolean;
+  documents: DocumentSummary[];
+  setDocuments: Dispatch<SetStateAction<DocumentSummary[]>>;
+  isLoading: boolean;
+  loadError: string;
   search: string;
   order: string;
   createError: string;
@@ -24,52 +32,26 @@ type DashboardProps = {
   isCreatingDocument: boolean;
 };
 
-export default function DocumentsDashboard({ search,
+export default function DocumentsDashboard({ userId,
+                                              isPrivateSpace,
+                                              documents,
+                                              setDocuments,
+                                              isLoading,
+                                              loadError,
+                                              search,
                                               order,
                                               onCreateDocument,
                                               isCreatingDocument,
                                               createError }: DashboardProps) {
 
-  const [documents, setDocuments] = useState<DocumentSummary[]>([]);
-  const [isLoadingDocuments, setIsLoadingDocuments] = useState(true);
-  const [documentsError, setDocumentsError] = useState("");
-
   const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);// for deleting docs
+  const [documentToShare, setDocumentToShare] = useState<DocumentSummary | null>(null);
 
   const [documentToEdit, setDocumentToEdit] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editError, setEditError] = useState("");
   const router = useRouter();
-  const dashboardError = documentsError || createError;
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    async function loadDocuments() {
-      try {
-        setIsLoadingDocuments(true);
-        setDocumentsError("");
-
-        const listedDocuments = await listDocuments_api(controller.signal);
-        setDocuments(listedDocuments);
-      } catch {
-        if (!controller.signal.aborted) {
-          setDocumentsError("Failed to load your documents. Please try again.");
-        }
-      } finally {
-        if (!controller.signal.aborted) {
-          setIsLoadingDocuments(false);
-        }
-      }
-    }
-
-    void loadDocuments();
-
-    return () => {
-      controller.abort();
-    };
-  }, []);
-
+  const dashboardError = loadError || createError;
 
 
   async function deleteDocument(id: string) {
@@ -88,6 +70,16 @@ export default function DocumentsDashboard({ search,
 
   function openDocument(id: string) {
     router.push(`/doc/${encodeURIComponent(id)}`);
+  }
+
+  // A document's "…" menu: empty, so hidden, unless the caller may edit it.
+  function documentActions(doc: DocumentSummary): ActionItem[] {
+    if (!doc.canEdit) return [];
+    return [
+      { label: "Rename", onSelect: () => { setDocumentToEdit(doc.id); setEditTitle(doc.title); setEditError(""); } },
+      ...(isPrivateSpace ? [] : [{ label: "Manage editors", onSelect: () => setDocumentToShare(doc) }]),
+      { label: "Delete", onSelect: () => setDocumentToDelete(doc.id), danger: true },
+    ];
   }
 
 async function saveRename(): Promise<boolean> {
@@ -145,7 +137,7 @@ async function saveRename(): Promise<boolean> {
         onClick={onCreateDocument}
       />
 
-      {isLoadingDocuments ? (
+      {isLoading ? (
         <p className="DashboardStatus">
           <SupportText>Loading documents...</SupportText>
         </p>
@@ -159,13 +151,13 @@ async function saveRename(): Promise<boolean> {
         </p>
       ) : null}
 
-      {!isLoadingDocuments && !documentsError && documents.length === 0 ? (
+      {!isLoading && !loadError && documents.length === 0 ? (
         <p className="DashboardStatus">
-          <BodyText>You do not have any documents yet.</BodyText>
+          <BodyText>No documents here yet.</BodyText>
         </p>
       ) : null}
 
-      {!isLoadingDocuments && !documentsError ? documents.filter((doc) =>
+      {!isLoading ? documents.filter((doc) =>
           doc.title.toLowerCase().includes(search.toLowerCase()))
         .sort((a, b) => {
         if (order == "name")
@@ -178,14 +170,7 @@ async function saveRename(): Promise<boolean> {
             key={doc.id}
             title={doc.title}
             onOpen={() => openDocument(doc.id)}
-            onDelete={doc.canDelete
-              ? () => setDocumentToDelete(doc.id)
-              : undefined}
-            onEdit={doc.canRename ? () => {
-              setDocumentToEdit(doc.id);
-              setEditTitle(doc.title);
-              setEditError("");
-            } : undefined}
+            actions={documentActions(doc)}
             isEditing={documentToEdit === doc.id}
             editTitle={editTitle}
             onEditTitle={setEditTitle}
@@ -207,6 +192,21 @@ async function saveRename(): Promise<boolean> {
         onConfirm={() => void deleteDocument(documentToDelete)}
       />
     )}
+    {documentToShare !== null && (
+      <EditorsDialog
+        document={documentToShare}
+        userId={userId}
+        onClose={() => setDocumentToShare(null)}
+        onSelfRevoked={() => {
+          setDocuments((currentDocuments) =>
+            currentDocuments.map((doc) =>
+              doc.id === documentToShare.id ? { ...doc, canEdit: false } : doc
+            )
+          );
+          setDocumentToShare(null);
+        }}
+      />
+    )}
   </>
   );
 }
@@ -214,8 +214,7 @@ async function saveRename(): Promise<boolean> {
 type DocumentCardProps = {
   title: string;
   onOpen: () => void;
-  onDelete?: () => void;
-  onEdit?: () => void;
+  actions: ActionItem[];
 
   isEditing: boolean;
   editTitle: string;
@@ -227,8 +226,7 @@ type DocumentCardProps = {
 
 function DocumentCard({ title,
                         onOpen,
-                        onDelete,
-                        onEdit,
+                        actions,
                         isEditing,
                         editTitle,
                         onEditTitle,
@@ -241,16 +239,7 @@ function DocumentCard({ title,
 
   return (
     <div className="DocumentCard">
-      {onDelete ? (
-        <button
-          type="button"
-          className="DeleteDoc"
-          aria-label={`Delete ${title}`}
-          onClick={onDelete}
-        >
-          ×
-        </button>
-      ) : null}
+      <ActionMenu label={`Actions for ${title}`} items={actions} className="DocumentMenuButton" />
 
       <button
         type="button"
@@ -305,7 +294,7 @@ function DocumentCard({ title,
         <button
           type="button"
           className="DocumentTitle"
-          onClick={onEdit}
+          onClick={onOpen}
           title={title}
         >
           {truncateTitle(title)}

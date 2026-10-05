@@ -1,0 +1,37 @@
+.ActionMenuContent {
+  z-index: 100;
+
+  min-width: 180px;
+  padding: 6px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  background: rgba(220, 240, 255, 0.96);
+  border: 1px solid rgba(111, 211, 255, 0.8);
+
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.25),
+    0 0 10px rgba(111, 211, 255, 0.2);
+
+  backdrop-filter: blur(6px);
+}
+
+.ActionMenuItem {
+  padding: 8px 10px;
+
+  color: #10233d;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 13px;
+  cursor: pointer;
+  outline: none;
+}
+
+.ActionMenuItem[data-highlighted] {
+  background: rgba(111, 211, 255, 0.16);
+}
+
+.ActionMenuDanger {
+  color: #8b1e2d;
+}

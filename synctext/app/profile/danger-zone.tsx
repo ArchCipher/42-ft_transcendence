@@ -25,7 +25,7 @@ export default function DangerZone({
 
   async function handleDelete() {
     try {
-      const res = await fetch("/api/profile", { method: "DELETE" });
+      const res = await fetch("/api/account", { method: "DELETE" });
       if (!res.ok) {
         onStatus({ kind: "error", text: FALLBACK });
         setShowDelete(false);
@@ -62,7 +62,7 @@ export default function DangerZone({
       {showDelete && (
         <ConfirmWindow
           title="Delete account?"
-          message="This permanently deletes your account and documents. This cannot be undone."
+          message="This permanently deletes your account and your private documents. Groups you own pass to their oldest admin, else their oldest member; a group where you are alone is deleted with its documents. To explicitly choose who takes over, use Make owner in the members list(s) first."
           confirmLabel="Delete account"
           onCancel={() => setShowDelete(false)}
           onConfirm={() => void handleDelete()}

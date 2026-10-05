@@ -4,26 +4,7 @@ import { FormEvent, useState } from "react";
 import { Check, Send, UserMinus, X } from "lucide-react";
 import type { FriendUser, FriendsResponse } from "@/lib/friends/types";
 import { Button } from "@/components/ui/button";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import FriendIdentity from "./FriendIdentity";
-
-type Feedback = { kind: "success" | "error"; text: string } | null;
+import ManagerDialog, { ConfirmAlert, PersonRow, type Feedback } from "../ManagerDialog";
 
 type FriendsManagerDialogProps = {
   open: boolean;
@@ -37,21 +18,6 @@ type FriendsManagerDialogProps = {
   onCancel: (friend: FriendUser) => Promise<boolean>;
   onRemove: (friend: FriendUser) => Promise<boolean>;
 };
-
-function RequestRow({
-  friend,
-  children,
-}: {
-  friend: FriendUser;
-  children: React.ReactNode;
-}) {
-  return (
-    <li className="FriendsManagerRow">
-      <FriendIdentity friend={friend} />
-      <div className="FriendsManagerRowActions">{children}</div>
-    </li>
-  );
-}
 
 export default function FriendsManagerDialog({
   open,
@@ -83,15 +49,13 @@ export default function FriendsManagerDialog({
 
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="FriendsManagerDialog" showCloseButton>
-          <DialogHeader>
-            <DialogTitle>Your collaborators</DialogTitle>
-            <DialogDescription>
-              Invite people, respond to requests, and keep your workspace connected.
-            </DialogDescription>
-          </DialogHeader>
-
+      <ManagerDialog
+        open={open}
+        onOpenChange={onOpenChange}
+        title="Your collaborators"
+        description="Invite people, respond to requests, and keep your workspace connected."
+        feedback={feedback}
+      >
           <form className="FriendsInviteForm" onSubmit={handleSubmit}>
             <label htmlFor="friend-identifier">Invite by username or email</label>
             <div className="FriendsInviteControls">
@@ -111,12 +75,6 @@ export default function FriendsManagerDialog({
             </div>
           </form>
 
-          {feedback ? (
-            <p className={`FriendsFeedback FriendsFeedback${feedback.kind === "error" ? "Error" : "Success"}`} role={feedback.kind === "error" ? "alert" : "status"}>
-              {feedback.text}
-            </p>
-          ) : null}
-
           <div className="FriendsManagerSections" aria-busy={isLoading}>
             <section aria-labelledby="incoming-requests-heading">
               <div className="FriendsSectionHeading">
@@ -126,14 +84,14 @@ export default function FriendsManagerDialog({
               {friends.incomingRequests.length ? (
                 <ul className="FriendsManagerList">
                   {friends.incomingRequests.map((friend) => (
-                    <RequestRow key={friend.id} friend={friend}>
+                    <PersonRow key={friend.id} person={friend}>
                       <Button className="FriendsDialogPrimary" size="sm" onClick={() => void onRespond(friend, "accept")} disabled={actionKey === `respond-${friend.id}`}>
                         <Check aria-hidden="true" /> Accept
                       </Button>
                       <Button className="FriendsDialogQuiet" size="sm" variant="ghost" onClick={() => void onRespond(friend, "decline")} disabled={actionKey === `respond-${friend.id}`}>
                         <X aria-hidden="true" /> Decline
                       </Button>
-                    </RequestRow>
+                    </PersonRow>
                   ))}
                 </ul>
               ) : <p className="FriendsEmpty">No requests waiting for you.</p>}
@@ -147,11 +105,11 @@ export default function FriendsManagerDialog({
               {friends.outgoingRequests.length ? (
                 <ul className="FriendsManagerList">
                   {friends.outgoingRequests.map((friend) => (
-                    <RequestRow key={friend.id} friend={friend}>
+                    <PersonRow key={friend.id} person={friend}>
                       <Button className="FriendsDialogQuiet" size="sm" variant="ghost" onClick={() => void onCancel(friend)} disabled={actionKey === `cancel-${friend.id}`}>
                         Cancel request
                       </Button>
-                    </RequestRow>
+                    </PersonRow>
                   ))}
                 </ul>
               ) : <p className="FriendsEmpty">No sent requests.</p>}
@@ -165,35 +123,28 @@ export default function FriendsManagerDialog({
               {friends.friends.length ? (
                 <ul className="FriendsManagerList">
                   {friends.friends.map((friend) => (
-                    <RequestRow key={friend.id} friend={friend}>
+                    <PersonRow key={friend.id} person={friend}>
                       <Button className="FriendsDialogDanger" size="sm" variant="destructive" onClick={() => setFriendToRemove(friend)} disabled={actionKey === `remove-${friend.id}`}>
                         <UserMinus aria-hidden="true" /> Remove
                       </Button>
-                    </RequestRow>
+                    </PersonRow>
                   ))}
                 </ul>
               ) : <p className="FriendsEmpty">Friends you add will appear here.</p>}
             </section>
           </div>
-        </DialogContent>
-      </Dialog>
+      </ManagerDialog>
 
-      <AlertDialog open={friendToRemove !== null} onOpenChange={(nextOpen) => !nextOpen && setFriendToRemove(null)}>
-        <AlertDialogContent className="FriendsRemoveDialog">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Remove {friendToRemove?.username}?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This removes the friendship. You can send a new request later if needed.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="FriendsRemoveCancel" disabled={actionKey === `remove-${friendToRemove?.id ?? ""}`}>Keep friend</AlertDialogCancel>
-            <AlertDialogAction className="FriendsRemoveAction" variant="destructive" disabled={actionKey === `remove-${friendToRemove?.id ?? ""}`} onClick={() => void confirmRemoval()}>
-              Remove friend
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmAlert
+        open={friendToRemove !== null}
+        onOpenChange={(nextOpen) => { if (!nextOpen) setFriendToRemove(null); }}
+        title={`Remove ${friendToRemove?.username}?`}
+        description="This removes the friendship. You can send a new request later if needed."
+        cancelLabel="Keep friend"
+        confirmLabel="Remove friend"
+        onConfirm={() => void confirmRemoval()}
+        disabled={actionKey === `remove-${friendToRemove?.id ?? ""}`}
+      />
     </>
   );
 }
