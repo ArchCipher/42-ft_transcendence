@@ -11,6 +11,7 @@ import { useState } from "react";
 import AuthPageShell from "../components/auth/AuthPageShell";
 import UserNavbar from "../components/navigation/UserNavbar";
 import StatusNotice from "../components/form/StatusNotice";
+import { usernameSchema } from "@/lib/auth/validation";
 
 const FALLBACK = "Something went wrong. Please try again.";
 
@@ -57,7 +58,16 @@ export default function ProfileClient({ initial }: { initial: ProfileInput }) {
     setFieldErrors({});
     setStatus(null);
 
-    const body = {username};
+    const parsed = usernameSchema.safeParse(username);
+
+    if (!parsed.success) {
+      setFieldErrors({
+        username: parsed.error.issues[0]?.message,
+      });
+      return;
+    }
+
+    const body = { username: parsed.data };
     setSaving(true);
 
     try {
@@ -79,7 +89,8 @@ export default function ProfileClient({ initial }: { initial: ProfileInput }) {
         return;
       }
 
-      setSaved({ username });
+      setUsername(parsed.data);
+      setSaved({ username: parsed.data });
       setStatus({ kind: "saved", text: "Saved." });
     } catch {
       setStatus({ kind: "error", text: FALLBACK });

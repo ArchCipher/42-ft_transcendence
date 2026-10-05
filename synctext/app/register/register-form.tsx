@@ -10,6 +10,7 @@ import Button from "@/app/components/ui/Button";
 import Field from "@/app/components/form/Field";
 import ErrorNote from "../components/form/ErrorNote";
 import { isPasswordStrong } from "@/lib/auth/password-strength";
+import { registerSchema } from "@/lib/auth/validation";
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -41,14 +42,31 @@ export default function RegisterForm() {
       return;
     }
 
+    const parsed = registerSchema.safeParse({
+      email,
+      username,
+      password,
+    });
+
+    if (!parsed.success) {
+      const fields = parsed.error.flatten().fieldErrors;
+
+      setFieldErrors({
+        email: fields.email?.[0],
+        username: fields.username?.[0],
+        password: fields.password?.[0],
+      });
+
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const { ok, fields, error } = await authPost("/api/auth/register", {
-        email,
-        username,
-        password,
-      });
+      const { ok, fields, error } = await authPost(
+        "/api/auth/register",
+        parsed.data,
+      );
 
       if (!ok) {
         if (fields)

@@ -8,6 +8,7 @@ import Button from "@/app/components/ui/Button";
 import Field from "@/app/components/form/Field";
 import { DisplayText, TechText } from "@/app/components/typography/Typography";
 import ErrorNote from "../components/form/ErrorNote";
+import { forgotPasswordSchema } from "@/lib/auth/validation";
 
 export default function ForgotPasswordForm() {
   const router = useRouter();
@@ -22,12 +23,23 @@ export default function ForgotPasswordForm() {
   async function handleForgotPassword() {
     setError("");
     setFieldErrors({});
+    const parsed = forgotPasswordSchema.safeParse({ email });
+
+    if (!parsed.success) {
+      const fields = parsed.error.flatten().fieldErrors;
+
+      setFieldErrors({
+        email: fields.email?.[0],
+      });
+
+      return;
+    }
     setLoading(true);
 
     try {
       const { ok, fields, error } = await authPost(
         "/api/auth/forgot-password",
-        { email },
+        parsed.data,
       );
 
       if (!ok) {
