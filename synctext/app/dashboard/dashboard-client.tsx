@@ -36,7 +36,8 @@ export default function DashboardClient({ userId, username, avatarUrl }: UserPro
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [isCreatingDocument, setIsCreatingDocument] = useState(false);
-  const [createError, setCreateError] = useState("");
+  // Tied to the group it happened in, so it never shows over another one.
+  const [createError, setCreateError] = useState<{ groupId: string; text: string } | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // The private space comes first from the API: shown by default, and once the
@@ -75,14 +76,19 @@ export default function DashboardClient({ userId, username, avatarUrl }: UserPro
   async function createDocument() {
     if (isCreatingDocument || !selectedGroup) return;
 
-    setCreateError("");
+    const groupId = selectedGroup.id;
+    setCreateError(null);
     setIsCreatingDocument(true);
 
     try {
-      const createdDocument = await createDocument_api(selectedGroup.id);
+      const createdDocument = await createDocument_api(groupId);
       router.push(`/doc/${encodeURIComponent(createdDocument.id)}`);
-    } catch {
-      setCreateError("Failed to create the document. Please try again.");
+    } catch (error) {
+      // The server says why, like every other action.
+      setCreateError({
+        groupId,
+        text: error instanceof Error ? error.message : "Failed to create the document. Please try again.",
+      });
     } finally {
       setIsCreatingDocument(false);
     }
@@ -166,7 +172,7 @@ export default function DashboardClient({ userId, username, avatarUrl }: UserPro
                 loadError={loadError}
                 search={search}
                 order={order}
-                createError={createError}
+                createError={createError && createError.groupId === selectedGroup?.id ? createError.text : ""}
                 onCreateDocument={() => void createDocument()}
                 isCreatingDocument={isCreatingDocument}
               />
