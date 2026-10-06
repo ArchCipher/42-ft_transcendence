@@ -11,6 +11,7 @@ import {
 } from "@/lib/auth/session-state";
 
 const POLL_MS = 30_000;
+const CHECK_MIN_MS = 30_000;
 const TOUCH_MIN_MS = 60_000;
 
 async function fetchSessionStatus(): Promise<{ signedIn: boolean }> {
@@ -40,6 +41,7 @@ doc editor etc).
 */
 export function SessionGuard({ children }: { children: ReactNode }) {
   const router = useRouter();
+  const lastCheckRef = useRef(0);
   const lastTouchRef = useRef(0);
 
   const checkSession = useCallback(async () => {
@@ -48,6 +50,9 @@ export function SessionGuard({ children }: { children: ReactNode }) {
       document.visibilityState !== "visible"
     )
       return;
+    const now = Date.now();
+    if (now - lastCheckRef.current < CHECK_MIN_MS) return;
+    lastCheckRef.current = now;
     const status = await fetchSessionStatus();
     if (!status.signedIn) {
       logoutClient(() => router.push(LOGGED_OUT_URL));
