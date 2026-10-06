@@ -47,7 +47,7 @@ export default async function CookiesPage() {
               <strong>Type</strong>
             </td>
             <td>
-              <code>HttpOnly</code>, <code>SameSite=Strict</code>,{" "}
+              <code>HttpOnly</code>, <code>SameSite=Lax</code>,{" "}
               <code>Secure</code>
             </td>
           </tr>
