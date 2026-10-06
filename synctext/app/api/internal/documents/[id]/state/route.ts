@@ -1,6 +1,6 @@
 import { isAuthorized } from "@/lib/auth/internal";
 import { createDocumentSnapshot } from "@/lib/documents/snapshots";
-import { prisma as db } from "@synctext/db";
+import { prisma as db, Prisma } from "@synctext/db";
 
 const SNAPSHOT_INTERVAL_MS = 5 * 60 * 1000;
 
@@ -84,34 +84,44 @@ export async function PUT(
 
     if (!document) return "not-found" as const;
 
-    const previousState = document.ystate
-      ? Buffer.from(document.ystate)
-      : null;
+    const previousState = document.ystate ? Buffer.from(document.ystate) : null;
 
     // hocuspocus can ask us to persist a state that is already current
     if (previousState?.equals(state)) return "unchanged" as const;
 
-    if (previousState) {
-      const latestSnapshot = await tx.documentSnapshot.findFirst({
-        where: { documentId: id },
-        orderBy: { createdAt: "desc" },
-        select: { createdAt: true },
-      });
+    try {
+      if (previousState) {
+        const latestSnapshot = await tx.documentSnapshot.findFirst({
+          where: { documentId: id },
+          orderBy: { createdAt: "desc" },
+          select: { createdAt: true },
+        });
 
-      const snapshotDue =
-        !latestSnapshot ||
-        Date.now() - latestSnapshot.createdAt.getTime() >= SNAPSHOT_INTERVAL_MS;
+        const snapshotDue =
+          !latestSnapshot ||
+          Date.now() - latestSnapshot.createdAt.getTime() >=
+            SNAPSHOT_INTERVAL_MS;
 
-      if (snapshotDue) {
-        // preserve the last persisted state before replacing it
-        await createDocumentSnapshot(tx, id, previousState);
+        if (snapshotDue) {
+          // preserve the last persisted state before replacing it
+          await createDocumentSnapshot(tx, id, previousState);
+        }
       }
-    }
 
-    await tx.document.update({
-      where: { id },
-      data: { ystate: state },
-    });
+      await tx.document.update({
+        where: { id },
+        data: { ystate: state },
+      });
+    } catch (error) {
+      // Collab can still hold an in-memory Yjs document that was deleted meanwhile.
+      // Losing the write is correct. P2025 or P2003 -> 404
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        (error.code === "P2025" || error.code === "P2003")
+      )
+        return "not-found" as const;
+      throw error;
+    }
 
     return "updated" as const;
   });
