@@ -11,8 +11,6 @@ import type { Status } from "./profile-client";
 import ErrorNote from "../components/form/ErrorNote";
 import { isPasswordStrong } from "@/lib/auth/password-strength";
 
-import { isPasswordStrong } from "@/lib/auth/password-strength";
-
 const FALLBACK = "Something went wrong. Please try again.";
 
 type PasswordFieldErrors = {
