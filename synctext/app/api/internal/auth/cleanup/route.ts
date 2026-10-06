@@ -3,13 +3,13 @@ import { isAuthorized } from "@/lib/auth/internal";
 import { deleteUser } from "@/lib/groups/ownership";
 
 /*
-Dead-row cleanup for the auth tables. Called only by the internal scheduled
-cleanup container, alongside the guest-session sweep. Every predicate below is
-"this row can no longer authenticate anyone", so running it early or late is
-harmless and the endpoint is idempotent.
+Dead-row cleanup for the auth tables. Each predicate is
+"this row can no longer authenticate anyone":
+  - verification / password-reset links: gone the moment they expire or are used
+  - sessions: 1 day of retention, for debugging auth incident
+  - abandoned signups: removed as soon as their link dies
 
-Retention is deliberate: rows are only removed after they have been dead for a
-while, which keeps a rolling window for debugging an auth incident.
+Idempotent and safe to run early or late.
 */
 
 const SESSION_RETENTION_MS = 24 * 60 * 60 * 1000; // 1 day
@@ -51,6 +51,7 @@ export async function POST(request: Request) {
   const unverified = await db.user.findMany({
     where: {
       emailVerifiedAt: null,
+      accounts: { none: {} },
       emailVerificationTokens: { none: { expiresAt: { gt: now } } },
     },
     select: { id: true },

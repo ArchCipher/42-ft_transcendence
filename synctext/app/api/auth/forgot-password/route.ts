@@ -2,9 +2,9 @@ import { emailRequestSchema } from "@/lib/auth/validation";
 import {
   clientIp,
   ipLimiter,
-  accountLimiter,
   ipKey,
-  accountKey,
+  emailLimiter,
+  emailKey,
 } from "@/lib/auth/rate-limit";
 import { prisma as db } from "@synctext/db";
 import { sendPasswordResetEmail } from "@/lib/auth/email";
@@ -39,8 +39,8 @@ export async function POST(request: Request) {
   if ((await ipLimiter.blockedRemaining(ipKey(ip))) > 0)
     return Response.json({ error: "Too many attempts" }, { status: 429 });
 
-  // rate limit by account
-  if ((await accountLimiter.blockedRemaining(accountKey(input.email))) > 0)
+  // rate limit by email
+  if (!(await emailLimiter.tryAcquire(emailKey(input.email))))
     return Response.json({ error: "Too many attempts" }, { status: 429 });
 
   // if user doesn't exist still say check email -> anti enumeration
@@ -74,9 +74,6 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("[email] forgot password send fail error:", error);
   }
-  // Count real send against account budget. Per-IP doesn't stop a caller who
-  // rotates IPs
-  await accountLimiter.recordFailure(accountKey(input.email));
 
   return Response.json(
     { ok: "Check your email to reset password" },

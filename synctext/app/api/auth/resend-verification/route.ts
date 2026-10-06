@@ -2,9 +2,9 @@ import { emailRequestSchema } from "@/lib/auth/validation";
 import {
   clientIp,
   ipLimiter,
-  accountLimiter,
   ipKey,
-  accountKey,
+  emailKey,
+  emailLimiter,
 } from "@/lib/auth/rate-limit";
 import { prisma as db } from "@synctext/db";
 import { sendVerificationEmail } from "@/lib/auth/email";
@@ -45,27 +45,25 @@ export async function POST(request: Request) {
   if ((await ipLimiter.blockedRemaining(ipKey(ip))) > 0)
     return Response.json({ error: "Too many attempts" }, { status: 429 });
 
-  // rate limit by account
-  if ((await accountLimiter.blockedRemaining(accountKey(input.email))) > 0)
+  // rate limit by email
+  if (!(await emailLimiter.tryAcquire(emailKey(input.email))))
     return Response.json({ error: "Too many attempts" }, { status: 429 });
 
-  // if user doesn't exist still say check email -> anti enumeration
-  const user = await db.user.findUnique({ where: { email: input.email } });
-  if (!user) {
-    await ipLimiter.recordFailure(ipKey(ip));
-    return Response.json(
-      { ok: "Check your email to verify your account" },
-      { status: 200 },
-    );
-  }
-
+  const user = await db.user.findUnique({
+    where: { email: input.email },
+    select: {
+      id: true,
+      emailVerifiedAt: true,
+      passwordHash: true,
+    },
+  });
   /*
-  Already verified: nothing to send. Reported as success so the response never
-  reveals which case it was.
-
-  A live token is NOT a reason to skip.
+  Nothing to send in any of these cases, answer identically so the
+  response never reveals which case it was: unknown address, already verified,
+  no password(OAuth only)
   */
-  if (user.emailVerifiedAt !== null)
+  if (!user) await ipLimiter.recordFailure(ipKey(ip));
+  if (!user || user.emailVerifiedAt !== null || user.passwordHash === null)
     return Response.json(
       { ok: "Check your email to verify your account" },
       { status: 200 },
@@ -92,9 +90,6 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("[email] resend verification send fail error:", error);
   }
-  // Count real send against account budget. Per-IP doesn't stop a caller who
-  // rotates IPs
-  await accountLimiter.recordFailure(accountKey(input.email));
 
   return Response.json(
     { ok: "Check your email to verify your account" },
