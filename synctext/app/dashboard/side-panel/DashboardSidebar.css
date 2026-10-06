@@ -83,6 +83,15 @@
 
 .SidebarGroup {
   flex: 1;
+  min-width: 0;
+}
+
+.SidebarGroup > span,
+.SidebarFriend > span:not(.SidebarRole):not(.FriendStatus) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .SidebarGroup:hover,

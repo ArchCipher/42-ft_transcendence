@@ -45,6 +45,7 @@ export default function ProfileClient({ initial }: { initial: ProfileInput }) {
     year: "numeric",
     month: "short",
     day: "numeric",
+    timeZone: "UTC",
   }).format(new Date(initial.createdAt));
 
   function handleCancel() {
@@ -117,7 +118,7 @@ export default function ProfileClient({ initial }: { initial: ProfileInput }) {
         </div>
 
         <div className={styles.metaRow}>
-          <span className={styles.badge}>Member since {memberSince}</span>
+          <span className={styles.badge}>Member since {memberSince} (UTC)</span>
           <span
             className={
               initial.emailVerifiedAt
