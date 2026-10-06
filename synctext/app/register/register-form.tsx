@@ -11,6 +11,7 @@ import Field from "@/app/components/form/Field";
 import ErrorNote from "../components/form/ErrorNote";
 import { isPasswordStrong } from "@/lib/auth/password-strength";
 import { registerSchema } from "@/lib/auth/validation";
+import { USERNAME_MAX } from "@synctext/shared";
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -115,7 +116,7 @@ export default function RegisterForm() {
         label="Username"
         value={username}
         onChange={(e) => setUsername(e.target.value)}
-        maxLength={32}
+        maxLength={USERNAME_MAX}
         required
         error={fieldErrors?.username}
         autoComplete="username"

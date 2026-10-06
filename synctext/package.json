@@ -43,6 +43,7 @@
     "lodash.throttle": "^4.1.1",
     "lucide-react": "^1.35.0",
     "next": "^16.3.0",
+    "oauth4webapi": "^3.8.8",
     "ogl": "^1.0.11",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
@@ -69,8 +70,9 @@
     "tailwindcss": "^4.3.3",
     "typescript": "^5"
   },
+
   "optionalDependencies": {
-    "@tailwindcss/oxide-linux-arm64-musl": "4.3.3",
-    "lightningcss-linux-arm64-musl": "1.32.0"
+    "lightningcss-linux-arm64-musl": "1.32.0",
+    "@tailwindcss/oxide-linux-arm64-musl": "4.3.3"
   }
 }

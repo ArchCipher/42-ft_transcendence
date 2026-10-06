@@ -7,22 +7,11 @@ import {
   accountKey,
 } from "@/lib/auth/rate-limit";
 import { getDummyHash, verifyPassword } from "@/lib/auth/password";
-import {
-  generateSessionToken,
-  MAX_SESSIONS,
-  sessionExpiresAt,
-  setSessionCookie,
-} from "@/lib/auth/session";
-import {
-  clearGuestSessionCookie,
-  getGuestSessionToken,
-} from "@/lib/auth/guest-session";
 
 import { prisma as db } from "@synctext/db";
 import { hashForLog } from "@/lib/auth/log";
 import { parseRequest } from "@/lib/auth/parse-request";
-import { claimGuestDocumentForUser } from "@/lib/auth/guest-claim";
-import { hashSessionToken } from "@synctext/shared";
+import { createSessionForUser } from "@/lib/auth/session-create";
 
 /*
 Login Handler: validation -> rate limit -> auth -> session
@@ -96,44 +85,9 @@ export async function POST(request: Request) {
   await accountLimiter.clear(accountKey(input.email));
 
   // create session, revoke previous sessions (keep MAX_SESSIONS)
-  const token = generateSessionToken();
-  const tokenHash = hashSessionToken(token);
-  await db.$transaction(async (tx) => {
-    await tx.session.create({
-      data: {
-        tokenHash,
-        userId: user.id,
-        expiresAt: sessionExpiresAt(),
-        lastUsedAt: new Date(),
-        ip,
-        userAgent: request.headers.get("user-agent") ?? null,
-      },
-    }); // create session: store hash, not the raw token
-    const stale = await tx.session.findMany({
-      where: { userId: user.id, revokedAt: null },
-      orderBy: { createdAt: "desc" },
-      skip: MAX_SESSIONS,
-    }); // get previous sessions, skip MAX_SESSIONS
-    if (stale.length)
-      await tx.session.updateMany({
-        where: { id: { in: stale.map((s) => s.id) } },
-        data: { revokedAt: new Date() },
-      }); // keep MAX_SESSIONS and revoke other old sessions
+  const redirectTo = await createSessionForUser(user.id, {
+    ip,
+    userAgent: request.headers.get("user-agent"),
   });
-
-  const guestToken = await getGuestSessionToken();
-  const guestClaim = await claimGuestDocumentForUser(guestToken, user.id);
-  if (guestToken) await clearGuestSessionCookie();
-  await setSessionCookie(token);
-
-  return Response.json(
-    {
-      ok: true,
-      redirectTo:
-        guestClaim.status === "claimed"
-          ? `/doc/${encodeURIComponent(guestClaim.documentId)}`
-          : "/dashboard",
-    },
-    { status: 200 },
-  );
+  return Response.json({ ok: true, redirectTo }, { status: 200 });
 }

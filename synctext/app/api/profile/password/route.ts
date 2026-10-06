@@ -25,7 +25,7 @@ API Response contracts: POST /api/profile/password
 
 const passwordChangeSchema = z
   .object({
-    currentPassword: z.string().min(1, "Enter your current password"),
+    currentPassword: z.string().optional(),
     newPassword: z.string().min(1, "Enter a new password"),
     confirmPassword: z.string().min(1, "Confirm your new password"),
   })
@@ -52,40 +52,42 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   }
-  if (currentPassword === newPassword) {
-    return Response.json(
-      {
-        error: "Password unchanged.",
-        fields: { newPassword: ["New password must be different from your old password."] },
-      },
-      { status: 400 },
-    );
-  }
 
   const key = accountKey(user.email);
   if ((await accountLimiter.blockedRemaining(key)) > 0) {
     return Response.json({ error: "Too many attempts" }, { status: 429 });
   }
 
-  if (!user.passwordHash) {
+  // Oauth has no password to confirm
+  if (user.passwordHash) {
+    if (!currentPassword)
+      return Response.json(
+        { error: "Enter your current password." },
+        { status: 400 },
+      );
+    if (!(await verifyPassword(currentPassword, user.passwordHash))) {
+      await accountLimiter.recordFailure(key);
+      return Response.json(
+        { error: "Current password is incorrect." },
+        { status: 400 },
+      );
+    }
+  }
+  if (currentPassword === newPassword) {
     return Response.json(
-      { error: "This account has no password set." },
+      {
+        error: "Password unchanged.",
+        fields: {
+          newPassword: [
+            "New password must be different from your old password.",
+          ],
+        },
+      },
       { status: 400 },
     );
   }
 
-  if (!(await verifyPassword(currentPassword, user.passwordHash))) {
-    await accountLimiter.recordFailure(key);
-    return Response.json(
-      { error: "Current password is incorrect." },
-      { status: 400 },
-    );
-  }
-
-  const strength = isPasswordStrong(newPassword, [
-    user.username,
-    user.email,
-  ]);
+  const strength = isPasswordStrong(newPassword, [user.username, user.email]);
   if (!strength.ok) {
     return Response.json(
       {

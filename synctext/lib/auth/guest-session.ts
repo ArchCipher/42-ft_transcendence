@@ -44,7 +44,7 @@ export function getGuestSessionStatus(
 const guestSessionCookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
-  sameSite: "strict",
+  sameSite: "lax",  // Oauth doesn't redirect correctly to dashboard without lax
   path: "/",
 } as const;
 

@@ -123,7 +123,7 @@ export default function PrivacyPage() {
       <ul>
         <li>
           <strong>Session cookie</strong> (essential): <code>HttpOnly</code>,{" "}
-          <code>SameSite=Strict</code>, <code>Secure</code> in production.
+          <code>SameSite=Lax</code>, <code>Secure</code> in production.
           Stores an opaque token (only its hash is stored server-side) to keep
           you signed in. Lifetime 7 days from creation and invalidated after 2
           hours of inactivity.

@@ -27,6 +27,8 @@ export const AVATAR_MAX_BYTES = 500 * 1024;
 
 // allow-listed avatar formats
 export const AVATAR_MIME_TYPES: readonly string[] = ["image/png", "image/jpeg"];
+export const USERNAME_MAX = 32;
+
 // A user is online when they have recently interacted with a visible,
 // authenticated application page. This is deliberately independent from the
 // much longer session idle timeout.

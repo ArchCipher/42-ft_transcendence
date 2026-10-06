@@ -57,6 +57,11 @@
   font-size: var(--app-text-label);
   line-height: 1.45;
 }
+.AuthNotice[role="alert"] {
+  border: 1px solid rgba(255, 90, 90, 0.85);
+  background: oklch(0.25 0.06 25 / 0.85);
+  color: rgba(255, 90, 90, 0.85);
+}
 
 .AuthLinks {
   display: flex;

@@ -43,7 +43,7 @@ export function sessionExpiresAt(): Date {
 const options = {
   httpOnly: true, // JS can't read it (anti-XSS)
   secure: process.env.NODE_ENV === "production", // HTTPS only
-  sameSite: "strict", // not sent cross-site (anti-CSRF)
+  sameSite: "lax", // Oauth doesn't redirect correctly to dashboard without lax
   path: "/",
   maxAge: SESSION_TTL_SECONDS, // match DB `expiresAt` column
 } as const;

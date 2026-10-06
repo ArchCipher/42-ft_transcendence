@@ -11,6 +11,7 @@ References:
 
 import { z } from "zod";
 import { isPasswordStrong } from "./password-strength";
+import { USERNAME_MAX } from "@synctext/shared";
 
 // ---- email --------------------------------------------------------------
 // Syntactic validation only
@@ -62,7 +63,7 @@ export const usernameSchema = z
   .trim()
   .toLowerCase() // canonical form
   .min(3, "Username must be at least 3 characters")
-  .max(32, "Username must be at most 32 characters")
+  .max(USERNAME_MAX, `Username must be at most ${USERNAME_MAX} characters`)
   .regex(/^[a-zA-Z0-9_]+$/, "Only letters, numbers, and underscores");
 
 // ---- forms ---------------------------------------------------------------
@@ -140,6 +141,20 @@ export const verifyEmailSchema = z
   })
   .strict();
 
+// ---- oauth ---------------------------------------------------------------
+
+export const oauthStartSchema = z
+  .object({
+    purpose: z.enum(["signin", "link"]).default("signin"),
+  })
+  .strict();
+
+export const oauthUnlinkSchema = z
+  .object({
+    provider: z.enum(["google"]),
+  })
+  .strict();
+
 // ---- internal --------------------------------------------------------------
 
 export const internalVerifySchema = z
@@ -168,6 +183,8 @@ export type RegisterInput = z.infer<typeof registerSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type PasswordResetInput = z.infer<typeof passwordResetSchema>;
 export type VerifyEmailInput = z.infer<typeof verifyEmailSchema>;
+export type OauthStartInput = z.infer<typeof oauthStartSchema>;
+export type OauthUnlinkInput = z.infer<typeof oauthUnlinkSchema>;
 export type InternalSessionVerifyInput = z.infer<typeof internalVerifySchema>;
 
 // Stable JSON shape for the client: { error: "Validation failed", ... } per field.

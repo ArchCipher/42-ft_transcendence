@@ -1,4 +1,5 @@
 import { createHash, randomBytes } from "node:crypto";
+import { appUrl } from "@/lib/env";
 
 export const PASSWORD_RESET_TTL_SECONDS = 30 * 60; // 30 mins
 
@@ -23,6 +24,5 @@ export function passwordResetExpiresAt(): Date {
 }
 
 export function passwordResetUrl(token: string) {
-  const url = process.env.APP_URL ?? "https://localhost:8443";
-  return `${url}/password-reset?token=${encodeURIComponent(token)}`;
+  return appUrl(`/password-reset?token=${encodeURIComponent(token)}`);
 }

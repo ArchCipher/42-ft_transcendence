@@ -23,10 +23,12 @@ export default function PasswordForm({
   onStatus,
   username,
   email,
+  hasPassword,
 }: {
   onStatus: (status: Status) => void;
   username: string;
   email: string;
+  hasPassword: boolean;
 }) {
   const [showForm, setShowForm] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -47,11 +49,11 @@ export default function PasswordForm({
   async function handleChangePassword() {
     setError(null);
     setFieldErrors({});
-    if (!currentPassword || !newPassword || !confirmPassword) {
+    if ((hasPassword && !currentPassword) || !newPassword || !confirmPassword) {
       setFieldErrors({
-        currentPassword: currentPassword
-          ? undefined
-          : "Enter your current password",
+        currentPassword:
+          hasPassword && !currentPassword ? "Enter your current password"
+            : undefined,
         newPassword: newPassword ? undefined : "Enter a new password",
         confirmPassword: confirmPassword
           ? undefined
@@ -63,7 +65,7 @@ export default function PasswordForm({
       setFieldErrors({ confirmPassword: "Passwords do not match." });
       return;
     }
-    if (currentPassword === newPassword) {
+    if (hasPassword && currentPassword === newPassword) {
       setFieldErrors({
         newPassword: "New password cannot be same as your current password.",
       });
@@ -135,7 +137,11 @@ export default function PasswordForm({
         onClick={() => setShowForm((v) => !v)}
       >
         <TechText className="text-xs">
-          {showForm ? "Hide password change" : "Change password"}
+          {showForm
+            ? "Hide password change"
+            : hasPassword
+              ? "Change password"
+              : "Set a password"}
         </TechText>
       </button>
 
@@ -145,15 +151,17 @@ export default function PasswordForm({
           role="group"
           aria-label="Change password"
         >
-          <Field
-            id="profile-current-password"
-            label="Current password"
-            type={showPassword ? "text" : "password"}
-            value={currentPassword}
-            error={fieldErrors.currentPassword}
-            onChange={onFieldChange(setCurrentPassword, "currentPassword")}
-            autoComplete="current-password"
-          />
+          {hasPassword && (
+            <Field
+              id="profile-current-password"
+              label="Current password"
+              type={showPassword ? "text" : "password"}
+              value={currentPassword}
+              error={fieldErrors.currentPassword}
+              onChange={onFieldChange(setCurrentPassword, "currentPassword")}
+              autoComplete="current-password"
+            />
+          )}
 
           <Field
             id="profile-new-password"
