@@ -59,11 +59,10 @@ export async function POST(request: Request) {
   });
   /*
   Nothing to send in any of these cases, answer identically so the
-  response never reveals which case it was: unknown address, already verified,
-  no password(OAuth only)
+  response never reveals which case it was: unknown address, already verified
   */
   if (!user) await ipLimiter.recordFailure(ipKey(ip));
-  if (!user || user.emailVerifiedAt !== null || user.passwordHash === null)
+  if (!user || user.emailVerifiedAt !== null)
     return Response.json(
       { ok: "Check your email to verify your account" },
       { status: 200 },
@@ -73,8 +72,8 @@ export async function POST(request: Request) {
   const token = generateVerificationToken();
   await db.$transaction([
     db.emailVerificationToken.deleteMany({
-      where: { userId: user.id },
-    }),
+      where: { userId: user.id, expiresAt: { gt: new Date() } },
+    }), // delete previous tokens if any
     db.emailVerificationToken.create({
       data: {
         userId: user.id,

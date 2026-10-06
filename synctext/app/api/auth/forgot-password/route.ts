@@ -43,15 +43,24 @@ export async function POST(request: Request) {
   if (!(await emailLimiter.tryAcquire(emailKey(input.email))))
     return Response.json({ error: "Too many attempts" }, { status: 429 });
 
-  // if user doesn't exist still say check email -> anti enumeration
-  const user = await db.user.findUnique({ where: { email: input.email } });
-  if (!user) {
-    await ipLimiter.recordFailure(ipKey(ip));
+  const user = await db.user.findUnique({
+    where: { email: input.email },
+    select: {
+      id: true,
+      passwordHash: true,
+    },
+  });
+  /*
+  Nothing to send in any of these cases, answer identically so the
+  response never reveals which case it was: unknown address,
+  no password(OAuth only)
+  */
+  if (!user) await ipLimiter.recordFailure(ipKey(ip));
+  if (!user || user.passwordHash === null)
     return Response.json(
       { ok: "Check your email to reset password" },
       { status: 200 },
     );
-  }
 
   // create password reset token, delete previous tokens
   const token = generatePasswordResetToken();
