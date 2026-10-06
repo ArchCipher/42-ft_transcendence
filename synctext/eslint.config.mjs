@@ -5,6 +5,12 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
+  {
+  // Playwright fixtures call their callback 'use'. Uutside react it is just a
+  // normal function, not a hook. Nothing under tests/ renders.
+  files: ["tests/**/*.ts", "tests/**/*.tsx"],
+  rules: {"react-hooks/rules-of-hooks": "off", "react-hooks/exhaustive-deps": "off"},
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

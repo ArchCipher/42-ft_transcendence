@@ -29,8 +29,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
-vitest.config.ts
-tests/
 
 # env files (can opt-in for committing if needed)
 .env*
@@ -42,3 +40,7 @@ tests/
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# test
+.playwright-browsers/
+playwright-report/

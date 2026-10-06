@@ -7,6 +7,15 @@ import {
   GroupRole,
   FriendshipStatus,
 } from "../src/index.js";
+import {
+  SEED_PASSWORD,
+  SEED_USERS,
+  SEED_GROUPS,
+  SEED_DOCUMENTS,
+  SEED_SNAPSHOT_DAYS,
+  SEED_FRIENDSHIPS,
+  type SeedUserName,
+} from "./seed-data.js";
 
 // Keep the Argon2id config aligned with synctext/lib/auth/password.ts
 // so seeded passwords use the same hashing policy as real user passwords.
@@ -56,109 +65,66 @@ async function createUser(data: {
 }
 
 async function main() {
-  const passwordHash = await hashPassword("password123");
+  const passwordHash = await hashPassword(SEED_PASSWORD);
   const emailVerifiedAt = new Date(); // skip the email verification flow for these test accounts
 
-  const common = { passwordHash, emailVerifiedAt, role: PlatformRole.USER };
+  const users = {} as Record<SeedUserName, { id: string }>;
+  for (const [name, { email, username, role }] of Object.entries(SEED_USERS)) {
+    users[name as SeedUserName] = await createUser({
+      email,
+      username,
+      passwordHash,
+      emailVerifiedAt,
+      role: role as PlatformRole,
+    });
+  }
 
-  // zaphod is the platform admin and belongs to no shared group: the fixture
-  // for a complete outsider, who must get 404 and never 403.
-  const zaphod = await createUser({
-    email: "zaphod@test.local",
-    username: "zaphod",
-    ...common,
-    role: PlatformRole.ADMIN,
-  });
-  const alice = await createUser({ email: "alice@test.local", username: "alice", ...common });
-  const bob = await createUser({ email: "bob@test.local", username: "bob", ...common });
-  const tim = await createUser({ email: "tim@test.local", username: "tim", ...common });
-
-  // Two shared groups. bob is OWNER of one and ADMIN of the other, which proves
-  // a role belongs to a group and not to a person. alice is in "synctext" only:
+  // A role belongs to a group and not to a person. alice is in "synctext" only:
   // she is the fixture for "member here, outsider there".
-  const synctext = await prisma.group.create({
-    data: {
-      name: "synctext",
-      members: {
-        create: [
-          { userId: alice.id, role: GroupRole.OWNER },
-          { userId: bob.id, role: GroupRole.ADMIN },
-          { userId: tim.id, role: GroupRole.MEMBER },
-        ],
+  type SeededGroup = { id: string; members: { id: string; userId: string }[] };
+  const groups = {} as Record<keyof typeof SEED_GROUPS, SeededGroup>;
+  for (const [key, group] of Object.entries(SEED_GROUPS)) {
+    groups[key as keyof typeof SEED_GROUPS] = await prisma.group.create({
+      data: {
+        name: group.name,
+        members: {
+          create: Object.entries(group.members).map(([name, role]) => ({
+            userId: users[name as SeedUserName].id,
+            role: role as GroupRole,
+          })),
+        },
       },
-    },
-    include: { members: true },
-  });
+      include: { members: true },
+    });
+  }
 
-  const collab = await prisma.group.create({
-    data: {
-      name: "collab",
-      members: {
-        create: [
-          { userId: bob.id, role: GroupRole.OWNER },
-          { userId: tim.id, role: GroupRole.MEMBER },
-        ],
-      },
-    },
-    include: { members: true },
-  });
-
-  const membership = (group: typeof synctext, userId: string) => {
-    const found = group.members.find((member) => member.userId === userId);
-    if (!found) throw new Error(`no membership for ${userId}`);
+  const membership = (group: SeededGroup, name: SeedUserName) => {
+    const found = group.members.find((member) => member.userId === users[name].id);
+    if (!found) throw new Error(`no membership for ${name}`);
     return found.id;
   };
 
-  // The four role-by-grant combinations, spread over two documents in the same
-  // group so the same three people cover all of them:
-  //   doc 1 -> bob is ADMIN without a grant, tim is MEMBER with one
-  //   doc 2 -> bob is ADMIN with a grant,    tim is MEMBER without
-  const document = await prisma.document.create({
-    data: {
-      id: "test-document",
-      title: "Test Document",
-      ystate: testDocumentYState("This is a test document"),
-      groupId: synctext.id,
-      createdById: alice.id,
-      grants: {
-        create: [
-          { membershipId: membership(synctext, alice.id) },
-          { membershipId: membership(synctext, tim.id) },
-        ],
+  for (const doc of SEED_DOCUMENTS) {
+    const group = groups[doc.group];
+    await prisma.document.create({
+      data: {
+        id: doc.id,
+        title: doc.title,
+        ystate: testDocumentYState(doc.text),
+        groupId: group.id,
+        createdById: users[doc.createdBy].id,
+        grants: {
+          create: doc.granted.map((name) => ({ membershipId: membership(group, name as SeedUserName) })),
+        },
       },
-    },
-  });
-
-  await prisma.document.create({
-    data: {
-      id: "test-document-2",
-      title: "Test Document 2",
-      ystate: testDocumentYState("Created by an admin of the group"),
-      groupId: synctext.id,
-      createdById: bob.id,
-      grants: { create: { membershipId: membership(synctext, bob.id) } },
-    },
-  });
-
-  // In the other group, so alice (not a member) must be refused on it.
-  await prisma.document.create({
-    data: {
-      id: "test-document-3",
-      title: "Test Document 3",
-      ystate: testDocumentYState("Lives in the collab group"),
-      groupId: collab.id,
-      createdById: bob.id,
-      grants: { create: { membershipId: membership(collab, bob.id) } },
-    },
-  });
+    });
+  }
 
   // Exactly SNAPSHOT_RETENTION_LIMIT snapshots, so the seed sits on the
   // boundary the state route prunes at.
-  const snapshotDays = ["2026-09-10", "2026-09-11", "2026-09-12", "2026-09-13", "2026-09-14"];
-
   await prisma.documentSnapshot.createMany({
-    data: snapshotDays.map((day) => ({
-      documentId: document.id,
+    data: SEED_SNAPSHOT_DAYS.map((day) => ({
+      documentId: SEED_DOCUMENTS[0].id,
       ystate: testDocumentYState(
         `this is a snapshot from ${day}. you can recover it if you want..`,
       ),
@@ -168,24 +134,28 @@ async function main() {
 
   // Friendship rows store the smaller id first (CHECK in the migration). zaphod
   // has no friends: nobody may add him to a group.
-  const friends = (requester: { id: string }, other: { id: string }) => {
-    const [userAId, userBId] = [requester.id, other.id].sort();
-    return {
-      userAId,
-      userBId,
-      requestedById: requester.id,
-      status: FriendshipStatus.ACCEPTED,
-      respondedAt: new Date(),
-    };
-  };
-
   await prisma.friendship.createMany({
-    data: [friends(bob, alice), friends(alice, tim)],
+    data: SEED_FRIENDSHIPS.map(({ requester, other }) => {
+      const requesterId = users[requester].id;
+      const otherId = users[other].id;
+      const [userAId, userBId] = [requesterId, otherId].sort();
+      return {
+        userAId,
+        userBId,
+        requestedById: requesterId,
+        status: FriendshipStatus.ACCEPTED,
+        respondedAt: new Date(),
+      };
+    }),
   });
 
   console.log(
-    `seeded: 4 users (${[zaphod, alice, bob, tim].map((u) => u.username).join(", ")}), ` +
-      `4 private spaces, 2 shared groups, 3 documents, ${snapshotDays.length} snapshots, 2 friendships`,
+    `seeded: ${Object.keys(SEED_USERS).length} users (${Object.values(SEED_USERS)
+      .map((u) => u.username)
+      .join(", ")}), ` +
+      `${Object.keys(SEED_USERS).length} private spaces, ${Object.keys(SEED_GROUPS).length} shared groups, ` +
+      `${SEED_DOCUMENTS.length} documents, ${SEED_SNAPSHOT_DAYS.length} snapshots, ` +
+      `${SEED_FRIENDSHIPS.length} friendships`,
   );
 }
 

@@ -9,6 +9,8 @@ export default defineConfig([
     "node_modules/**",
     "**/dist/**",
     ".next/**",
-    "synctext/**",
+    "playwright-browsers/**",
+	"playwright-report/**",
+	"test-results/**",
   ]),
 ]);
