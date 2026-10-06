@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authPost, FALLBACK } from "../auth/api";
@@ -9,6 +9,7 @@ import { DisplayText, TechText } from "@/app/components/typography/Typography";
 import Button from "@/app/components/ui/Button";
 import Field from "@/app/components/form/Field";
 import ErrorNote from "../components/form/ErrorNote";
+import { isPasswordStrong } from "@/lib/auth/password-strength";
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -24,6 +25,11 @@ export default function RegisterForm() {
   }>({});
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  const passwordStrength = useMemo(
+    () => (password ? isPasswordStrong(password, [email, username]) : null),
+    [password, email, username]
+  );
 
   // calls /api/auth/register and either sets error or calls /auth?verify=pending
   async function handleRegister() {
@@ -107,6 +113,36 @@ export default function RegisterForm() {
         error={fieldErrors?.password}
         autoComplete="new-password"
       />
+
+      {passwordStrength && (
+        <div className="PasswordStrength">
+          <TechText className="text-xs">
+            Password strength: {passwordStrength.score}/4
+          </TechText>
+
+          <div
+            className="PasswordStrengthBar"
+            aria-label={`Password strength ${passwordStrength.score} out of 4`}
+          >
+            {[1, 2, 3, 4].map((level) => (
+              <span
+                key={level}
+                className={
+                  level <= passwordStrength.score
+                    ? "PasswordStrengthSegment PasswordStrengthSegmentActive"
+                    : "PasswordStrengthSegment"
+                }
+              />
+            ))}
+          </div>
+
+          {passwordStrength.feedback && (
+            <TechText className="text-xs">
+              {passwordStrength.feedback}
+            </TechText>
+          )}
+        </div>
+      )}
 
       <Field
         id="confirm-password"
