@@ -8,6 +8,7 @@ import { DisplayText, TechText } from "@/app/components/typography/Typography";
 import Button from "@/app/components/ui/Button";
 import Field from "@/app/components/form/Field";
 import ErrorNote from "../components/form/ErrorNote";
+import { loginSchema } from "@/lib/auth/validation";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -25,15 +26,26 @@ export default function LoginForm() {
   async function handleLogin() {
     setError("");
     setFieldErrors({});
+
+    const parsed = loginSchema.safeParse({ email, password });
+
+    if (!parsed.success) {
+      const fields = parsed.error.flatten().fieldErrors;
+
+      setFieldErrors({
+        email: fields.email?.[0],
+        password: fields.password?.[0],
+      });
+
+      return;
+    }
+
     setLoading(true);
 
     try {
       const { ok, fields, error, redirectTo } = await authPost(
         "/api/auth/login",
-        {
-          email,
-          password,
-        },
+          parsed.data,
       );
 
       if (!ok) {

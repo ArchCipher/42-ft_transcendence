@@ -8,6 +8,7 @@ import Field from "@/app/components/form/Field";
 import Button from "@/app/components/ui/Button";
 import { DisplayText, TechText } from "@/app/components/typography/Typography";
 import ErrorNote from "../components/form/ErrorNote";
+import { passwordResetSchema } from "@/lib/auth/validation";
 
 export default function PasswordResetForm() {
   const router = useRouter();
@@ -37,13 +38,27 @@ export default function PasswordResetForm() {
       return;
     }
 
+    const parsed = passwordResetSchema.safeParse({
+      token,
+      password,
+    });
+
+    if (!parsed.success) {
+      const fields = parsed.error.flatten().fieldErrors;
+
+      setFieldErrors({
+        password: fields.password?.[0],
+      });
+
+      return;
+    }
     setLoading(true);
 
     try {
-      const { ok, fields, error } = await authPost("/api/auth/password-reset", {
-        token,
-        password,
-      });
+      const { ok, fields, error } = await authPost(
+        "/api/auth/password-reset",
+        parsed.data,
+      );
 
       if (!ok) {
         if (fields)

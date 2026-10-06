@@ -9,7 +9,6 @@ import Button from "@/app/components/ui/Button";
 import Field from "@/app/components/form/Field";
 import type { Status } from "./profile-client";
 import ErrorNote from "../components/form/ErrorNote";
-
 import { isPasswordStrong } from "@/lib/auth/password-strength";
 
 const FALLBACK = "Something went wrong. Please try again.";
@@ -67,6 +66,15 @@ export default function PasswordForm({
     if (currentPassword === newPassword) {
       setFieldErrors({
         newPassword: "New password cannot be same as your current password.",
+      });
+      return;
+    }
+
+    const strength = isPasswordStrong(newPassword, [username, email]);
+
+    if (!strength.ok) {
+      setFieldErrors({
+        newPassword: strength.feedback || "Password is too weak.",
       });
       return;
     }
