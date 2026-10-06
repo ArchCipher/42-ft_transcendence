@@ -10,7 +10,7 @@ import {
 } from "@hocuspocus/provider-react";
 import { SessionGuard } from "@/hooks/use-session-guard";
 import { AnyExtension, useEditor } from "@tiptap/react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import Collaboration from "@tiptap/extension-collaboration";
 import CollaborationCaret from "@tiptap/extension-collaboration-caret";
@@ -25,6 +25,7 @@ import { GuestDocumentNavbar } from "@/app/doc/[id]/guest-navbar";
 import { getLocalUser } from "@/lib/sync/sync-user";
 import { Footer } from "@/app/components/footer/Footer";
 import { useHydrated } from "@/hooks/use-hydrated";
+import { usePoll } from "@/hooks/use-poll";
 
 type SyncUser = { name: string; color: string };
 
@@ -75,7 +76,32 @@ function SyncEditorSession({
       ? Date.now() >= new Date(guestState.editExpiresAt).getTime()
       : false,
   );
-  const effectiveReadOnly = readOnly || guestReadOnly;
+  const [accessReadOnly, setAccessReadOnly] = useState(readOnly);
+  const [documentUnavailable, setDocumentUnavailable] = useState(false);
+  const effectiveReadOnly = accessReadOnly || guestReadOnly || documentUnavailable;
+
+  const checkDocumentAccess = useCallback(
+    async (signal: AbortSignal) => {
+      const response = await fetch(`/api/documents/${encodeURIComponent(docId)}`, {
+        signal,
+        cache: "no-store",
+      });
+
+      if (response.status === 404) {
+        setDocumentUnavailable(true);
+        setAccessReadOnly(true);
+        return;
+      }
+      if (!response.ok) return;
+
+      const document = (await response.json()) as { canEdit: boolean };
+      setDocumentUnavailable(false);
+      setAccessReadOnly(!document.canEdit);
+    },
+    [docId],
+  );
+
+  usePoll(checkDocumentAccess, !guestState);
 
   useEffect(() => {
     if (!guestState) return;
@@ -130,8 +156,19 @@ function SyncEditorSession({
     />
   );
 
-  const body = mounted ? (
+  const body = documentUnavailable ? (
+    <div className="flex min-h-[60vh] items-center justify-center">
+      <p className="text-sm text-[rgb(244,242,238,0.75)]">
+        This document is no longer available to you.
+      </p>
+    </div>
+  ) : mounted ? (
     <>
+      {!readOnly && accessReadOnly && (
+        <p className="px-4 py-3 text-center text-sm text-[rgb(244,242,238,0.75)]">
+          Your editing access was removed. This document is now read-only.
+        </p>
+      )}
       <SimpleEditorView editor={editor} showToolbar={!effectiveReadOnly} />
       <Footer />
     </>
