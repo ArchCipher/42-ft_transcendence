@@ -56,26 +56,28 @@ export async function POST(request: Request) {
   if (!isPasswordStrong(input.password, [user.username, user.email]).ok)
     return Response.json({ error: "Password too weak" }, { status: 400 });
 
-  // revoke password-reset token
-  const claim = await db.passwordResetToken.updateMany({
-    where: { id: record.id, usedAt: null },
-    data: { usedAt: new Date() },
-  }); // update token
-  if (claim.count === 0)
-    return Response.json({ error: "Invalid or expired link" }, { status: 400 });
-
-  // record new password, revoke all sessions
   const passwordHash = await hashPassword(input.password);
-  await db.$transaction([
-    db.user.update({
+  const done = await db.$transaction(async (tx) => {
+    // revoke password-reset token
+    const claim = await tx.passwordResetToken.updateMany({
+      where: { id: record.id, usedAt: null },
+      data: { usedAt: new Date() },
+    }); // update token
+    if (claim.count === 0) return false;
+
+    // record new password, revoke all sessions
+    await tx.user.update({
       where: { id: record.userId },
       data: { passwordHash },
-    }), // update user row
-    db.session.updateMany({
+    }); // update user row
+    await tx.session.updateMany({
       where: { userId: record.userId, revokedAt: null },
       data: { revokedAt: new Date() },
-    }), // revoke all sessions
-  ]);
+    }); // revoke all sessions
+    return true;
+  });
+  if (!done)
+    return Response.json({ error: "Invalid or expired link" }, { status: 400 });
 
   // success: reset any accumulated failures for ip/account
   await ipLimiter.clear(ipKey(ip));

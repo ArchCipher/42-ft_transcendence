@@ -61,6 +61,17 @@ export const GUEST_DOCUMENT_LIMIT: RateLimitConfig = {
   lockoutMs: ONE_HOUR,
 };
 
+/*
+Outbound mail per address. Deliberately not ACCOUNT_LIMIT: login and register check
+accountLimiter, so sharing one bucket lets a stranger asking for reset emails lock
+the account owner out of login.
+*/
+export const EMAIL_LIMIT: RateLimitConfig = {
+  windowMs: FIFTEEN_MINUTES,
+  maxFailures: 5,
+  lockoutMs: FIFTEEN_MINUTES,
+};
+
 interface Bucket {
   failures: number[]; // timestamps of failed attempts in current window
   lockedUntil: number; // ms the key is blocked (0 = allowed)
@@ -161,6 +172,7 @@ export const ipLimiter = new MemoryRateLimiter(IP_LIMIT);
 export const accountLimiter = new MemoryRateLimiter(ACCOUNT_LIMIT);
 export const registerLimiter = new MemoryRateLimiter(REGISTER_LIMIT);
 export const guestDocumentLimiter = new MemoryRateLimiter(GUEST_DOCUMENT_LIMIT);
+export const emailLimiter = new MemoryRateLimiter(EMAIL_LIMIT);
 
 /*
 Keys must be namespaced: IPs and accounts share the limiter instance space
@@ -168,6 +180,7 @@ so that `ipKey(8.8.8.8)` doesn't collide with `accountKey(8.8.8.8)`.
 */
 export const ipKey = (ip: string): string => `ip:${ip}`;
 export const accountKey = (email: string): string => `account:${email}`;
+export const emailKey = (email: string): string => `email:${email}`;
 
 /*
 Best-effort client IP for the IP limiter. Behind a trusted reverse proxy

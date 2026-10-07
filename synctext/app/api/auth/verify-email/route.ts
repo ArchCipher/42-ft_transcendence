@@ -22,32 +22,38 @@ export async function GET(request: Request) {
       { status: 400 },
     );
 
-  const record = await db.emailVerificationToken.findUnique({
-    where: { tokenHash: hashVerificationToken(parsed.data.token) },
+  const now = new Date();
+
+  // Claim the token and verify the account atomically
+  const tokenHash = hashVerificationToken(parsed.data.token);
+  const verified = await db.$transaction(async (tx) => {
+    const record = await tx.emailVerificationToken.findUnique({
+      where: { tokenHash },
+      select: { id: true, userId: true, usedAt: true, expiresAt: true },
+    });
+    if (!record || record.usedAt !== null || record.expiresAt <= now)
+      return false;
+
+    // atomic conditional claim: only one concurrent request gets count === 1
+    const claim = await tx.emailVerificationToken.updateMany({
+      where: { id: record.id, usedAt: null },
+      data: { usedAt: now },
+    }); // update token
+    if (claim.count === 0) return false;
+
+    await tx.user.update({
+      where: { id: record.userId },
+      data: { emailVerifiedAt: now },
+    });
+
+    return true;
   });
 
-  if (!record || record.usedAt !== null || record.expiresAt < new Date())
+  if (!verified)
     return Response.json(
       { error: "Invalid or expired verification link" },
       { status: 400 },
     );
-
-  // revoke verification token
-  const claim = await db.emailVerificationToken.updateMany({
-    where: { id: record.id, usedAt: null },
-    data: { usedAt: new Date() },
-  }); // update token
-  if (claim.count === 0)
-    return Response.json(
-      { error: "Invalid or expired verification link" },
-      { status: 400 },
-    );
-
-  // record email verification
-  await db.user.update({
-    where: { id: record.userId },
-    data: { emailVerifiedAt: new Date() },
-  }); // update user row
 
   return Response.json({ ok: true }, { status: 200 });
 }

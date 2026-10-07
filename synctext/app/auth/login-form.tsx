@@ -140,6 +140,11 @@ export default function LoginForm({ oauthEnabled }: { oauthEnabled: boolean }) {
             Forgot password?
           </TechText>
         </Link>
+        <Link href="/resend-verification">
+          <TechText className="text-xs text-[#6fd3ff]">
+            Resend verification?
+          </TechText>
+        </Link>
       </div>
     </form>
   );

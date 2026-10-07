@@ -99,9 +99,7 @@ export async function POST(request: Request) {
     console.error("[email] verification send fail error:", error);
   }
 
-  // TODO: resend email endpoint for email send failure
-  // TODO: create script to remove abandoned signup pile up every 24h
-  // delete verifiedAt === null + no oauth
+  // sweep: POST /api/internal/auth/cleanup
 
   // count successful account creation
   await registerLimiter.recordFailure(ipKey(ip));

@@ -1,10 +1,10 @@
-import { forgotPasswordSchema } from "@/lib/auth/validation";
+import { emailRequestSchema } from "@/lib/auth/validation";
 import {
   clientIp,
   ipLimiter,
-  accountLimiter,
   ipKey,
-  accountKey,
+  emailLimiter,
+  emailKey,
 } from "@/lib/auth/rate-limit";
 import { prisma as db } from "@synctext/db";
 import { sendPasswordResetEmail } from "@/lib/auth/email";
@@ -28,7 +28,7 @@ API Response contracts: POST /api/auth/forgot-password
 */
 
 export async function POST(request: Request) {
-  const result = await parseRequest(request, forgotPasswordSchema);
+  const result = await parseRequest(request, emailRequestSchema);
   if (result.error) return result.error;
 
   const input = result.data;
@@ -39,19 +39,28 @@ export async function POST(request: Request) {
   if ((await ipLimiter.blockedRemaining(ipKey(ip))) > 0)
     return Response.json({ error: "Too many attempts" }, { status: 429 });
 
-  // rate limit by account
-  if ((await accountLimiter.blockedRemaining(accountKey(input.email))) > 0)
+  // rate limit by email
+  if (!(await emailLimiter.tryAcquire(emailKey(input.email))))
     return Response.json({ error: "Too many attempts" }, { status: 429 });
 
-  // if user doesn't exist still say check email -> anti enumeration
-  const user = await db.user.findUnique({ where: { email: input.email } });
-  if (!user) {
-    await ipLimiter.recordFailure(ipKey(ip));
+  const user = await db.user.findUnique({
+    where: { email: input.email },
+    select: {
+      id: true,
+      passwordHash: true,
+    },
+  });
+  /*
+  Nothing to send in any of these cases, answer identically so the
+  response never reveals which case it was: unknown address,
+  no password(OAuth only)
+  */
+  if (!user) await ipLimiter.recordFailure(ipKey(ip));
+  if (!user || user.passwordHash === null)
     return Response.json(
       { ok: "Check your email to reset password" },
       { status: 200 },
     );
-  }
 
   // create password reset token, delete previous tokens
   const token = generatePasswordResetToken();
@@ -74,8 +83,6 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("[email] forgot password send fail error:", error);
   }
-
-  // TODO: resend email endpoint for email send failure
 
   return Response.json(
     { ok: "Check your email to reset password" },
