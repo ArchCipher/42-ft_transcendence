@@ -30,6 +30,7 @@ type DashboardProps = {
   createError: string;
   onCreateDocument: () => void;
   isCreatingDocument: boolean;
+  filter: string;
 };
 
 export default function DocumentsDashboard({ userId,
@@ -40,6 +41,7 @@ export default function DocumentsDashboard({ userId,
                                               loadError,
                                               search,
                                               order,
+                                              filter,
                                               onCreateDocument,
                                               isCreatingDocument,
                                               createError }: DashboardProps) {
@@ -157,9 +159,14 @@ async function saveRename(): Promise<boolean> {
         </p>
       ) : null}
 
-      {!isLoading ? documents.filter((doc) =>
-          doc.title.toLowerCase().includes(search.toLowerCase()))
-        .sort((a, b) => {
+      {!isLoading ? documents.filter((doc) => {
+        if (filter === "created") return doc.createdBy?.id === userId;
+        if (filter === "edit") return doc.canEdit;
+        if (filter === "read") return !doc.canEdit;
+          return true;
+        }).filter((doc) =>
+          doc.title.toLowerCase().includes(search.toLowerCase())
+        ).sort((a, b) => {
         if (order == "name")
           return a.title.localeCompare(b.title);
         const dateField = order === "modification" ? "updatedAt" : "createdAt";
