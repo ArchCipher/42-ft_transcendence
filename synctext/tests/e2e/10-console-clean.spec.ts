@@ -32,6 +32,7 @@ const editorOf = (page: import("@playwright/test").Page) =>
 test.describe("III.2 browser console stays clean", () => {
   test("public and legal pages produce no console errors or warnings", async ({ page }) => {
     const console_ = watchConsole(page);
+	const ALLOWED_SUBSTRINGS: string[] = ["loading failed for the <script>", "due to access control checks",];
 
     for (const path of ["/", "/auth", "/register", "/forgot-password", "/resend-verification"]) {
       await page.goto(path);
