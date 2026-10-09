@@ -30,6 +30,7 @@ export default function DashboardClient({ userId, username, avatarUrl }: UserPro
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [order, setOrder] = useState("creation"); // to order by creation, name, modification
+  const [filter, setFilter] = useState("all");
   const [groups, setGroups] = useState<GroupSummary[]>([]);
   const [documents, setDocuments] = useState<DocumentSummary[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
@@ -120,6 +121,8 @@ export default function DashboardClient({ userId, username, avatarUrl }: UserPro
                 setSearch={setSearch}
                 order={order}
                 setOrder={setOrder}
+                filter={filter}
+                setFilter={setFilter}
                 onHome={() => setSelectedGroupId(null)}
               />
             </AppPanel>
@@ -174,6 +177,7 @@ export default function DashboardClient({ userId, username, avatarUrl }: UserPro
                 loadError={loadError}
                 search={search}
                 order={order}
+                filter={filter}
                 createError={createError && createError.groupId === selectedGroup?.id ? createError.text : ""}
                 onCreateDocument={() => void createDocument()}
                 isCreatingDocument={isCreatingDocument}

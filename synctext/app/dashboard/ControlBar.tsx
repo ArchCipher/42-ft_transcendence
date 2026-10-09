@@ -5,11 +5,14 @@ import Button from "@/app/components/ui/Button";
 import { House } from "lucide-react";
 import InputBox from "@/app/components/form/InputBox";
 import SelectBox from "@/app/components/form/SelectBox";
-import { useState } from "react";
 import "./ControlBar.css";
 
-function FilterBox() {
-  const [filter, setFilter] = useState("all");
+type FilterBoxProps = {
+  filter: string;
+  setFilter: (value: string) => void;
+};
+
+function FilterBox({ filter, setFilter }: FilterBoxProps) {
 
   return (
     <div className="FilterBox">
@@ -84,9 +87,11 @@ type ControlBarProps = {
   order: string;
   setOrder: (value: string) => void;
   onHome: () => void;
+  filter: string;
+  setFilter: (value: string) => void;
 };
 
-export default function ControlBar({ search, setSearch, order, setOrder, onHome }: ControlBarProps) {
+export default function ControlBar({ search, setSearch, order, setOrder, filter, setFilter, onHome }: ControlBarProps) {
   return (
     <div className="ControlBar">
       <Button
@@ -98,7 +103,7 @@ export default function ControlBar({ search, setSearch, order, setOrder, onHome 
         <House size={18} />
       </Button>
 
-      <FilterBox />
+      <FilterBox filter={filter} setFilter={setFilter} />
       <OrderBox orderBy={order} setOrderBy={setOrder} />
       <DocumentSearch search={search} setSearch={setSearch}/>
     </div>

@@ -1,3 +1,7 @@
+.input {
+  color: var(--app-text-white);
+}
+
 .input::placeholder {
   color: var(--app-muted);
 }
