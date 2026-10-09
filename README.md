@@ -1,171 +1,134 @@
-*This project has been created as part of the 42 curriculum by kmurugan, tmurua, uponci, hruiz-fr, and gzanin.*
+*This project has been created as part of the 42 curriculum by kmurugan, tmurua, uponci, hruiz-fr, gzanin.*
 
 # SyncText
-
 ## Description
 
-**SyncText** is a shared space to write notes, drafts, ideas, or any text together, instantly. It is a collaborative document editor where you can start writing even without an account. If you decide it is useful, register and keep what you wrote. Otherwise, leave it behind.
+SyncText is a self-hosted collaborative text editor. It's a place where you can create documents and share them with others.
 
-SyncText runs its own authentication, collaboration, persistence, and database on infrastructure you control. Documents are stored and synchronized inside the application rather than relying on an external document platform.
+Organize your documents in your private space or your shared groups, where collaborators can instantly read what you write or even co-write in real time.
 
-Registered users receive a **Private Space** for their documents. Shared documents use group membership and document-level access rules: groups distinguish **Owner**, **Admin**, and **Member** responsibilities, while document access distinguishes who may view or edit content.
+To try SyncText, start writing a temporary document. If you like it, just register. Your document will be saved and you'll be able to create and join other shared groups, add friends, and start co-writing.
 
-Key implemented features include:
-
-- secure email/password authentication, email verification, and password reset;
-- temporary guest documents that can be claimed after sign-in;
-- document creation, listing, renaming, deletion, and access control;
-- real-time collaborative editing with shared cursors over WebSockets;
-- PostgreSQL persistence for collaborative Yjs state;
-- automatic document snapshots with history, preview, and restore;
-- private spaces, shared-group membership, and document grants;
-- responsive shared UI components;
-- Privacy Policy, Terms of Service, Cookies, and Accessibility pages.
+![Two users editing a shared SyncText document with live cursors](docs/assets/collaboration.gif)
 
 ## Instructions
 
 ### Prerequisites
 
-- Docker Engine or Docker Desktop
-- Docker Compose v2 (`docker compose`)
-- GNU Make
-- OpenSSL with support for `req -addext`
-- Ports `8443` and `8025` available
-- Latest stable Google Chrome
+- Docker
+- Docker Compose v2
+- GNU Make and GNU sed
+- OpenSSL supporting `req -addext`
+- Available ports `8443` and `8025`
 
-Node.js 22 and npm are only required on the host for optional local development checks. The standard application workflow runs through Docker.
+Node.js 22 and npm are only required on the host for optional local development checks. The application workflow runs through Docker
 
-### Configuration
+### One-command deployment
+1. Clone the repository.
+2. Build and start all services:
 
-No manual configuration is required for the default local setup.
+   ```sh
+   make
+   ```
 
-On the first startup, `make` automatically:
-
-1. creates `.env` from `.env.example`,
-2. generates random local values for `DB_PASSWORD` and `INTERNAL_SERVICE_TOKEN`,
-3. creates a self-signed TLS certificate under `secrets/`.
-
-Existing `.env` and TLS files are preserved on later runs.
-
-The default local configuration uses:
-
-| Variable | Local value / purpose |
-|---|---|
-| `DOMAIN_NAME` | `localhost`, used for the TLS certificate and NGINX host |
-| `APP_URL` | `https://localhost:8443`, used in application links |
-| `NODE_ENV` | `production`, matching the container runtime |
-| `DB_NAME`, `DB_USER` | `synctext` |
-| `DB_PASSWORD` | Randomly generated on first startup |
-| `INTERNAL_SERVICE_TOKEN` | Randomly generated on first startup |
-| `MAILPIT_URL` | `http://mailpit:8025`, the internal development mail service |
-
-`.env`, generated credentials, and TLS private keys remain local and are ignored by Git.
-
-### Start the application
-
-From the repository root, build and start the complete application with one command:
-
-```sh
-make
+3. Open **[https://localhost:8443](https://localhost:8443)** and accept the browser's self-signed certificate warning.
+4. For development email verification and password-reset messages, open **[Mailpit](http://127.0.0.1:8025)** at:
+```
+http://localhost:8025
 ```
 
-This prepares missing local configuration, builds the Docker images, starts PostgreSQL, applies database migrations, starts Next.js and Hocuspocus, and exposes browser traffic through NGINX over HTTPS/WSS.
-
-Open:
+5. You can check service health at:
 
 ```text
-https://localhost:8443
+https://localhost:8443/status
 ```
 
-The local TLS certificate is self-signed, so the browser may show a certificate warning on first access.
 
-For development email verification and password-reset messages, open Mailpit at:
+### First startup
 
-```text
-http://127.0.0.1:8025
-```
+On first startup, `make`:
+
+1. Creates `.env` from `.env.example`.
+
+2. Generates `DB_PASSWORD` and `INTERNAL_SERVICE_TOKEN`. 
+3. Creates self-signed TLS certificates in `secrets/`.
+4. Builds containers, applies migrations, and starts the application.
+
+Later runs preserve your configuration and certificates. Both `.env` and `secrets/` are ignored by Git.
+
+### Google OAuth (optional)
+
+Google login requires `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and a matching callback URL. See DEV.md for setup.
+
+Without credentials, set `GOOGLE_OAUTH_ENABLED=false` in `.env`.
 
 ### Useful commands
 
-| Command | Purpose |
-|---|---|
-| `make ps` | Show container status |
-| `make logs` | Follow service logs |
-| `make down` | Stop the stack while keeping project data volumes |
-| `make up` | Rebuild and start the stack |
-| `make migrate-dev NAME=description` | Create a development Prisma migration |
-| `make typecheck` | Run workspace type checks |
-| `make lint` | Run the configured lint checks |
+| Command                                       | Purpose                             |
+| --------------------------------------------- | ----------------------------------- |
+| `make ps` / `make logs`                       | Check services / view logs          |
+| `make down`                                   | Stop services without deleting data |
+| `make backup-db`                              | Create database backup              |
+| `make backup-db-list`                         | List backups                        |
+| `make backup-db-restore BACKUP=filename.dump` | Restore a database backup           |
 
-`make fclean` and `make re` remove project data volumes. Use them only when a clean local database is intended.
+**Database restoration** validates the dump, stops writers, recreates the database, reapplies migrations, and restarts services.
 
-Development fixtures and the migration/seed workflow are documented in [DEV.md](DEV.md).
+**Warning:** `make fclean` and `make re` delete project volumes, including backups.
 
-## Resources
+See [DEV.md](DEV.md) for migration and seed instructions.
 
-### Technical references
+## Features List
 
-- [Next.js](https://nextjs.org/docs)
-- [React](https://react.dev/learn)
-- [TypeScript](https://www.typescriptlang.org/docs/)
-- [Tiptap](https://tiptap.dev/docs/editor/getting-started/overview)
-- [Yjs](https://docs.yjs.dev/)
-- [Hocuspocus](https://tiptap.dev/docs/hocuspocus/getting-started/overview)
-- [Prisma](https://www.prisma.io/docs)
-- [PostgreSQL 16](https://www.postgresql.org/docs/16/)
-- [Docker Compose](https://docs.docker.com/compose/)
-- [NGINX WebSocket proxying](https://nginx.org/en/docs/http/websocket.html)
-- [shadcn/ui](https://ui.shadcn.com/docs)
-- [Base UI](https://base-ui.com/react/overview/quick-start)
-- [Mailpit](https://mailpit.axllent.org/docs/)
-- [OWASP Password Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html)
+| Feature | Functionality | Contributors |
+|---|---|---|
+| Accounts | Signup/login/logout, email verification/resend, password reset/change, Google linking/unlinking | Kiruthika, Gianluca, Umberto |
+| Profiles and sessions | Username/avatar editing, default avatars, account deletion, hashed session tokens, expiry/revocation | Kiruthika, Gianluca, Harold |
+| Friends | Send/cancel/accept/decline requests, remove friends, display recent online presence | Tom, Umberto, Gianluca |
+| Documents | Create/open/rename/delete, search/sort, private spaces, editor grants | Umberto, Gianluca, Harold |
+| Groups | Create/rename/delete, friend-only membership additions, roles, ownership transfer and leaving | Harold, Gianluca, Umberto |
+| Guests | 30-minute editing, five-minute read-only grace period, claim on sign-in, expiry cleanup | Umberto, Harold, Kiruthika |
+| Collaboration | Rich-text formatting, lists, links, find/replace, undo/redo, live cursors, reconnection, persistence | Harold, Umberto, Kiruthika, Tom |
+| History | Latest five snapshots, isolated read-only previews, live restore with a recovery snapshot | Tom |
+| Interface | Responsive navigation/dialogs, reusable controls, server-rendered pages, reduced-motion handling | Gianluca, Umberto, Kiruthika |
+| Operations | HTTPS/WSS deployment, CI build/lint, health/status checks, scheduled backups and recovery | Tom, Harold, Umberto, Kiruthika |
+| Legal pages | Footer links to Privacy Policy, Terms, Cookies and Accessibility | Kiruthika |
 
-### AI usage
+## Modules
 
-AI tools were used as development assistance for explaining unfamiliar framework and infrastructure concepts, reviewing code changes, investigating bugs and integration problems, planning tests, and assisting with snapshot/versioning and documentation work.
+**16 points: 4 Major Modules × 2 + 8 Minor Modules × 1.** 
+*Evaluation requires 14 validated points.*
 
-AI-generated suggestions were treated as proposals rather than authoritative output. Changes were reviewed against the repository and validated through code review, type checking, linting, and manual testing where applicable.
+| Module                                 | Type/points      | Implementation and justification                                                                           | Contributors                              |
+| -------------------------------------- | ---------------- | ---------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| Frontend/backend frameworks            | Major / 2        | Next.js supplies both UI and backend routing in one application                                            | Umberto, all developers                   |
+| WebSockets                             | Major / 2        | Push document updates/cursors with client reconnection                                                     | Harold, Kiruthika, Tom, Umberto           |
+| Standard user management               | Major / 2        | Editable profiles, uploaded/default avatars, friends and presence support collaboration                    | Kiruthika, Umberto, Tom, Gianluca, Harold |
+| Organization system                    | Major / 2        | Group CRUD, membership roles and document actions provide managed workspaces                               | Harold, Gianluca, Umberto                 |
+| ORM                                    | Minor / 1        | Prisma models, migrations and transactions maintain relational data                                        | Harold, backend contributors              |
+| Real-time collaboration                | Minor / 1        | Shared Yjs/Tiptap editing and cursors coordinate concurrent writers                                        | Harold, Umberto, Kiruthika, Tom           |
+| OAuth 2.0                              | Minor / 1        | Google OIDC provides remote login and explicit account linking                                             | Kiruthika                                 |
+| Custom design system                   | Minor / 1        | 10+ reusable [project components](synctext/app/components) share palette, typography and icons             | Gianluca, Umberto                         |
+| Health/backups/recovery                | Minor / 1        | Compose health checks, public `/status`, daily backups, seven-dump retention and restore workflow          | Tom                                       |
+| Additional browsers                    | Minor / 1        | Firefox, Edge and Safari extend Chrome support; team testing reports no known browser-specific limitations | Kiruthika, Tom, Umberto, Gianluca, Harold |
+| SSR                                    | Minor / 1        | Server-rendered pages and homepage metadata provide initial HTML and SEO                                   | Umberto, Kiruthika, Gianluca              |
+| Document Version History & Restoration | Minor custom / 1 | Historical previews and recovery snapshots enable coordinated live restoration                             | Tom, Harold                               |
 
-## Team Information
+### Custom Module
 
-All five team members are developers. Additional roles describe coordination responsibilities rather than exclusive ownership of a feature.
-
-| Member | 42 login | Role(s) | Responsibilities |
-|---|---|---|---|
-| Kiruthika Murugananthan | `kmurugan` | Product Owner, Developer | Product requirements, authentication, session security, legal pages |
-| Tom Murua | `tmurua` | Project Manager / Scrum Master, Developer | Team coordination, infrastructure, persistence, snapshots, documentation |
-| Umberto Ponci | `uponci` | Technical Lead / Architect, Developer | Technical direction, application/editor integration, document APIs, CI |
-| Harold Ruiz-Franck | `hruiz-fr` | Developer | Database architecture, collaboration service, permissions, group model |
-| Gianluca Zanin | `gzanin` | Developer | Frontend layout, shared components, responsive navigation, dashboard and auth UI |
-
-## Project Management
-
-The team organizes work through GitHub Issues, feature branches, and pull requests. Responsibilities are assigned by area, while implementation and review can involve multiple members.
-
-The team holds regular planning and progress meetings. WhatsApp is used for day-to-day coordination, while meetings take place in person or through Google Meet. GitHub is used to track tasks, implementation, code review, and integration.
-
-The main responsibility areas are:
-
-- **Product and requirements:** Kiruthika
-- **Project coordination and infrastructure:** Tom
-- **Technical architecture:** Umberto
-- **Database and collaboration architecture:** Harold
-- **Frontend and responsive UI:** Gianluca
-
-All team members contribute through implementation, review, testing, and documentation.
+The custom module lets users restore documents after accidental changes. Older versions are previewed in temporary `Y.Doc` objects, so the current document isn't affected. Since Yjs merges states, restoration needs to replace the editor content instead of merging the old state. We use database and collaboration locks to prevent conflicts between ongoing edits, saves, and restoration. Before restoring an older version, we also save the current state as a recovery snapshot. This goes beyond basic real-time editing and adds enough complexity to justify a Minor module.
 
 ## Technical Stack
 
-| Area | Technology | Purpose and reason for the choice |
-|---|---|---|
-| Web application | Next.js 16.3.1, React 19.2.8, TypeScript 5.9.3 | Provides frontend pages and backend route handlers in one TypeScript application |
-| Editor | Tiptap 3.30.2 | Extensible rich-text editor with Yjs collaboration support |
-| Collaboration | Yjs 13.6.32, Hocuspocus 4.6.0 | Handles concurrent document state and real-time WebSocket synchronization |
-| Database | PostgreSQL 16, Prisma 7.9.1 | Relational data model, typed queries, migrations, transactions, and binary document-state storage |
-| UI | Tailwind CSS 4.3.3, shadcn/Base UI, custom CSS, Lucide icons | Reusable UI primitives and responsive styling |
-| Authentication | Argon2id, Zod, zxcvbn, opaque session tokens | Secure password hashing, input validation, password strength estimation and revocable server-side sessions |
-| Runtime and deployment | Node.js 22, Docker Compose, NGINX | Reproducible builds and a single HTTPS/WSS entry point |
-| Development email | Mailpit | Local inspection of verification and password-reset emails |
+| Technology                                             | Choice and purpose                                                             |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| Next.js 16.3.1, React 19.2.8, TypeScript 5.9.3         | Frontend pages and backend API handlers share typed application code           |
+| Tiptap 3.30.2                                          | Extensible rich-text editing                                                   |
+| Yjs 13.6.32, Hocuspocus 4.6.0                          | Concurrent document state, WebSocket synchronization and cursors               |
+| PostgreSQL 16, Prisma 7.9.1                            | Relational integrity, transactions, binary state, typed queries and migrations |
+| Tailwind CSS 4.3.3, shadcn/Base UI, custom CSS, Lucide | Shared styling, interactive primitives and icons                               |
+| Argon2id, Zod, zxcvbn, oauth4webapi                    | Salted password hashing, input validation, strength checks and Google OIDC     |
+| Node.js 22, Docker Compose, NGINX, Mailpit             | Reproducible runtime, HTTPS routing and local email inspection                 |
 
 ### Architecture
 
@@ -188,7 +151,8 @@ The collaboration service uses authenticated internal Next.js endpoints for acce
 | `db` | PostgreSQL storage |
 | `migrate` | Applies Prisma migrations before the web service starts |
 | `mailpit` | Captures local development email |
-| `guest-cleanup` | Removes expired, unclaimed guest sessions and documents |
+| `guest-cleanup` | Periodically removes expired guest sessions, auth tokens and abandoned signups |
+| `backup` | Automatically backs up PostgreSQL and provides database restoration |
 
 The repository uses npm workspaces:
 
@@ -205,6 +169,8 @@ The database schema is defined in `packages/db/prisma/schema.prisma`. SQL migrat
 erDiagram
     direction TB
     User ||--o{ GroupMember : joins
+    User ||--o{ OAuthAccount : links
+    User ||--o{ OAuthTransaction : initiates
     Group ||--o{ GroupMember : contains
     Group |o--o{ Document : contains
     User |o--o{ Document : created
@@ -214,25 +180,28 @@ erDiagram
     Document ||--o{ DocumentSnapshot : retains
 ```
 
-| Model | Important fields and types | Relationships / purpose |
+
+| Model | Key fields/types | Relationships |
 |---|---|---|
-| `User` | `id`, `email`, `username`: `String`; `passwordHash`, `avatarUrl`: `String?`; `role`: `PlatformRole` | Accounts, memberships, sessions, auth tokens, friendship pairs |
-| `Group` | `id`, `name`: `String`; `isPrivateSpace`: `Boolean`; timestamps | Contains members and documents |
-| `GroupMember` | `id`, `groupId`, `userId`: `String`; `role`: `GroupRole`; `joinedAt`: `DateTime` | Connects users to groups; a group/user pair is unique |
-| `Document` | `id`, `title`: `String`; `ystate`: `Bytes?`; `groupId`, `guestSessionId`, `createdById`: `String?` | Stores document metadata and persisted collaborative state |
-| `DocumentGrant` | `membershipId`, `documentId`: `String`; `createdAt`: `DateTime` | Gives one group membership edit access to one document |
-| `DocumentSnapshot` | `id`, `documentId`: `String`; `ystate`: `Bytes`; `createdAt`: `DateTime` | Stores historical Yjs document states |
-| `GuestSession` | `id`, `tokenHash`: `String`; expiry dates: `DateTime` | Owns one temporary unclaimed guest document |
-| `Friendship` | `userAId`, `userBId`, `requestedById`: `String`; `status`: `FriendshipStatus`; `respondedAt`: `DateTime?` | Stores canonical friendship/request pairs |
-| `Session` | `id`, `userId`, `tokenHash`: `String`; expiry/revocation/activity dates | Server-side authenticated sessions |
-| `EmailVerificationToken` | `id`, `userId`, `tokenHash`: `String`; `expiresAt`: `DateTime`; `usedAt`: `DateTime?` | Email verification |
-| `PasswordResetToken` | `id`, `userId`, `tokenHash`: `String`; `expiresAt`: `DateTime`; `usedAt`: `DateTime?` | Password reset |
+| `User` | Unique `email, username: String`, `passwordHash/avatarUrl: String?`, `role: PlatformRole` | Memberships, sessions, tokens, OAuth identities, friendship pairs |
+| `Group` | `name: String`, `isPrivateSpace: Boolean` | Many memberships/documents |
+| `GroupMember` | `role: GroupRole`; unique `groupId/userId` | Joins user/group; holds grants |
+| `Document` | `title: String`, `ystate: Bytes?`, nullable `groupId/guestSessionId/createdById` | Group or guest holder; snapshots/grants |
+| `DocumentGrant` | Composite `membershipId/documentId` key | Grants one membership editor access |
+| `DocumentSnapshot` | `ystate: Bytes`, `createdAt: DateTime` | Historical state for one document |
+| `GuestSession` | Unique `tokenHash: String`, `editExpiresAt/expiresAt` | At most one temporary document |
+| `Friendship` | Composite `userAId/userBId`, `requestedById`, `status: FriendshipStatus` | Two users; canonical ordered pair |
+| `Session` | Unique `tokenHash: String`, `expiresAt`, nullable `revokedAt/lastUsedAt` | One authenticated user |
+| `OAuthAccount` | `provider/providerAccountId: String`; unique pair | One linked user |
+| `OAuthTransaction` | `stateHash/codeVerifier/nonce: String`, `purpose: OAuthPurpose`, `expiresAt` | Optional initiating user |
+| `EmailVerificationToken`, `PasswordResetToken` | Unique `tokenHash: String`, `expiresAt`, nullable `usedAt` | One user per token |
 
 Main enums:
 
 - `PlatformRole`: `USER`, `ADMIN`
 - `GroupRole`: `OWNER`, `ADMIN`, `MEMBER`
 - `FriendshipStatus`: `PENDING`, `ACCEPTED`, `DECLINED`
+- `OAuthPurpose`: `SIGN_IN`, `LINK`
 
 ### Document access model
 
@@ -248,94 +217,43 @@ For documents belonging to a group:
 
 The same permission model is used by document APIs and collaboration access checks.
 
-## Features List
+## Team Information
 
-| Feature | Functionality | Contributor(s) |
+All five members are developers; additional roles define coordination responsibilities.
+
+| Member / 42 login | Role | Responsibility |
 |---|---|---|
-| Registration and authentication | Validates input, hashes passwords with Argon2id, verifies email, signs users in/out, and supports password reset | Kiruthika; Gianluca for auth UI; Umberto for later UI integration |
-| Session handling | Hashed server-side tokens, secure cookies, expiry/revocation, activity checks, and cross-tab updates | Kiruthika |
-| Document dashboard | Create, list, open, rename, delete, search, and sort accessible documents | Umberto, Gianluca, Harold |
-| Collaborative rich-text editing | Shared Tiptap/Yjs content, live cursors/participants, connection status, and synchronized document updates | Harold, Umberto; Kiruthika for connection authorization |
-| Persistent document state | Saves and reloads binary Yjs state through internal APIs and PostgreSQL | Tom, Harold |
-| Automatic snapshots | Stores bounded historical document states with serialized writes and retention | Tom |
-| Snapshot history and preview | Lists recent snapshots and opens an isolated read-only preview | Tom |
-| Snapshot restore | Restores an earlier snapshot through the collaboration service, creates a recovery snapshot first, and updates connected clients live | Tom |
-| Group permission foundation | Private spaces, shared-group membership, document grants, centralized read/write checks, and viewer mode | Harold; Kiruthika for collaboration access rechecks |
-| Temporary guest documents | Creates or resumes a guest document, limits its lifetime, claims it into a private space after sign-in, and removes expired unclaimed documents | Umberto; Harold and Kiruthika for permission/collaboration integration |
-| Shared and responsive UI | Reusable controls, auth/dashboard layouts, mobile navigation, dialogs, and reduced-motion handling | Gianluca, Umberto |
-| Legal information pages | Privacy Policy, Terms of Service, Cookies, and Accessibility pages linked from the application | Kiruthika |
-| Local deployment and validation | Docker Compose setup, HTTPS/WSS routing, migration/readiness ordering, CI build/lint checks, and local validation commands | Tom, Harold, Umberto, Kiruthika |
+| Kiruthika Murugananthan / `kmurugan` | Product Owner | Product priorities, authentication/security |
+| Tom Murua / `tmurua` | Project Manager / Scrum Master | Coordination, infrastructure, documentation |
+| Umberto Ponci / `uponci` | Technical Lead / Architect | Technical direction, integration, quality |
+| Harold Ruiz-Franck / `hruiz-fr` | Developer | Database, collaboration, permissions |
+| Gianluca Zanin / `gzanin` | Developer | Frontend, components, responsive UI |
 
-### Snapshot behavior
+## Project Management
 
-Changed collaborative content is persisted as binary Yjs state. Automatic snapshots retain previous document states while avoiding duplicate writes and unbounded history.
+The team uses GitHub Issues to organize and assign tasks, and feature branches and pull requests for development. Each PR requires at least two reviews before merging. Responsibilities are divided between team members, but integration and testing are shared.
 
-Snapshot previews use a separate temporary `Y.Doc`, so viewing history does not change the live document.
+The team meets weekly, every Wednesday through Google Meet, with some team members joining in person whenever possible. We also keep in touch almost daily through our WhatsApp group.
 
-Authorized editors can restore a previous snapshot. Before restoration, the current state is stored as a recovery snapshot. Restoration is coordinated through the collaboration service so connected clients converge on the restored state without requiring a page refresh.
-
-### Guest document lifetime
-
-An unauthenticated visitor can edit for 30 minutes, followed by a five-minute read-only period. Signing in before expiry claims the document into the user's private space. Expired, unclaimed documents are removed by the periodic cleanup service.
-
-## Modules
-
-Major modules are worth 2 points and Minor modules 1 point. The selected module set totals **15 points: 4 Major × 2 + 7 Minor × 1**.
-
-| Module | Type | Points | Justification and implementation | Contributor(s) |
-|---|---|---:|---|---|
-| Framework for frontend and backend | Major | 2 | Next.js provides both React frontend capabilities and backend route handlers in one TypeScript application | Umberto; all developers contribute to the application |
-| Real-time features using WebSockets | Major | 2 | Hocuspocus/Yjs WebSocket connections synchronize document changes, connection state, and access changes across clients | Harold, Kiruthika, Tom, Umberto |
-| Real-time collaborative features | Minor | 1 | Tiptap and Yjs provide simultaneous editing, shared state, cursors, and read-only participation | Harold, Umberto, Kiruthika, Tom |
-| Public API to interact with the database | Major | 2 | Selected to expose secured external access to application data. The current document APIs provide part of the foundation; the complete module requires API-key security, rate limiting, documentation, and the required endpoint/method coverage | Umberto |
-| Standard user management and authentication | Major | 2 | Selected to support user identity and social collaboration. Secure account/session flows and profile/friendship foundations exist; full profile/avatar persistence, complete friend flows, online status, and profile pages are required for completion | Umberto, Kiruthika, Gianluca, Harold |
-| ORM | Minor | 1 | Prisma provides typed database access, relations, migrations, and transaction support over PostgreSQL | Harold; used across the backend |
-| Complete notification system | Minor | 1 | Selected for user-facing document, group, and social events. Authentication emails are separate from this module | Kiruthika |
-| OAuth 2.0 | Minor | 1 | Selected to provide an alternative remote authentication method in addition to local email/password authentication | Kiruthika |
-| Custom design system | Minor | 1 | Reusable controls, shared visual rules, typography, icons, and component structure provide the basis for a consistent custom interface | Gianluca, Umberto |
-| Additional browsers | Minor | 1 | Selected to provide full application compatibility with at least two browsers in addition to Chrome | Harold |
-| Health checks, status, backups, and disaster recovery | Minor | 1 | Docker health checks monitor the main services and `/status` shows their current availability. PostgreSQL is backed up automatically to a separate persistent volume with limited retention, and backups can be created, listed, and restored through the Makefile | Tom |
+CI is used to build the Docker Compose stack and run lint checks.
 
 ## Individual Contributions
 
-### Kiruthika (`kmurugan`)
+- **Kiruthika (`kmurugan`):** implemented registration, verification/reset emails, password/session security, OAuth, legal pages and validation tooling. Collaboration access rechecks address sessions or permissions changing while a WebSocket remains connected.
+- **Tom (`tmurua`):** implemented Compose/HTTPS infrastructure, Friends API, persistence, snapshots, history/preview, restore, status and database backups; coordinates integration and documentation. Serialized writes, restore locks and recovery snapshots address concurrent edits during restoration.
+- **Umberto (`uponci`):** integrated the editor/application, document/dashboard APIs, guest documents and CI; contributed navigation and authentication UI. Transactional guest claiming transfers the document before deleting its temporary session, preserving content.
+- **Harold (`hruiz-fr`):** implemented Prisma workspaces/schema/migrations/fixtures, Hocuspocus/Yjs infrastructure, viewer behavior, synchronization fixes, groups and centralized permissions. Membership grants keep access independent of the original creator and revoke it when members leave.
+- **Gianluca (`gzanin`):** implemented authentication/dashboard/profile layouts, friends/group UI, menus, document actions, reusable components and mobile controls. Truncation/tooltips and responsive navigation keep long titles and dense controls usable on smaller screens.
 
-- Product Owner and developer for registration, validation, password hashing, sessions, logout/reset, and email verification.
-- Implemented collaboration authentication, permission/session rechecks, and dashboard/session protection.
-- Implemented the legal information pages and contributed development validation tooling.
-- Contributes to the framework, WebSocket, and user-management modules.
+## Resources
 
-**Technical challenge:** a collaboration connection can outlive a user's session or permission. Server-side verification and repeated access checks restrict or close the connection when access changes.
+- Web: [Next.js](https://nextjs.org/docs), [React](https://react.dev/learn), [TypeScript](https://www.typescriptlang.org/docs/).
+- Editing: [Tiptap](https://tiptap.dev/docs/editor/getting-started/overview), [Yjs](https://docs.yjs.dev/), [Hocuspocus](https://tiptap.dev/docs/hocuspocus/getting-started/overview).
+- Data/deployment: [Prisma](https://www.prisma.io/docs), [PostgreSQL 16](https://www.postgresql.org/docs/16/), [Docker Compose](https://docs.docker.com/compose/), [NGINX WebSockets](https://nginx.org/en/docs/http/websocket.html), [Mailpit](https://mailpit.axllent.org/docs/).
+- UI/security: [shadcn/ui](https://ui.shadcn.com/docs), [Base UI](https://base-ui.com/react/overview/quick-start), [OWASP password storage](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html).
 
-### Tom (`tmurua`)
+### AI Usage
 
-- Project Manager / Scrum Master and developer for Docker Compose, configuration, HTTPS, container/network setup, and service health checking.
-- Implemented binary collaborative-state persistence, automatic snapshots, snapshot history/preview, and snapshot restore.
-- Coordinates reviews and integration and maintains the project README.
-- Contributes to the framework, WebSocket, and real-time collaboration modules and is responsible for the health/backups/recovery module.
+AI tools ae used to help us learn unfamiliar concepts, like understanding how Yjs synchronization works. AI also helps by providing test cases for simultaneous editing and reconnections, investigating bugs, and reviewing documentation against the 42 requirements.
 
-**Technical challenge:** persistence and restore operations must not race with concurrent collaborative edits. Database locking, serialized writes, document locking during restore, recovery snapshots, and collaboration-aware restoration keep history and live document state consistent.
-
-### Umberto (`uponci`)
-
-- Technical Lead / Architect and developer for application/editor integration, document/dashboard APIs, and temporary guest-document behavior.
-- Implemented CI build/lint validation and contributed component, navigation, homepage, and authentication integration.
-- Contributes to the framework, public API, and user-management modules.
-
-**Technical challenge:** a temporary guest document must become a normal private document after sign-in without losing content. The claim flow changes ownership transactionally before removing the guest session.
-
-### Harold (`hruiz-fr`)
-
-- Developer for Prisma workspaces, migrations/schema, development fixtures, Hocuspocus/WebSocket infrastructure, and Tiptap/Yjs collaboration.
-- Implemented viewer/access behavior, synchronization fixes, the group/private-space data model, and centralized permissions.
-- Responsible for the WebSocket, real-time collaboration, ORM, and additional-browser modules.
-
-**Technical challenge:** document access must survive changes in who originally created a document. Centralized group-owner and membership-grant rules keep authorization tied to the group rather than to a creator-only ownership model.
-
-### Gianluca (`gzanin`)
-
-- Developer for frontend layout, authentication UI, document actions, user menu, reusable components, mobile navigation, and dashboard/profile presentation.
-- Implemented responsive dialogs and controls, frontend type fixes, and platform/build compatibility improvements.
-- Responsible for the custom design-system module and contributes to the framework and account UI.
-
-**Technical challenge:** long document titles and dense controls can break smaller layouts. Title truncation/tooltips and responsive navigation preserve usability while keeping the complete title accessible.
+AI output is always treated as suggestion, and never as solution. All changes in the project are reviewed through code review, type checking, linting, and manual testing.
