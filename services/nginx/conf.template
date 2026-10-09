@@ -24,6 +24,11 @@ server {
         return 200 "ok\n";
     }
 
+    # internal service API is for the backend network only
+    location /api/internal {
+        return 404;
+    }
+
     # forward application traffic to next.js
     location / {
         proxy_pass http://web:3000;
@@ -47,7 +52,9 @@ server {
 
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+		# overwrite (not append) so client-IP can't be spoofed
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Real-IP $remote_addr;
 
         # a websocket connection is long-lived, not a single request/response —
         # the default 60s read timeout would silently kill idle editors

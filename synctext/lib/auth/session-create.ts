@@ -18,6 +18,10 @@ export async function createSessionForUser(
   const token = generateSessionToken();
   const tokenHash = hashSessionToken(token);
   await db.$transaction(async (tx) => {
+    await tx.user.updateMany({
+      where: { id: userId },
+      data: { updatedAt: new Date() },
+    });
     await tx.session.create({
       data: {
         tokenHash,

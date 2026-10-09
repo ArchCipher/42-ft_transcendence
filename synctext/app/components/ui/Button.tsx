@@ -4,16 +4,13 @@ import { cn } from "@/lib/utils";
 import { TechText } from "@/app/components/typography/Typography";
 import styles from "./Button.module.css";
 
-type ButtonProps = {
-  children: React.ReactNode;
+type ButtonProps = React.ComponentPropsWithoutRef<"button"> & {
   href?: string;
   variant?: "primary" | "outline" | "danger";
   type?: "button" | "submit";
   disabled?: boolean;
   withArrow?: boolean;
   compact?: boolean;
-  onClick?: () => void;
-  className?: string;
 };
 
 export default function Button({
@@ -26,6 +23,7 @@ export default function Button({
   compact = false,
   className = "",
   onClick,
+  ...rest
 }: ButtonProps) {
   const classes = cn(
     styles.button,
@@ -64,6 +62,7 @@ export default function Button({
       disabled={disabled}
       className={classes}
       onClick={onClick}
+	  {...rest}
     >
       {content}
     </button>

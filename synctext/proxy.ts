@@ -14,6 +14,7 @@ const PUBLIC_PREFIXES = [
   "/auth", // login page
   "/register",
   "/verify-email",
+  "/resend-verification",
   "/forgot-password",
   "/password-reset",
   // A guest enters through /sync, then continues to their browser-scoped
