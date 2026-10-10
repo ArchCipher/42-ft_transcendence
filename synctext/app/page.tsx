@@ -33,8 +33,8 @@ export default async function MainPage() {
         <Hero />
         <Features />
         <FinalCTA />
-        <Footer />
       </main>
+      <Footer />
     </AppBackground>
   );
 }

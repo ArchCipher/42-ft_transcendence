@@ -32,7 +32,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <a className="skip-link" href="#main">
           Skip to content
         </a>
-        <div id="main" tabIndex={-1} className="min-h-full flex flex-col">
+        <div id="main" tabIndex={-1} className="min-h-full flex-1 flex flex-col">
           {children}
         </div>
       </body>

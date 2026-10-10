@@ -186,9 +186,8 @@ export default function DashboardClient({ userId, username, avatarUrl }: UserPro
           </AppPanel>
 
         </div>
-
-        <Footer />
       </div>
+	  <Footer />
     </AppBackground>
   );
 }
