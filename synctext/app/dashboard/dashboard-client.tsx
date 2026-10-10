@@ -12,7 +12,6 @@ import { Footer } from "@/app/components/footer/Footer";
 import DocumentsDashboard from "./DocumentsDashboard";
 import DashboardSidebar from "./side-panel/DashboardSidebar";
 import { TechText } from "@/app/components/typography/Typography";
-import Button from "@/app/components/ui/Button";
 import { createDocument_api, listDocuments_api } from "./document/document";
 import { groupLabel, listGroups_api } from "./group/group";
 import { Menu } from "lucide-react";
