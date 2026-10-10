@@ -17,6 +17,13 @@
     transform 0.15s ease,
     text-shadow 0.15s ease;
 }
+.plusButton svg {
+  width: 1em;
+  height: 1em;
+}
+.plusButton:hover svg {
+  filter: drop-shadow(0 0 6px rgba(111, 211, 255, 0.9));
+}
 
 .small {
   width: 30px;
@@ -37,10 +44,10 @@
 }
 
 .tile {
-  width: 150px;
-  height: 150px;
+  width: 100px;
+  height: 100px;
 
-  font-size: 58px;
+  font-size: 40px;
 
   border: 1px dashed var(--app-accent-neon);
 }
