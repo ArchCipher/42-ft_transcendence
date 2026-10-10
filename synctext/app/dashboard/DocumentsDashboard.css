@@ -55,7 +55,6 @@
   background: transparent;
   border: 0;
   cursor: pointer;
-  border-radius: 8px;
   transition: transform 160ms ease, filter 160ms ease;
 }
 
@@ -96,7 +95,6 @@
   background: transparent;
 
   border: 1px solid var(--app-accent-neon);
-  border-radius: 4px;
 
   text-align: center;
   font-size: var(--dashboard-titledoc-size);
@@ -132,7 +130,6 @@
   justify-content: center;
 
   border: 0;
-  border-radius: 50%;
   background: rgba(8, 25, 55, 0.82);
   color: var(--app-text-white);
   opacity: 0.72;

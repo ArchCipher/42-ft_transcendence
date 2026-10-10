@@ -156,12 +156,11 @@ export default function DashboardClient({ userId, username, avatarUrl }: UserPro
                 </TechText>
 
                 <Button
-                  variant="outline"
-                  compact
                   className="DashboardSidebarToggle"
                   onClick={() => setSidebarOpen((open) => !open)}
+                  aria-label="Toggle sidebar"
                 >
-                  <Menu size={18} />
+                  <Menu size={18} aria-hidden="true" />
                 </Button>
 
               </div>

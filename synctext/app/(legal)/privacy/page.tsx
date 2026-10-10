@@ -203,12 +203,6 @@ export default function PrivacyPage() {
           you own.
         </li>
         <li>
-          <strong>Dormant accounts</strong>: if you do not sign in for{" "}
-          <strong>12 months</strong>, we send a warning email 30 days before
-          deletion. Unless you sign back in, your account and associated data
-          are <strong>deleted 12 months after your last sign-in</strong>.
-        </li>
-        <li>
           <strong>Sessions</strong> are revoked on logout, password change, and
           account deletion, and expire after 7 days.
         </li>

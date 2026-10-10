@@ -15,7 +15,7 @@ export default function FriendIdentity({ friend, compact = false }: FriendIdenti
         {friend.avatarUrl ? (
           // Avatar URLs are user-provided and are not constrained to Next Image hosts.
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={friend.avatarUrl} alt="" />
+          <img src={friend.avatarUrl} alt={`${friend.username} avatar`} />
         ) : initial}
       </span>
       {friend.online !== undefined && (

@@ -273,7 +273,6 @@ function SnapshotHistoryContent({
         <Button
           type="button"
           variant="ghost"
-          size="sm"
           onClick={() => refreshHistory()}
           disabled={isLoading || isRestoring}
         >
@@ -287,7 +286,7 @@ function SnapshotHistoryContent({
           <p ref={successMessageRef} role="status" tabIndex={-1} className="text-sm outline-none">
             {success}
           </p>
-          <DialogClose disabled={isRestoring} render={<Button variant="outline" size="sm" />}>
+          <DialogClose disabled={isRestoring} render={<Button variant="outline" />}>
             Back to document
           </DialogClose>
         </div>

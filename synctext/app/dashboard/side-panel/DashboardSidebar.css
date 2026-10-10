@@ -168,7 +168,6 @@
   place-items: center;
   overflow: hidden;
   border: 1px solid rgba(111, 211, 255, 0.45);
-  border-radius: 50%;
   background: rgba(111, 211, 255, 0.1);
   color: var(--app-accent-neon);
   font-family: var(--font-geist-mono), monospace;
@@ -209,49 +208,6 @@
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0;
-}
-
-.FriendsSidebarActions {
-  display: grid;
-  gap: 8px;
-  padding: 0 0 14px;
-}
-
-.FriendsSidebarActions .NewFriendButton {
-  width: 100%;
-  min-height: 40px;
-  display: flex;
-  justify-content: stretch;
-  border-color: rgba(111, 211, 255, 0.42);
-}
-
-.FriendsSidebarActions .NewFriendButton > span {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.FriendsManageButton {
-  justify-self: start;
-  padding: 2px 0;
-  border: 0;
-  background: transparent;
-  color: rgba(111, 211, 255, 0.86);
-  font-family: var(--font-geist-mono), monospace;
-  font-size: 12px;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  cursor: pointer;
-}
-
-.FriendsManageButton:hover {
-  color: var(--app-text-white);
-}
-
-.FriendsManageButton:focus-visible {
-  outline: 2px solid var(--app-accent-yellow);
-  outline-offset: 3px;
 }
 
 .FriendsSidebarState,
@@ -361,8 +317,14 @@
   font-size: 12px;
 }
 
-.FriendsFeedbackSuccess { color: #99e2bd; background: rgba(74, 222, 128, 0.1); }
-.FriendsFeedbackError { color: #ffadad; background: rgba(255, 90, 90, 0.1); }
+.FriendsFeedbackSuccess {
+  color: #99e2bd;
+  background: rgba(74, 222, 128, 0.1);
+}
+.FriendsFeedbackError {
+  color: #ffadad;
+  background: rgba(255, 90, 90, 0.1);
+}
 
 .FriendsManagerSections {
   display: grid;
@@ -386,7 +348,9 @@
   gap: 12px;
 }
 
-.FriendsSectionHeading h3 { margin: 0; }
+.FriendsSectionHeading h3 {
+  margin: 0;
+}
 
 .FriendsSectionHeading span {
   color: var(--app-accent-neon);
@@ -411,7 +375,9 @@
   gap: 12px;
   border: 1px solid rgba(111, 211, 255, 0.16);
   background: rgba(255, 255, 255, 0.02);
-  transition: background-color 160ms ease, border-color 160ms ease;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease;
 }
 
 .FriendsManagerRow:hover {
@@ -471,21 +437,26 @@
     border-left: 0;
   }
 
-  .FriendsInviteControls { grid-template-columns: 1fr; }
+  .FriendsInviteControls {
+    grid-template-columns: 1fr;
+  }
 
   .FriendsManagerRow {
     align-items: flex-start;
     flex-direction: column;
   }
 
-  .FriendsManagerRowActions { width: 100%; justify-content: flex-start; }
+  .FriendsManagerRowActions {
+    width: 100%;
+    justify-content: flex-start;
+  }
 }
 
 .SidebarAddGroup {
   padding: 12px 0 16px;
 }
 
-.SidebarAddGroup .NewGroupButton {
+.SidebarAddGroup .SidebarButton {
   width: 100%;
   min-height: 44px;
   padding: 0 14px;
@@ -503,7 +474,7 @@
   box-shadow: none;
 }
 
-.SidebarAddGroup .NewGroupButton > span {
+.SidebarAddGroup .SidebarButton > span {
   width: 100%;
   display: flex;
   align-items: center;
@@ -511,14 +482,14 @@
   gap: 12px;
 }
 
-.SidebarAddGroup .NewGroupButton:hover:not(:disabled) {
+.SidebarAddGroup .SidebarButton:hover:not(:disabled) {
   border-color: var(--app-accent-neon);
   background: rgba(111, 211, 255, 0.16);
   color: var(--app-text-white);
   box-shadow: none;
 }
 
-.SidebarAddGroup .NewGroupButton:focus-visible {
+.SidebarAddGroup .SidebarButton:focus-visible {
   outline: 2px solid var(--app-accent-yellow);
   outline-offset: 3px;
 }
@@ -561,7 +532,13 @@
   }
 
   .DashboardSidebarToggle {
-    margin-right: 10px;
+    width: fit-content;
+    height: 2.25rem;
+    color: var(--app-accent-neon);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    touch-action: manipulation;
   }
 
   .DashboardSidebar.DashboardSidebarOpen {

@@ -94,6 +94,7 @@ export const simpleEditorConfig = {
       autocorrect: "off",
       autocapitalize: "off",
       "aria-label": "Main content area, start typing to enter text.",
+      role: "textbox",
       class: "simple-editor",
     },
   },

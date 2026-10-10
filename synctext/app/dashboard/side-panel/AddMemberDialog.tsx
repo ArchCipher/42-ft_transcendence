@@ -71,7 +71,6 @@ export default function AddMemberDialog({ group, friends, onClose, onAdded }: Ad
           <PersonRow key={friend.id} person={friend}>
             <Button
               className="FriendsDialogPrimary"
-              size="sm"
               disabled={pendingId === friend.id}
               onClick={() => void addMember(friend)}
             >

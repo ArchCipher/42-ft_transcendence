@@ -99,8 +99,9 @@ export default function ControlBar({ search, setSearch, order, setOrder, filter,
         compact
         className="ControlBarHome"
         onClick={onHome}
+        aria-label="Go to dashboard home"
       >
-        <House size={18} />
+        <House size={18} aria-hidden="true" />
       </Button>
 
       <FilterBox filter={filter} setFilter={setFilter} />

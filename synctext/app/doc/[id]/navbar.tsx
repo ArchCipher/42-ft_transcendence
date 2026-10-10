@@ -159,6 +159,7 @@ export function DocumentNavbar({
             <span
               className="inline-flex items-center gap-1.5 text-[rgba(244,242,238,0.65)]"
               aria-label={`Connection status: ${status}`}
+              role="status"
               aria-live="polite"
               title={status}
             >

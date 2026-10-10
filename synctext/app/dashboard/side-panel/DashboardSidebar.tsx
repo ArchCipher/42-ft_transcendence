@@ -298,7 +298,7 @@ export default function DashboardSidebar({ userId, groups, selectedGroupId, onSe
             <div className="SidebarAddGroup">
               <Button
                 variant="outline"
-                className="NewGroupButton"
+                className="SidebarButton"
                 onClick={() => setNameDialog({})}
               >
                 New group
@@ -358,21 +358,6 @@ export default function DashboardSidebar({ userId, groups, selectedGroupId, onSe
               {friendsData.incomingRequests.length ? <span className="FriendsRequestBadge" aria-label={`${friendsData.incomingRequests.length} incoming friend requests`}>{friendsData.incomingRequests.length}</span> : null}
             </AccordionTrigger>
             <AccordionContent className="SidebarAccordionContent">
-              <div className="FriendsSidebarActions">
-                <Button variant="outline" className="NewFriendButton" onClick={() => {
-                  setFriendsManagerOpen(true);
-                  void refreshFriends();
-                }}>
-                  Add friend
-                  <Plus size={16} aria-hidden="true" />
-                </Button>
-                <button type="button" className="FriendsManageButton" onClick={() => {
-                  setFriendsManagerOpen(true);
-                  void refreshFriends();
-                }}>
-                  Manage requests
-                </button>
-              </div>
               <InputBox
                 type="search"
                 placeholder="Search friends..."
@@ -380,6 +365,14 @@ export default function DashboardSidebar({ userId, groups, selectedGroupId, onSe
                 value={friendsSearch}
                 onChange={(event) => setFriendsSearch(event.target.value)}
               />
+              <div className="SidebarAddGroup">
+                <Button variant="outline" className="SidebarButton" onClick={() => {
+                  setFriendsManagerOpen(true);
+                  void refreshFriends();
+                }}>
+                  Manage friends
+                </Button>
+              </div>
               <div className="SidebarFriendList">
                 {friendsLoading ? <p className="FriendsSidebarState">Refreshing friends…</p> : null}
                 {!friendsLoading && !sortedFriends.length ? <p className="FriendsSidebarState">{friendsSearch ? "No matching friends." : "No friends yet. Add a collaborator to get started."}</p> : null}
