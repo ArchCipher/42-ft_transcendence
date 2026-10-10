@@ -66,7 +66,6 @@ export default function Button(props: ButtonProps) {
 
   const {
     children,
-    href: _href,
     variant = "primary",
     type = "button",
     disabled = false,
