@@ -44,3 +44,13 @@
 
   font: inherit;
 }
+
+@media (max-width: 900px) {
+  .surface {
+    min-height: 34px;
+  }
+  .surface > * {
+    min-height: 32px;
+    padding: 6px 10px;
+  }
+}

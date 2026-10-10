@@ -113,6 +113,8 @@
 }
 
 .SidebarFriend {
+  flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -452,11 +454,11 @@
   }
 }
 
-.SidebarAddGroup {
+.SidebarAddX {
   padding: 12px 0 16px;
 }
 
-.SidebarAddGroup .SidebarButton {
+.SidebarAddX .SidebarButton {
   width: 100%;
   min-height: 44px;
   padding: 0 14px;
@@ -474,7 +476,7 @@
   box-shadow: none;
 }
 
-.SidebarAddGroup .SidebarButton > span {
+.SidebarAddX .SidebarButton > span {
   width: 100%;
   display: flex;
   align-items: center;
@@ -482,14 +484,14 @@
   gap: 12px;
 }
 
-.SidebarAddGroup .SidebarButton:hover:not(:disabled) {
+.SidebarAddX .SidebarButton:hover:not(:disabled) {
   border-color: var(--app-accent-neon);
   background: rgba(111, 211, 255, 0.16);
   color: var(--app-text-white);
   box-shadow: none;
 }
 
-.SidebarAddGroup .SidebarButton:focus-visible {
+.SidebarAddX .SidebarButton:focus-visible {
   outline: 2px solid var(--app-accent-yellow);
   outline-offset: 3px;
 }
@@ -534,8 +536,10 @@
   .DashboardSidebarToggle {
     width: fit-content;
     height: 2.25rem;
+	padding: 0;
+	align-items: center;
     color: var(--app-accent-neon);
-    background: transparent;
+	background: transparent;
     border: none;
     cursor: pointer;
     touch-action: manipulation;

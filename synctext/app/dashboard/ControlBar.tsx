@@ -26,9 +26,9 @@ function FilterBox({ filter, setFilter }: FilterBoxProps) {
           onChange={setFilter}
           options={[
             { value: "all", label: "All documents" },
-            { value: "created", label: "I created" },
-            { value: "edit", label: "I can edit" },
-            { value: "read", label: "I can only read" },
+            { value: "created", label: "Created by me" },
+            { value: "edit", label: "Can edit" },
+            { value: "read", label: "Read only" },
           ]}
         />
       </div>
@@ -53,8 +53,8 @@ function OrderBox({ orderBy, setOrderBy }: OrderBoxProps) {
           value={orderBy}
           onChange={setOrderBy}
           options={[
-            { value: "creation", label: "Creation date" },
-            { value: "modification", label: "Modification date" },
+            { value: "creation", label: "Created date" },
+            { value: "modification", label: "Modified date" },
             { value: "name", label: "Name" },
           ]}
         />

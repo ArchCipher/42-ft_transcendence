@@ -155,13 +155,13 @@ export default function DashboardClient({ userId, username, avatarUrl }: UserPro
                   {selectedGroup ? groupLabel(selectedGroup) : ""}
                 </TechText>
 
-                <Button
+                <button
                   className="DashboardSidebarToggle"
                   onClick={() => setSidebarOpen((open) => !open)}
                   aria-label="Toggle sidebar"
                 >
                   <Menu size={18} aria-hidden="true" />
-                </Button>
+                </button>
 
               </div>
             </div>

@@ -12,8 +12,28 @@ type UserMenuProps = {
   avatarUrl: string | null;
 };
 
-export default function UserMenu({ username, avatarUrl }: UserMenuProps) {
+export function AccountMenuItems() {
   const router = useRouter();
+  return (
+	<>
+	  <Menu.Item
+		className="NavMenuItem"
+		onClickCapture={() => router.push("/profile")}
+	  >
+		<TechText className="text-sm max-[900px]:text-xs">Profile</TechText>
+	  </Menu.Item>
+
+	  <Menu.Item
+		className="NavMenuItem navMenuDanger"
+		onClick={() => void logoutClient(() => router.push(LOGGED_OUT_URL))}
+	  >
+		<TechText className="text-sm max-[900px]:text-xs">Logout</TechText>
+	  </Menu.Item>
+	</>
+  );
+}
+
+export default function UserMenu({ username, avatarUrl }: UserMenuProps) {
   return (
     <div className="NavMenuRoot">
       <Menu.Root modal={false}>
@@ -37,25 +57,7 @@ export default function UserMenu({ username, avatarUrl }: UserMenuProps) {
         <Menu.Portal>
           <Menu.Positioner className="NavMenuPositioner" align="end">
             <Menu.Popup className="NavMenuPanel">
-              <Menu.Item
-                className="NavMenuItem"
-                onClickCapture={() => router.push("/profile")}
-              >
-                <TechText className="text-sm max-[900px]:text-xs">
-                  Profile
-                </TechText>
-              </Menu.Item>
-
-              <Menu.Item
-                className="NavMenuItem navMenuDanger"
-                onClick={() =>
-                  void logoutClient(() => router.push(LOGGED_OUT_URL))
-                }
-              >
-                <TechText className="text-sm max-[900px]:text-xs">
-                  Logout
-                </TechText>
-              </Menu.Item>
+              <AccountMenuItems />
             </Menu.Popup>
           </Menu.Positioner>
         </Menu.Portal>

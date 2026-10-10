@@ -101,6 +101,11 @@
 }
 
 @media (max-width: 900px) {
+    .DashboardPage {
+    --dashboard-text-size: 12px;
+    --dashboard-titledoc-size: 14px;
+    --dashboard-title-size: 16px;
+  }
   .DashboardLayout {
     position: relative;
 
@@ -120,7 +125,7 @@
   }
 
   .DashboardFixedBarInner .DashboardSidebarToggle {
-    display: flex;
+	display: flex;
     grid-column: 3;
     justify-self: end;
   }

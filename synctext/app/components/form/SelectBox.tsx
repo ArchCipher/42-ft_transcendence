@@ -47,7 +47,7 @@ export default function SelectBox({
 
   return (
     <div ref={selectRef} className={styles.select}>
-      <Box>
+      <Box className={styles.outlined}>
         <button
           type="button"
           className={styles.button}

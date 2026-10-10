@@ -3,7 +3,7 @@
   padding: 0;
 
   display: grid;
-  grid-template-columns: 48px minmax(0, 1fr) minmax(0, 1fr) minmax(180px, 1.15fr);
+  grid-template-columns: 48px minmax(0, 1.15fr) minmax(0, 1.15fr) minmax(140px, 0.8fr);
   align-items: center;
   justify-content: space-between;
   gap: clamp(12px, 2vw, 24px);
@@ -50,52 +50,47 @@
 }
 
 .ControlBar .ControlBarHome {
-  width: 48px;
-  min-width: 48px;
-  height: 48px;
-  min-height: 48px;
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+  min-height: 40px;
   padding: 0;
 }
 
 @media (max-width: 900px) {
   .ControlBar {
-    grid-template-columns: 112px minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 10px;
   }
 
   .FilterBox,
   .OrderBox {
-    grid-column: 1 / -1;
-    grid-template-columns: 112px minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
+	gap: 4px;
+	align-items: stretch;
   }
 
   .FilterBox {
     grid-row: 1;
+    grid-column: 1;
     z-index: 30;
   }
 
   .OrderBox {
-    grid-row: 2;
+    grid-row: 1;
+    grid-column: 2;
     z-index: 20;
   }
 
   .ControlBarHome {
+    grid-row: 2;
     grid-column: 1;
-    grid-row: 3;
-    justify-self: center;
   }
 
   .SearchBox {
     grid-column: 2;
-    grid-row: 3;
-    position: relative;
+    grid-row: 2;
+    min-width: 0;
     z-index: 10;
-  }
-}
-
-@media (max-width: 480px) {
-  .FilterBox,
-  .OrderBox {
-    grid-template-columns: 96px minmax(0, 1fr);
   }
 }

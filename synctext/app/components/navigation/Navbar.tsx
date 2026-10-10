@@ -5,12 +5,14 @@ type NavbarProps = {
   brand?: React.ReactNode;
   mobileMenu?: boolean;
   className?: string;
+  mobileChildren?: React.ReactNode,
 };
 
 export default function Navbar({ children,
                                   brand,
                                   mobileMenu = true,
                                   className = "",
+                                  mobileChildren,
                                 }: NavbarProps) {
   return (
     <header className={`relative z-[60] w-full border-b border-white/15 ${className}`}>
@@ -37,7 +39,7 @@ export default function Navbar({ children,
           {mobileMenu ? (
             <div className="ml-auto min-[901px]:hidden">
               <MobileMenu>
-                {children}
+                {mobileChildren ?? children}
               </MobileMenu>
             </div>
           ) : null}

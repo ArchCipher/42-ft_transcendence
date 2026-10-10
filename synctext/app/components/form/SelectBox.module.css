@@ -7,7 +7,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 8px;
   white-space: nowrap;
   cursor: pointer;
   color: var(--app-text-white);

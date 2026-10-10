@@ -295,7 +295,7 @@ export default function DashboardSidebar({ userId, groups, selectedGroupId, onSe
               aria-label="Search groups"
             />
 
-            <div className="SidebarAddGroup">
+            <div className="SidebarAddX">
               <Button
                 variant="outline"
                 className="SidebarButton"
@@ -365,7 +365,7 @@ export default function DashboardSidebar({ userId, groups, selectedGroupId, onSe
                 value={friendsSearch}
                 onChange={(event) => setFriendsSearch(event.target.value)}
               />
-              <div className="SidebarAddGroup">
+              <div className="SidebarAddX">
                 <Button variant="outline" className="SidebarButton" onClick={() => {
                   setFriendsManagerOpen(true);
                   void refreshFriends();
