@@ -74,6 +74,9 @@
   border: 1px solid transparent;
   transition: background 120ms ease, border-color 120ms ease;
 }
+.DocumentCardReadOnly .DocumentIcon {
+  color: var(--app-muted);
+}
 .DocumentCard:hover {
   background: rgba(111, 211, 255, 0.06);
 }

@@ -125,8 +125,7 @@
   white-space: nowrap;
 }
 
-.SidebarGroup:hover,
-.SidebarFriend:hover {
+.SidebarActionRow:hover {
   background: rgba(111, 211, 255, 0.08);
 }
 
@@ -140,7 +139,6 @@
 
 .SidebarGroupActive {
   color: var(--app-accent-neon);
-  background: rgba(111, 211, 255, 0.12);
 }
 
 .SidebarFriend {
@@ -541,7 +539,7 @@
 
   border: 0;
   background: transparent;
-  color: var(--app-accent-neon);
+  color: var(--app-muted);
   cursor: pointer;
 }
 

@@ -176,6 +176,7 @@ async function saveRename(): Promise<boolean> {
 			updatedAt={doc.updatedAt}
             onOpen={() => openDocument(doc.id)}
             actions={documentActions(doc)}
+            canEdit={doc.canEdit}
             isEditing={documentToEdit === doc.id}
             editTitle={editTitle}
             onEditTitle={setEditTitle}
@@ -221,6 +222,7 @@ type DocumentCardProps = {
   title: string;
   owner: string | null;
   updatedAt: string;
+  canEdit: boolean;
   onOpen: () => void;
   actions: ActionItem[];
 
@@ -235,6 +237,7 @@ type DocumentCardProps = {
 function DocumentCard({ title,
                         owner,
                         updatedAt,
+                        canEdit,
                         onOpen,
                         actions,
                         isEditing,
@@ -249,7 +252,7 @@ function DocumentCard({ title,
   const dateLabel = updatedAt ? updatedAt.slice(0, 10) : "";
 
   return (
-    <div className="DocumentCard">
+    <div className={`DocumentCard ${canEdit ? "" : "DocumentCardReadOnly"}`}>
 
       <FileText className="DocumentIcon" aria-hidden="true" strokeWidth={1.4} />
 
