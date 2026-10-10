@@ -21,7 +21,6 @@
   grid-row: 2;
 
   height: min(760px, calc(100dvh - 188px));
-  min-height: 540px;
   min-height: 0;
   padding: 0;
 
@@ -53,6 +52,10 @@
 .DashboardSidebar {
   grid-column: 1;
   grid-row: 2;
+  height: min(760px, calc(100dvh - 188px));
+  background: var(--app-panel-bg);
+  border: 1px solid var(--app-line-dim);
+  overflow: hidden;
 }
 
 .DashboardNavActions {

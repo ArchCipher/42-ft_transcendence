@@ -330,7 +330,7 @@ export default function DashboardSidebar({ userId, groups, selectedGroupId, onSe
             </AccordionContent>
           </AccordionItem>
 
-          <AccordionItem value="members" className="SidebarAccordionItem">
+          <AccordionItem value="members" className={`SidebarAccordionItem ${members.filter((member) => member.userId !== userId).length === 0 ? "SidebarAccordionItemEmpty" : ""}`}>
             <AccordionTrigger className="SidebarAccordionTrigger"><TechText>Members</TechText></AccordionTrigger>
             <AccordionContent className="SidebarAccordionContent">
               <div className="SidebarFriendList">

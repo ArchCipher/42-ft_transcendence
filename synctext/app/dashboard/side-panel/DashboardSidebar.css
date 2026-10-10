@@ -1,31 +1,63 @@
 .SidebarContent {
-  overflow: visible;
-}
-
-.SidebarAccordionItem [data-slot="accordion-content"][data-open] {
-  order: 0;
-  overflow: visible;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .SidebarAccordion {
   width: 100%;
-  overflow: visible;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .SidebarAccordionItem {
   border-bottom: 0 !important;
+  min-height: 0;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+.SidebarAccordionItem[data-state="open"],
+.SidebarAccordionItem[data-open],
+.SidebarAccordionItem [data-slot="accordion-content"][data-open] {
+  flex: 1 1 0;
+  min-height: 0;
+}
+.SidebarAccordionItem [data-slot="accordion-content"][data-open] {
+  flex: 1 1 0;
+  min-height: 0;
+  max-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  animation: none;
+  transition:none;
+}
+.SidebarAccordionItemEmpty,
+.SidebarAccordionItemEmpty[data-open],
+.SidebarAccordionItemEmpty[data-state="open"],
+.SidebarAccordionItemEmpty [data-slot="accordion-content"][data-open] {
+  flex: 0 0 auto !important;
+  min-height: 0;
+}
+.SidebarAccordionItemEmpty [data-slot="accordion-content"][data-open] {
+  display: none !important;
 }
 
 .SidebarAccordionContent {
+  height: auto !important;
+  max-height: none !important;
   padding: 16px;
-  background: var(--app-panel-bg);
-  overflow: visible;
 }
 
 .SidebarAccordionTrigger {
   width: 100%;
   min-height: 48px;
   padding: 0 16px;
+  border-bottom: 1px solid var(--app-line-dim) !important;
 
   display: flex;
   align-items: center;
@@ -516,19 +548,12 @@
 
 @media (max-width: 900px) {
   .DashboardSidebar {
-    position: absolute;
+	justify-self: start;
+	z-index: 30;
 
-    top: 0;
-    bottom: 0;
-    left: 0;
-
-    width: min(320px, calc(100vw - 44px));
-    height: auto;
-
-    z-index: 30;
-
+    width: min(300px, calc(100vw - 44px));
+	height: 100%;
     background: rgb(14, 32, 65);
-
     transform: translateX(calc(-100% - 20px));
     transition: transform 200ms var(--tt-transition-easing-quart);
   }
@@ -549,22 +574,4 @@
     transform: translateX(0);
   }
 
-  .SidebarContent {
-    height: 100%;
-    overflow: visible;
-  }
-
-  .SidebarAccordionContent {
-    max-height: none;
-    overflow: visible;
-  }
-
-  .DashboardSidebar {
-    overflow: visible;
-  }
-
-  .SidebarAccordion,
-  .SidebarAccordionItem {
-    overflow: visible;
-  }
 }
