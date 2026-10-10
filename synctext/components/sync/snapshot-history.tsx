@@ -342,7 +342,7 @@ export function SnapshotHistory({ docId, canRestore, isConnected }: SnapshotHist
 
       <DialogContent
         showCloseButton={false}
-        className="flex h-[calc(100dvh-1rem)] max-h-[52rem] w-[calc(100%-1rem)] max-w-6xl flex-col gap-0 overflow-hidden p-0 sm:h-[calc(100dvh-3rem)] sm:w-[calc(100%-3rem)] sm:max-w-6xl"
+        className="SnapshotHistoryDialog flex h-[min(660px,(calc(100vw-64px))] w-[min(940px,calc(100vw-48px))] flex-col gap-0 overflow-hidden p-0 sm:w-[min(1080px,calc(100vw-64px))]"
       >
         <div className="flex shrink-0 items-start justify-between gap-4 border-b border-border p-4">
           <DialogHeader>
