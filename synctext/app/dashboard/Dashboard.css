@@ -150,8 +150,7 @@
   }
 
   .DashboardPanel {
-    height: auto;
-    min-height: min(640px, calc(100dvh - 148px));
+    height: min(640px, calc(100dvh - 148px));
   }
 
   .DashboardFixedBarInner {
