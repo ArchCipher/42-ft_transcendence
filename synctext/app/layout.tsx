@@ -29,7 +29,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <a className="skip-link" href="main">
+        <a className="skip-link" href="#main">
           Skip to content
         </a>
         <div id="main" tabIndex={-1} className="min-h-full flex flex-col">
