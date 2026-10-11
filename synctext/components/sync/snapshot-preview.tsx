@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { EditorContent, useEditor } from "@tiptap/react"
+import { EditorContent, useEditor, type AnyExtension } from "@tiptap/react"
 import Collaboration from "@tiptap/extension-collaboration"
 import * as Y from "yjs"
 
@@ -80,7 +80,7 @@ function SnapshotEditor({ snapshotDocument }: SnapshotEditorProps) {
       extensions: [
         ...baseTiptapExtensions({ undoRedo: false }),
         Collaboration.configure({ document: snapshotDocument }),
-      ],
+      ] as AnyExtension[],
     },
     [snapshotDocument],
   )

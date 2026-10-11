@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import { EditorContent, EditorContext } from "@tiptap/react"
-import type { Editor } from "@tiptap/react"
+import type { AnyExtension, Editor } from "@tiptap/react"
 
 // --- UI Primitives ---
 import { Button } from "@/components/tiptap-ui-primitive/button"
@@ -111,7 +111,7 @@ export const simpleEditorConfig = {
 // components/sync/, not in this vendored-template directory.
 export function baseTiptapExtensions({
   undoRedo,
-}: { undoRedo?: false } = {}) {
+}: { undoRedo?: false } = {}): AnyExtension[] {
   return [
     StarterKit.configure({
       horizontalRule: false,
@@ -142,7 +142,7 @@ export function baseTiptapExtensions({
       upload: handleImageUpload,
       onError: (error) => console.error("Upload failed:", error),
     }),
-  ]
+  ] as AnyExtension[]
 }
 
 const MainToolbarContent = ({

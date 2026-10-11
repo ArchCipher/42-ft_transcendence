@@ -56,7 +56,7 @@ export default async function DocPage({ params }: { params: Promise<{ id: string
     if (!document) notFound();
 
     return (
-      <>
+      <div className="flex min-h-full flex-1 flex-col bg-[#020110]">
         <PublicNavbar />
         <SyncEditorPage
           docId={document.id}
@@ -69,7 +69,7 @@ export default async function DocPage({ params }: { params: Promise<{ id: string
             expiresAt: actor.expiresAt.toISOString(),
           }}
         />
-      </>
+      </div>
     );
   }
 
@@ -90,7 +90,7 @@ export default async function DocPage({ params }: { params: Promise<{ id: string
   const editable = canEdit(rights)
 
   return (
-	<>
+	<div className="flex min-h-full flex-1 flex-col bg-[#020110]">
     <UserNavbar username={actor.username} avatarUrl={actor.avatarUrl} />
     <SyncEditorPage
       docId={document.id}
@@ -99,6 +99,6 @@ export default async function DocPage({ params }: { params: Promise<{ id: string
       canRename={editable}
       readOnly={!editable}
     />
-	</>
+	</div>
   )
 }
