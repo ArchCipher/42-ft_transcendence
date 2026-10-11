@@ -1,3 +1,7 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Accessibility Statement" };
+
 export default async function AccessibilityPage() {
   return (
     <>

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { prisma as db } from "@synctext/db";
 import { hashGuestSessionToken } from "@synctext/shared";
@@ -10,6 +11,8 @@ import { identityFromGuestSession, identityFromUser } from "@/lib/sync/sync-user
 import { SyncEditorPage } from "@/components/sync/sync-editor"
 import UserNavbar from "@/app/components/navigation/UserNavbar";
 import PublicNavbar from "@/app/components/navigation/PublicNavbar";
+
+export const metadata: Metadata = { title: "Document" };
 
 async function ownsExpiredGuestDocument(documentId: string): Promise<boolean> {
   const token = await getGuestSessionToken();

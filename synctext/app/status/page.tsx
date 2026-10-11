@@ -5,7 +5,7 @@ import styles from "./status.module.css";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Status | SyncText",
+  title: "Status",
   description: "Current SyncText service status",
 };
 

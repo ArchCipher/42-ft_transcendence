@@ -97,9 +97,9 @@ export default function RegisterForm() {
         await handleRegister();
       }}
     >
-      <h2 className="AuthFormTitle">
+      <h1 className="AuthFormTitle">
         <DisplayText>Create your account</DisplayText>
-      </h2>
+      </h1>
       <Field
         id="email"
         label="Email"
