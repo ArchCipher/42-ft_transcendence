@@ -1,6 +1,6 @@
 .Dashboard .DocumentCreate {
   width: 100%;
-  min-height: 44px;
+  min-height: var(--control-height);
   padding: 0 14px;
   align-self: stretch;
 

@@ -18,7 +18,7 @@
 
 .surface {
   width: 100%;
-  min-height: 44px;
+  min-height: calc(var(--control-height) - 2px);
   box-sizing: border-box;
 
   display: flex;
@@ -32,7 +32,7 @@
 
 .surface > * {
   width: 100%;
-  min-height: 42px;
+  min-height: calc(var(--control-height) - 2px);
   box-sizing: border-box;
   padding: 10px 12px;
 
@@ -46,11 +46,7 @@
 }
 
 @media (max-width: 900px) {
-  .surface {
-    min-height: 34px;
-  }
   .surface > * {
-    min-height: 32px;
     padding: 6px 10px;
   }
 }

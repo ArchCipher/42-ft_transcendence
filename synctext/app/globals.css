@@ -97,9 +97,13 @@
   --app-text-label: 0.75rem;
   --app-text-meta: 0.82rem;
   --app-muted: oklch(0.76 0.025 285);
+  --control-height: 44px;
 
   @media (min-width: 640px) {
 	--nav-x-padding: clamp(1.25rem, 5vw, 5rem);
+  }
+  @media (max-width: 900px) {
+	--control-height: 36px;
   }
 }
 

@@ -126,13 +126,13 @@ async function saveRename(): Promise<boolean> {
       <main className="Dashboard">
 
       <Button variant="outline" className="DocumentCreate"
-	  onClick={onCreateDocument}
-	  disabled={isCreatingDocument}
-	  aria-label={isCreatingDocument ? "Creating document" : "Create document"}
-	  >
+      onClick={onCreateDocument}
+      disabled={isCreatingDocument}
+      aria-label={isCreatingDocument ? "Creating document" : "Create document"}
+      >
       <Plus size={16} aria-hidden="true" />
-	  <span>New document</span>
-	  </Button>
+      <span>New document</span>
+      </Button>
 
       {isLoading ? (
         <p className="DashboardStatus">
@@ -172,8 +172,8 @@ async function saveRename(): Promise<boolean> {
         <li key={doc.id}>
           <DocumentCard
             title={doc.title}
-			owner={doc.createdBy?.username ?? null}
-			updatedAt={doc.updatedAt}
+            owner={doc.createdBy?.username ?? null}
+            updatedAt={doc.updatedAt}
             onOpen={() => openDocument(doc.id)}
             actions={documentActions(doc)}
             canEdit={doc.canEdit}
@@ -306,13 +306,13 @@ function DocumentCard({ title,
           {title}
         </button>
       )}
-	{!isEditing && (
-		<>
-		{owner && <span className="DocumentMeta DocumentMetaOwner">{owner}</span>}
-		{dateLabel && <span className="DocumentMeta DocumentMetaDate">{dateLabel}</span>}
-		</>
-	)}
-	<ActionMenu label={`Actions for ${title}`} items={actions} className="DocumentMenuButton" />
+    {!isEditing && (
+      <>
+        {owner && <span className="DocumentMeta DocumentMetaOwner">{owner}</span>}
+        {dateLabel && <span className="DocumentMeta DocumentMetaDate">{dateLabel}</span>}
+      </>
+    )}
+     <ActionMenu label={`Actions for ${title}`} items={actions} className="DocumentMenuButton" />
     </div>
   );
 }
