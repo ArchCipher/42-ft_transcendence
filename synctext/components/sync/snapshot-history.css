@@ -1,6 +1,5 @@
 /* keep the shared editor styles scoped to the snapshot preview */
 .SnapshotHistoryDialog {
-  /* background: rgb(14, 32, 65); */
   color: var(--app-text-white);
   border: 1px solid var(--app-line-dim);
   border-radius: 0 !important;

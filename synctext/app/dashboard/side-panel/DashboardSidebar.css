@@ -542,6 +542,9 @@
   color: var(--app-muted);
   cursor: pointer;
 }
+.SidebarEditButton:hover {
+  color: var(--app-text-white);
+}
 
 @media (max-width: 900px) {
   .DashboardSidebar {

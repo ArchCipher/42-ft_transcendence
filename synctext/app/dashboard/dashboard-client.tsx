@@ -155,6 +155,7 @@ export default function DashboardClient({ userId, username, avatarUrl }: UserPro
                 </TechText>
 
                 <button
+                  type="button"
                   className="DashboardSidebarToggle"
                   onClick={() => setSidebarOpen((open) => !open)}
                   aria-label="Toggle sidebar"
