@@ -254,7 +254,14 @@ function DocumentCard({ title,
   return (
     <div className={`DocumentCard ${canEdit ? "" : "DocumentCardReadOnly"}`}>
 
-      <FileText className="DocumentIcon" aria-hidden="true" strokeWidth={1.4} />
+      <button
+        type="button"
+        className="DocumentIconButton"
+        onClick={onOpen}
+        aria-label={`Open ${title}`}
+      >
+        <FileText className="DocumentIcon" aria-hidden="true" strokeWidth={1.4} />
+      </button>
 
       {isEditing ? (
           <div className="DocumentTitleEdit">
