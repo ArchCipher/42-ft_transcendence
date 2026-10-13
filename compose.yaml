@@ -206,10 +206,10 @@ services:
     networks:
       - backend
 
-  guest-cleanup: # removes unclaimed guest sessions and their cascading docs
+  cleanup: # removes unclaimed guest sessions, guest docs, auth tokens and abandoned signups
     image: alpine:3.20
 
-    container_name: synctext-guest-cleanup
+    container_name: synctext-cleanup
 
     restart: unless-stopped
 
