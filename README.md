@@ -169,7 +169,7 @@ The collaboration service uses authenticated internal Next.js endpoints for acce
 | `db` | PostgreSQL storage |
 | `migrate` | Applies Prisma migrations before the web service starts |
 | `mailpit` | Captures local development email |
-| `guest-cleanup` | Periodically removes expired guest sessions, auth tokens and abandoned signups |
+| `cleanup` | Periodically removes expired guest sessions, auth tokens and abandoned signups |
 | `backup` | Automatically backs up PostgreSQL and provides database restoration |
 
 The repository uses npm workspaces:

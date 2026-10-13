@@ -107,7 +107,7 @@ backup-db-restore: setup
 	$(COMPOSE) up -d --wait db
 	$(COMPOSE) build backup migrate
 	$(COMPOSE) run --rm --no-deps --entrypoint /usr/local/bin/restore.sh backup validate "$(BACKUP)"
-	$(COMPOSE) stop nginx collab web guest-cleanup backup
+	$(COMPOSE) stop nginx collab web cleanup backup
 	@if $(COMPOSE) run --rm --no-deps --entrypoint /usr/local/bin/restore.sh backup restore "$(BACKUP)"; then \
 		if $(COMPOSE) run --rm --no-deps migrate; then \
 			$(COMPOSE) up -d; \
