@@ -111,23 +111,25 @@ Backups are stored on the same Docker host. Keep an off-host copy for host or di
 
 ## Modules
 
-**16 points: 4 Major Modules × 2 + 8 Minor Modules × 1.** 
+**20 points: 6 Major Modules × 2 + 8 Minor Modules × 1.** 
 *Evaluation requires 14 validated points.*
 
-| Module                                 | Type/points      | Implementation and justification                                                                           | Contributors                              |
-| -------------------------------------- | ---------------- | ---------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
-| Frontend/backend frameworks            | Major / 2        | Next.js supplies both UI and backend routing in one application                                            | Umberto, all developers                   |
-| WebSockets                             | Major / 2        | Push document updates/cursors with client reconnection                                                     | Harold, Kiruthika, Tom, Umberto           |
-| Standard user management               | Major / 2        | Editable profiles, uploaded/default avatars, friends and presence support collaboration                    | Kiruthika, Umberto, Tom, Gianluca, Harold |
-| Organization system                    | Major / 2        | Group CRUD, membership roles and document actions provide managed workspaces                               | Harold, Gianluca, Umberto                 |
-| ORM                                    | Minor / 1        | Prisma models, migrations and transactions maintain relational data                                        | Harold, backend contributors              |
-| Real-time collaboration                | Minor / 1        | Shared Yjs/Tiptap editing and cursors coordinate concurrent writers                                        | Harold, Umberto, Kiruthika, Tom           |
-| OAuth 2.0                              | Minor / 1        | Google OIDC provides remote login and explicit account linking                                             | Kiruthika                                 |
-| Custom design system                   | Minor / 1        | 10+ reusable [project components](synctext/app/components) share palette, typography and icons             | Gianluca, Umberto                         |
-| Health/backups/recovery                | Minor / 1        | Compose health checks, public `/status`, daily backups, seven-dump retention and restore workflow          | Tom                                       |
-| Additional browsers                    | Minor / 1        | Firefox, Edge and Safari extend Chrome support; team testing reports no known browser-specific limitations | Kiruthika, Tom, Umberto, Gianluca, Harold |
-| SSR                                    | Minor / 1        | Server-rendered pages and homepage metadata provide initial HTML and SEO                                   | Umberto, Kiruthika, Gianluca              |
-| Document Version History & Restoration | Minor custom / 1 | Historical previews and recovery snapshots enable coordinated live restoration                             | Tom, Harold                               |
+| Module                                 | Type/points      | Implementation and justification                                                                                                 | Contributors                              |
+| -------------------------------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| Frontend/backend frameworks            | Major / 2        | Next.js supplies both UI and backend routing in one application                                                                  | Umberto, all developers                   |
+| WebSockets                             | Major / 2        | Push document updates/cursors with client reconnection                                                                           | Harold, Kiruthika, Tom, Umberto           |
+| Standard user management               | Major / 2        | Editable profiles, uploaded/default avatars, friends and presence support collaboration                                          | Kiruthika, Umberto, Tom, Gianluca, Harold |
+| Organization system                    | Major / 2        | Group CRUD, membership roles and document actions provide managed workspaces                                                     | Harold, Gianluca, Umberto                 |
+| Accessibility compliance               | Major / 2        | Complete accessibility compliance (WCAG 2.1 AA) with screen reader  <br>support, keyboard navigation, and assistive technologies | Kiruthika, Gianluca                       |
+| Public API                             | Major / 2        | A public API to interact with the database with a secured API key, rate  <br>limiting, documentation, and 5 endpoints            | Umberto                                   |
+| ORM                                    | Minor / 1        | Prisma models, migrations and transactions maintain relational data                                                              | Harold, backend contributors              |
+| Real-time collaboration                | Minor / 1        | Shared Yjs/Tiptap editing and cursors coordinate concurrent writers                                                              | Harold, Umberto, Kiruthika, Tom           |
+| OAuth 2.0                              | Minor / 1        | Google OIDC provides remote login and explicit account linking                                                                   | Kiruthika                                 |
+| Custom design system                   | Minor / 1        | 10+ reusable [project components](synctext/app/components) share palette, typography and icons                                   | Gianluca, Umberto                         |
+| Health/backups/recovery                | Minor / 1        | Compose health checks, public `/status`, daily backups, seven-dump retention and restore workflow                                | Tom                                       |
+| Additional browsers                    | Minor / 1        | Firefox, Edge and Safari extend Chrome support; team testing reports no known browser-specific limitations                       | Kiruthika, Tom, Umberto, Gianluca, Harold |
+| SSR                                    | Minor / 1        | Server-rendered pages and homepage metadata provide initial HTML and SEO                                                         | Umberto, Kiruthika, Gianluca              |
+| Document Version History & Restoration | Minor custom / 1 | Historical previews and recovery snapshots enable coordinated live restoration                                                   | Tom, Harold                               |
 
 ### Custom Module
 
@@ -177,21 +179,41 @@ The repository uses npm workspaces:
 - `packages/db/` for Prisma and database helpers;
 - `packages/shared/` for shared types and constants.
 
+## Database Schema
 
-|                    | Key fields/types                                                                          | Relationships                                                     |
-| ------------------ | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| `User`             | Unique `email, username: String`, `passwordHash/avatarUrl: String?`, `role: PlatformRole` | Memberships, sessions, tokens, OAuth identities, friendship pairs |
-| `Group`            | `name: String`, `isPrivateSpace: Boolean`                                                 | Many memberships/documents                                        |
-| `GroupMember`      | `role: GroupRole`; unique `groupId/userId`                                                | Joins user/group; holds grants                                    |
-| `Document`         | `title: String`, `ystate: Bytes?`, nullable `groupId/guestSessionId/createdById`          | Group or guest holder; snapshots/grants                           |
-| `DocumentGrant`    | Composite `membershipId/documentId` key                                                   | Grants one membership editor access                               |
-| `DocumentSnapshot` | `ystate: Bytes`, `createdAt: DateTime`                                                    | Historical state for one document                                 |
-| `GuestSession`     | Unique `tokenHash: String`, `editExpiresAt/expiresAt`                                     | At most one temporary document                                    |
-| `Friendship`       | Composite `userAId/userBId`, `requestedById`, `status: FriendshipStatus`                  | Two users; canonical ordered pair                                 |
-| `Session`          | Unique `tokenHash: String`, `expiresAt`, nullable `revokedAt/lastUsedAt`                  | One authenticated user                                            |
-| `OAuthAccount`     | `provider/providerAccountId: String`; unique pair                                         | One linked user                                                   |
-| `OAuthTransaction` | `stateHash/codeVerifier/nonce: String`, `purpose: OAuthPurpose`, `expiresAt`              | Optional initiating user                                          |
-|                    | Unique `tokenHash: String`, `expiresAt`, nullable `usedAt`                                | One user per token                                                |
+The database schema is defined in `packages/db/prisma/schema.prisma`. SQL migrations enforce additional constraints where Prisma's schema language is not sufficient.
+
+```mermaid
+erDiagram
+    direction TB
+    User ||--o{ GroupMember : joins
+    User ||--o{ OAuthAccount : links
+    User ||--o{ OAuthTransaction : initiates
+    Group ||--o{ GroupMember : contains
+    Group |o--o{ Document : contains
+    User |o--o{ Document : created
+    GuestSession |o--o| Document : temporarily_owns
+    GroupMember ||--o{ DocumentGrant : receives
+    Document ||--o{ DocumentGrant : allows
+    Document ||--o{ DocumentSnapshot : retains
+```
+
+
+
+| Model                                          | Key fields/types                                                                          | Relationships                                                     |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `User`                                         | Unique `email, username: String`, `passwordHash/avatarUrl: String?`, `role: PlatformRole` | Memberships, sessions, tokens, OAuth identities, friendship pairs |
+| `Group`                                        | `name: String`, `isPrivateSpace: Boolean`                                                 | Many memberships/documents                                        |
+| `GroupMember`                                  | `role: GroupRole`; unique `groupId/userId`                                                | Joins user/group; holds grants                                    |
+| `Document`                                     | `title: String`, `ystate: Bytes?`, nullable `groupId/guestSessionId/createdById`          | Group or guest holder; snapshots/grants                           |
+| `DocumentGrant`                                | Composite `membershipId/documentId` key                                                   | Grants one membership editor access                               |
+| `DocumentSnapshot`                             | `ystate: Bytes`, `createdAt: DateTime`                                                    | Historical state for one document                                 |
+| `GuestSession`                                 | Unique `tokenHash: String`, `editExpiresAt/expiresAt`                                     | At most one temporary document                                    |
+| `Friendship`                                   | Composite `userAId/userBId`, `requestedById`, `status: FriendshipStatus`                  | Two users; canonical ordered pair                                 |
+| `Session`                                      | Unique `tokenHash: String`, `expiresAt`, nullable `revokedAt/lastUsedAt`                  | One authenticated user                                            |
+| `OAuthAccount`                                 | `provider/providerAccountId: String`; unique pair                                         | One linked user                                                   |
+| `OAuthTransaction`                             | `stateHash/codeVerifier/nonce: String`, `purpose: OAuthPurpose`, `expiresAt`              | Optional initiating user                                          |
+| `EmailVerificationToken`, `PasswordResetToken` | Unique `tokenHash: String`, `expiresAt`, nullable `usedAt`                                | One user per token                                                |
 
 Main enums:
 
@@ -261,6 +283,6 @@ CI is used to build the Docker Compose stack and run lint checks.
 
 ### AI Usage
 
-AI tools ae used to help us learn unfamiliar concepts, like understanding how Yjs synchronization works. AI also helps by providing test cases for simultaneous editing and reconnections, investigating bugs, and reviewing documentation against the 42 requirements.
+AI tools are used to help us learn unfamiliar concepts, like understanding how Yjs synchronization works. AI also helps by providing test cases for simultaneous editing and reconnections, investigating bugs, and reviewing documentation against the 42 requirements.
 
 AI output is always treated as suggestion, and never as solution. All changes in the project are reviewed through code review, type checking, linting, and manual testing.
