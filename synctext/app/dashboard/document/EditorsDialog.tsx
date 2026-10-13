@@ -54,7 +54,7 @@ export default function EditorsDialog({ document, userId, onClose, onSelfRevoked
       <ManagerDialog
         open
         onOpenChange={(open) => { if (!open) onClose(); }}
-        title={`Editors of ${document.title}`}
+        title={`Manage editors of ${document.title}`}
         description="Every member of the group can read. Editors can also write, rename, delete and manage editors."
         feedback={error ? { kind: "error", text: error } : null}
       >
