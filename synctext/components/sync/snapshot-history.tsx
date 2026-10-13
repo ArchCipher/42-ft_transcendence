@@ -269,7 +269,7 @@ function SnapshotHistoryContent({
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border px-4 py-2">
-        <p className="text-xs text-muted-foreground">Times are local.</p>
+        <p className="text-muted-foreground">Times are local.</p>
         <Button
           type="button"
           variant="ghost"
