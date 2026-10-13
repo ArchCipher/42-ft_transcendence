@@ -312,7 +312,11 @@ function DocumentCard({ title,
         {dateLabel && <span className="DocumentMeta DocumentMetaDate">{dateLabel}</span>}
       </>
     )}
+    {actions.length > 0 ? (
      <ActionMenu label={`Actions for ${title}`} items={actions} className="DocumentMenuButton" />
+    ) : (
+      <span className="DocumentMenuButton" aria-hidden="true"/>
+    )}
     </div>
   );
 }
