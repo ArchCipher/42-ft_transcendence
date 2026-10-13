@@ -8,7 +8,7 @@
   "scripts": {
     "build": "prisma generate && tsc",
     "seed": "tsx prisma/seed.ts",
-	"typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.9.1",
@@ -20,7 +20,7 @@
     "argon2": "^0.45.1",
     "prisma": "^7.9.1",
     "tsx": "^4.19.4",
-    "typescript": "^5",
+    "typescript": "^5.9.3",
     "yjs": "^13.6.32"
   }
 }

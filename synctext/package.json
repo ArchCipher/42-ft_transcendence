@@ -64,11 +64,10 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "class-variance-authority": "^0.7.1",
-    "eslint": "^8.57.1",
-    "eslint-config-next": "^14.2.35",
+    "eslint-config-next": "^16.4.0",
     "sass": "^1.102.0",
     "tailwindcss": "^4.3.3",
-    "typescript": "^5"
+    "typescript": "^5.4.0"
   },
   "optionalDependencies": {
     "@tailwindcss/oxide-linux-arm64-musl": "4.3.3",
