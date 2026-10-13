@@ -32,7 +32,8 @@ export default function DashboardClient({ userId, username, avatarUrl }: UserPro
   const [filter, setFilter] = useState("all");
   const [groups, setGroups] = useState<GroupSummary[]>([]);
   const [documents, setDocuments] = useState<DocumentSummary[]>([]);
-  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(() =>
+    typeof window !== "undefined" ? sessionStorage.getItem("selectedGroupId") : null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [isCreatingDocument, setIsCreatingDocument] = useState(false);
@@ -61,6 +62,11 @@ export default function DashboardClient({ userId, username, avatarUrl }: UserPro
     setIsLoading(false);
   }, []);
   const cancelPoll = usePoll(loadLists);
+
+  function selectGroup(groupId: string) {
+    setSelectedGroupId(groupId);
+    sessionStorage.setItem("selectedGroupId", groupId);
+  }
 
   // After a group action: a deleted or left group drops out, and the selection
   // falls back to the private space on its own.
@@ -122,7 +128,8 @@ export default function DashboardClient({ userId, username, avatarUrl }: UserPro
                 setOrder={setOrder}
                 filter={filter}
                 setFilter={setFilter}
-                onHome={() => setSelectedGroupId(null)}
+                onHome={() => { setSelectedGroupId(null);
+                                sessionStorage.removeItem("selectedGroupId"); }}
               />
             </AppPanel>
           </div>
@@ -131,7 +138,7 @@ export default function DashboardClient({ userId, username, avatarUrl }: UserPro
             userId={userId}
             groups={groups}
             selectedGroupId={selectedGroup?.id ?? null}
-            onSelectGroup={setSelectedGroupId}
+            onSelectGroup={selectGroup}
             onGroupsChanged={refreshGroups}
             isOpen={sidebarOpen}
           />
