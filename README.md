@@ -78,6 +78,21 @@ Without credentials, set `GOOGLE_OAUTH_ENABLED=false` in `.env`.
 
 See [DEV.md](DEV.md) for migration and seed instructions.
 
+### Disaster recovery procedures
+
+The backup service creates a PostgreSQL dump when it starts, then every **24 hours** by default. It keeps the latest **seven dumps** in the `db_backups` volume. Configure this with `DB_BACKUP_INTERVAL_SECONDS` and `DB_BACKUP_RETENTION_COUNT` in `.env`.
+
+To recover from accidental deletion or damaged application data:
+
+1. Close all SyncText editor tabs so old browser state cannot be sent back after restoration.
+2. Run `make backup-db-list` and choose a dump from before the incident.
+3. Run `make backup-db-restore BACKUP=filename.dump` using that filename. This replaces the whole database; changes made after the backup are lost.
+4. After a successful restore, check `make ps`, open `/status`, and verify a known document before resuming editing.
+
+If restoration or migrations fail, application services remain stopped. Check `make logs`, fix the reported problem, and retry with a valid dump.
+
+Backups are stored on the same Docker host. Keep an off-host copy for host or disk failure; a local backup volume alone cannot recover from that loss.
+
 ## Features List
 
 | Feature | Functionality | Contributors |
@@ -117,6 +132,7 @@ See [DEV.md](DEV.md) for migration and seed instructions.
 ### Custom Module
 
 The custom module lets users restore documents after accidental changes. Older versions are previewed in temporary `Y.Doc` objects, so the current document isn't affected. Since Yjs merges states, restoration needs to replace the editor content instead of merging the old state. We use database and collaboration locks to prevent conflicts between ongoing edits, saves, and restoration. Before restoring an older version, we also save the current state as a recovery snapshot. This goes beyond basic real-time editing and adds enough complexity to justify a Minor module.
+
 
 ## Technical Stack
 
@@ -161,40 +177,21 @@ The repository uses npm workspaces:
 - `packages/db/` for Prisma and database helpers;
 - `packages/shared/` for shared types and constants.
 
-## Database Schema
 
-The database schema is defined in `packages/db/prisma/schema.prisma`. SQL migrations enforce additional constraints where Prisma's schema language is not sufficient.
-
-```mermaid
-erDiagram
-    direction TB
-    User ||--o{ GroupMember : joins
-    User ||--o{ OAuthAccount : links
-    User ||--o{ OAuthTransaction : initiates
-    Group ||--o{ GroupMember : contains
-    Group |o--o{ Document : contains
-    User |o--o{ Document : created
-    GuestSession |o--o| Document : temporarily_owns
-    GroupMember ||--o{ DocumentGrant : receives
-    Document ||--o{ DocumentGrant : allows
-    Document ||--o{ DocumentSnapshot : retains
-```
-
-
-| Model | Key fields/types | Relationships |
-|---|---|---|
-| `User` | Unique `email, username: String`, `passwordHash/avatarUrl: String?`, `role: PlatformRole` | Memberships, sessions, tokens, OAuth identities, friendship pairs |
-| `Group` | `name: String`, `isPrivateSpace: Boolean` | Many memberships/documents |
-| `GroupMember` | `role: GroupRole`; unique `groupId/userId` | Joins user/group; holds grants |
-| `Document` | `title: String`, `ystate: Bytes?`, nullable `groupId/guestSessionId/createdById` | Group or guest holder; snapshots/grants |
-| `DocumentGrant` | Composite `membershipId/documentId` key | Grants one membership editor access |
-| `DocumentSnapshot` | `ystate: Bytes`, `createdAt: DateTime` | Historical state for one document |
-| `GuestSession` | Unique `tokenHash: String`, `editExpiresAt/expiresAt` | At most one temporary document |
-| `Friendship` | Composite `userAId/userBId`, `requestedById`, `status: FriendshipStatus` | Two users; canonical ordered pair |
-| `Session` | Unique `tokenHash: String`, `expiresAt`, nullable `revokedAt/lastUsedAt` | One authenticated user |
-| `OAuthAccount` | `provider/providerAccountId: String`; unique pair | One linked user |
-| `OAuthTransaction` | `stateHash/codeVerifier/nonce: String`, `purpose: OAuthPurpose`, `expiresAt` | Optional initiating user |
-| `EmailVerificationToken`, `PasswordResetToken` | Unique `tokenHash: String`, `expiresAt`, nullable `usedAt` | One user per token |
+|                    | Key fields/types                                                                          | Relationships                                                     |
+| ------------------ | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `User`             | Unique `email, username: String`, `passwordHash/avatarUrl: String?`, `role: PlatformRole` | Memberships, sessions, tokens, OAuth identities, friendship pairs |
+| `Group`            | `name: String`, `isPrivateSpace: Boolean`                                                 | Many memberships/documents                                        |
+| `GroupMember`      | `role: GroupRole`; unique `groupId/userId`                                                | Joins user/group; holds grants                                    |
+| `Document`         | `title: String`, `ystate: Bytes?`, nullable `groupId/guestSessionId/createdById`          | Group or guest holder; snapshots/grants                           |
+| `DocumentGrant`    | Composite `membershipId/documentId` key                                                   | Grants one membership editor access                               |
+| `DocumentSnapshot` | `ystate: Bytes`, `createdAt: DateTime`                                                    | Historical state for one document                                 |
+| `GuestSession`     | Unique `tokenHash: String`, `editExpiresAt/expiresAt`                                     | At most one temporary document                                    |
+| `Friendship`       | Composite `userAId/userBId`, `requestedById`, `status: FriendshipStatus`                  | Two users; canonical ordered pair                                 |
+| `Session`          | Unique `tokenHash: String`, `expiresAt`, nullable `revokedAt/lastUsedAt`                  | One authenticated user                                            |
+| `OAuthAccount`     | `provider/providerAccountId: String`; unique pair                                         | One linked user                                                   |
+| `OAuthTransaction` | `stateHash/codeVerifier/nonce: String`, `purpose: OAuthPurpose`, `expiresAt`              | Optional initiating user                                          |
+|                    | Unique `tokenHash: String`, `expiresAt`, nullable `usedAt`                                | One user per token                                                |
 
 Main enums:
 
@@ -249,8 +246,18 @@ CI is used to build the Docker Compose stack and run lint checks.
 
 - Web: [Next.js](https://nextjs.org/docs), [React](https://react.dev/learn), [TypeScript](https://www.typescriptlang.org/docs/).
 - Editing: [Tiptap](https://tiptap.dev/docs/editor/getting-started/overview), [Yjs](https://docs.yjs.dev/), [Hocuspocus](https://tiptap.dev/docs/hocuspocus/getting-started/overview).
+- Collaboration and document history: [Yjs Awareness & Presence](https://docs.yjs.dev/getting-started/adding-awareness), [Yjs Document Updates](https://docs.yjs.dev/api/document-updates), [Yjs Y.XmlFragment](https://docs.yjs.dev/api/shared-types/y.xmlfragment), [Hocuspocus Persistence](https://tiptap.dev/docs/hocuspocus/guides/persistence), [Tiptap CollaborationCaret](https://tiptap.dev/docs/editor/extensions/functionality/collaboration-caret).
 - Data/deployment: [Prisma](https://www.prisma.io/docs), [PostgreSQL 16](https://www.postgresql.org/docs/16/), [Docker Compose](https://docs.docker.com/compose/), [NGINX WebSockets](https://nginx.org/en/docs/http/websocket.html), [Mailpit](https://mailpit.axllent.org/docs/).
+- Database concurrency and recovery: [PostgreSQL Row-Level Locks](https://www.postgresql.org/docs/16/explicit-locking.html#LOCKING-ROWS), [PostgreSQL SQL Dumps and Restoration](https://www.postgresql.org/docs/16/backup-dump.html).
+- Container startup: [Docker Compose Startup Order](https://docs.docker.com/compose/how-tos/startup-order/).
 - UI/security: [shadcn/ui](https://ui.shadcn.com/docs), [Base UI](https://base-ui.com/react/overview/quick-start), [OWASP password storage](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html).
+- Authentication: [The Copenhagen Book](https://thecopenhagenbook.com/), [OWASP Cheat Sheet Series](https://cheatsheetseries.owasp.org/cheatsheets) ([Authentication](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html), [Content Security Policy](https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html), [OAuth2](https://cheatsheetseries.owasp.org/cheatsheets/OAuth2_Cheat_Sheet.html)), [zxcvbn docs](https://zxcvbn-ts.github.io/zxcvbn/guide/getting-started/).
+- Sessions: [Sessions vs tokens](https://dev.to/jps27cse/sessions-vs-tokens-complete-guide-for-backend-engineers-2gdk), [Session management: JWTs vs opaque tokens](https://guptadeepak.com/ciam-compass/guides/session-management-jwts-vs-opaque-tokens/).
+- OAuth 2.0: [DeepWiki oauth4webapi](https://deepwiki.com/panva/oauth4webapi), [Account linking by email match trusts a claim, not a verification](https://safeguard.sh/resources/blog/account-linking-trusts-a-claim-not-a-verification), [Google OpenID configuration](https://accounts.google.com/.well-known/openid-configuration), [Google OAuth 2.0 web-server flow](https://developers.google.com/identity/protocols/oauth2/web-server).
+- Email: [Verification email examples](https://flodesk.com/tips/verification-email-examples).
+- Collaboration authentication: [Hocuspocus hooks](https://tiptap.dev/docs/hocuspocus/server/hooks), [Hocuspocus authentication](https://tiptap.dev/docs/hocuspocus/guides/authentication).
+- Content Security Policy: [CSP reference](https://content-security-policy.com/), [CSP explained](https://www.youtube.com/watch?v=ET3o4EtDqL8).
+- Accessibility: [Accessibility Developer Guide](https://www.accessibility-developer-guide.com/).
 
 ### AI Usage
 
