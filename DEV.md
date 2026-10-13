@@ -86,3 +86,23 @@ GOOGLE_OAUTH_ENABLED=true
 GOOGLE_CLIENT_ID=<your_google_client_id>
 GOOGLE_CLIENT_SECRET=<your_google_client_secret>
 8. Confirm `APP_URL` in `.env` matches the browser origin exactly "http://localhost:3000" or "https://localhost:8443"
+
+# tests
+
+```sh
+cd synctext
+PLAYWRIGHT_BROWSERS_PATH="$PWD/.playwright-browsers" npx playwright install chromium firefox
+# if needed also install webkit for safari
+
+
+./tests/run-tests.sh
+
+# run single test
+./tests/run-e2e.sh 18-accessibility
+
+# run all tests (in chromium)
+./tests/run-e2e.sh --project=chromium
+
+# run all tests (all browsers mentioned in playwright.config.ts)
+./tests/run-e2e.sh
+```

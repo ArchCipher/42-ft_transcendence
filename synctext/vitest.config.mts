@@ -14,5 +14,6 @@ export default defineConfig({
   test: {
     include: ["tests/auth/**/*.test.ts"],
     environment: "node",
+    env: {APP_URL: "https://localhost:8443"}
   },
 });
