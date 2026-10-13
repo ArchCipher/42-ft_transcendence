@@ -45,8 +45,21 @@ export function DocumentTitle({
             event.preventDefault();
             onSubmit();
           }}
+          onPointerDown={(event) => {
+            // Some browsers don't focus buttons on click. Keep the input
+            // focused so blur cannot remove the form before Save submits.
+            if (
+              event.target instanceof Element &&
+              event.target.closest('button[type="submit"]')
+            ) {
+              event.preventDefault();
+            }
+          }}
           onBlur={(event) => {
-            if (!event.currentTarget.contains(event.relatedTarget)) {
+            if (
+              !isRenaming &&
+              !event.currentTarget.contains(event.relatedTarget)
+            ) {
               onCancel();
             }
           }}
@@ -63,7 +76,7 @@ export function DocumentTitle({
             onChange={(event) => onDraftChange(event.target.value)}
             onFocus={(event) => event.currentTarget.select()}
             onKeyDown={(event) => {
-              if (event.key === "Escape") {
+              if (event.key === "Escape" && !isRenaming) {
                 onCancel();
               }
             }}
