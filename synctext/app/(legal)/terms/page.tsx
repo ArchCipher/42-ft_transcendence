@@ -1,3 +1,7 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Terms of Service" };
+
 export default async function TermsPage() {
   return (
     <>
@@ -165,9 +169,7 @@ export default async function TermsPage() {
         To the maximum extent permitted by law, we are not liable for any
         indirect, incidental, special, consequential, or punitive damages, or
         for any loss of data, profits, or goodwill, arising from your use of or
-        inability to use the Service. Our total liability for any claim shall
-        not exceed the amount you paid us (if any) for using the Service in the
-        12 months before the claim.
+        inability to use the Service.
       </p>
 
       <h2 id="changes-to-the-service-and-these-terms">

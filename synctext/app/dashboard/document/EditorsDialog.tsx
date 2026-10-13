@@ -68,7 +68,6 @@ export default function EditorsDialog({ document, userId, onClose, onSelfRevoked
               ) : editor.canEdit ? (
                 <Button
                   className="FriendsDialogQuiet"
-                  size="sm"
                   variant="ghost"
                   disabled={pendingId === editor.userId}
                   onClick={() => (editor === me ? setConfirmSelfRevoke(true) : void setEditor(editor, false))}
@@ -78,7 +77,6 @@ export default function EditorsDialog({ document, userId, onClose, onSelfRevoked
               ) : (
                 <Button
                   className="FriendsDialogPrimary"
-                  size="sm"
                   disabled={pendingId === editor.userId}
                   onClick={() => void setEditor(editor, true)}
                 >

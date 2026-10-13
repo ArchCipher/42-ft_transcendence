@@ -80,9 +80,9 @@ export default function EmailAuthForm({
         await handleSubmit(); // handle it with JS
       }}
     >
-      <h2 className="AuthFormTitle">
+      <h1 className="AuthFormTitle">
         <DisplayText>{title}</DisplayText>
-      </h2>
+      </h1>
 
       <Field
         id="email"

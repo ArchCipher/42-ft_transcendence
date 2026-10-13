@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import { EditorContent, EditorContext } from "@tiptap/react"
-import type { Editor } from "@tiptap/react"
+import type { AnyExtension, Editor } from "@tiptap/react"
 
 // --- UI Primitives ---
 import { Button } from "@/components/tiptap-ui-primitive/button"
@@ -24,7 +24,7 @@ import "@/components/tiptap-node/paragraph-node/paragraph-node.scss"
 
 // --- Tiptap UI ---
 import { HeadingDropdownMenu } from "@/components/tiptap-ui/heading-dropdown-menu"
-import { ImageUploadButton } from "@/components/tiptap-ui/image-upload-button"
+// import { ImageUploadButton } from "@/components/tiptap-ui/image-upload-button"
 import { ListDropdownMenu } from "@/components/tiptap-ui/list-dropdown-menu"
 import { BlockquoteButton } from "@/components/tiptap-ui/blockquote-button"
 import { CodeBlockButton } from "@/components/tiptap-ui/code-block-button"
@@ -94,6 +94,7 @@ export const simpleEditorConfig = {
       autocorrect: "off",
       autocapitalize: "off",
       "aria-label": "Main content area, start typing to enter text.",
+      role: "textbox",
       class: "simple-editor",
     },
   },
@@ -110,7 +111,7 @@ export const simpleEditorConfig = {
 // components/sync/, not in this vendored-template directory.
 export function baseTiptapExtensions({
   undoRedo,
-}: { undoRedo?: false } = {}) {
+}: { undoRedo?: false } = {}): AnyExtension[] {
   return [
     StarterKit.configure({
       horizontalRule: false,
@@ -141,7 +142,7 @@ export function baseTiptapExtensions({
       upload: handleImageUpload,
       onError: (error) => console.error("Upload failed:", error),
     }),
-  ]
+  ] as AnyExtension[]
 }
 
 const MainToolbarContent = ({
@@ -214,9 +215,9 @@ const MainToolbarContent = ({
 
       <ToolbarSeparator />
 
-      <ToolbarGroup>
+      {/* <ToolbarGroup>
         <ImageUploadButton text="Add" />
-      </ToolbarGroup>
+      </ToolbarGroup> */}
 
       <Spacer />
 

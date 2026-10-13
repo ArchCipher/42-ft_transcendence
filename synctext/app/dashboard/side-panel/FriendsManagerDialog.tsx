@@ -85,10 +85,10 @@ export default function FriendsManagerDialog({
                 <ul className="FriendsManagerList">
                   {friends.incomingRequests.map((friend) => (
                     <PersonRow key={friend.id} person={friend}>
-                      <Button className="FriendsDialogPrimary" size="sm" onClick={() => void onRespond(friend, "accept")} disabled={actionKey === `respond-${friend.id}`}>
+                      <Button className="FriendsDialogPrimary" onClick={() => void onRespond(friend, "accept")} disabled={actionKey === `respond-${friend.id}`}>
                         <Check aria-hidden="true" /> Accept
                       </Button>
-                      <Button className="FriendsDialogQuiet" size="sm" variant="ghost" onClick={() => void onRespond(friend, "decline")} disabled={actionKey === `respond-${friend.id}`}>
+                      <Button className="FriendsDialogQuiet" variant="ghost" onClick={() => void onRespond(friend, "decline")} disabled={actionKey === `respond-${friend.id}`}>
                         <X aria-hidden="true" /> Decline
                       </Button>
                     </PersonRow>
@@ -106,7 +106,7 @@ export default function FriendsManagerDialog({
                 <ul className="FriendsManagerList">
                   {friends.outgoingRequests.map((friend) => (
                     <PersonRow key={friend.id} person={friend}>
-                      <Button className="FriendsDialogQuiet" size="sm" variant="ghost" onClick={() => void onCancel(friend)} disabled={actionKey === `cancel-${friend.id}`}>
+                      <Button className="FriendsDialogQuiet" variant="ghost" onClick={() => void onCancel(friend)} disabled={actionKey === `cancel-${friend.id}`}>
                         Cancel request
                       </Button>
                     </PersonRow>
@@ -124,7 +124,7 @@ export default function FriendsManagerDialog({
                 <ul className="FriendsManagerList">
                   {friends.friends.map((friend) => (
                     <PersonRow key={friend.id} person={friend}>
-                      <Button className="FriendsDialogDanger" size="sm" variant="destructive" onClick={() => setFriendToRemove(friend)} disabled={actionKey === `remove-${friend.id}`}>
+                      <Button className="FriendsDialogDanger" variant="destructive" onClick={() => setFriendToRemove(friend)} disabled={actionKey === `remove-${friend.id}`}>
                         <UserMinus aria-hidden="true" /> Remove
                       </Button>
                     </PersonRow>

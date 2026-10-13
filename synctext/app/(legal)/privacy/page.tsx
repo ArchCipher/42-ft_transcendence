@@ -1,3 +1,7 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Privacy Policy" };
+
 export default function PrivacyPage() {
   return (
     <>
@@ -201,12 +205,6 @@ export default function PrivacyPage() {
           active and deleted when you delete your account. Deleting your account
           deletes (cascades) your friend links, org memberships and documents
           you own.
-        </li>
-        <li>
-          <strong>Dormant accounts</strong>: if you do not sign in for{" "}
-          <strong>12 months</strong>, we send a warning email 30 days before
-          deletion. Unless you sign back in, your account and associated data
-          are <strong>deleted 12 months after your last sign-in</strong>.
         </li>
         <li>
           <strong>Sessions</strong> are revoked on logout, password change, and

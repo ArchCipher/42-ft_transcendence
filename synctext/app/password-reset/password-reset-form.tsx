@@ -86,9 +86,9 @@ export default function PasswordResetForm() {
         await handlePasswordReset();
       }}
     >
-      <h2 className="AuthFormTitle">
+      <h1 className="AuthFormTitle">
         <DisplayText>Choose a new password</DisplayText>
-      </h2>
+      </h1>
 
       <Field
         id="password"

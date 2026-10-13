@@ -1,4 +1,10 @@
 /* keep the shared editor styles scoped to the snapshot preview */
+.SnapshotHistoryDialog {
+  color: var(--app-text-white);
+  border: 1px solid var(--app-line-dim);
+  border-radius: 0 !important;
+}
+
 .snapshot-history-preview {
   overflow: auto;
   overscroll-behavior: contain;

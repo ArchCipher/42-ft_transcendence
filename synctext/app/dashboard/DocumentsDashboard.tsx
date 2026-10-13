@@ -2,21 +2,15 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState, type Dispatch, type SetStateAction } from "react";
-import { FileText } from "lucide-react";
+import { FileText, Plus } from "lucide-react";
 import type { DocumentSummary } from "@/lib/documents/documents";
 import { deleteDocument_api, renameDocument_api } from "./document/document";
 import "./DocumentsDashboard.css";
 import { BodyText, SupportText } from "@/app/components/typography/Typography";
 import ConfirmWindow from "@/app/components/feedback/ConfirmWindow";
-import PlusButton from "@/app/components/ui/PlusButton";
 import ActionMenu, { type ActionItem } from "./ActionMenu";
 import EditorsDialog from "./document/EditorsDialog";
-
-function truncateTitle(title: string, limit = 18) {
-  return title.length > limit
-    ? `${title.slice(0, limit)}...`
-    : title;
-}
+import Button from "../components/ui/Button";
 
 type DashboardProps = {
   userId: string;
@@ -131,13 +125,14 @@ async function saveRename(): Promise<boolean> {
 
       <main className="Dashboard">
 
-      <PlusButton
-        size="tile"
-        className="CreateDocumentTile"
-        aria-label={isCreatingDocument ? "Creating document" : "Create document"}
-        disabled={isCreatingDocument}
-        onClick={onCreateDocument}
-      />
+      <Button variant="outline" className="DocumentCreate"
+      onClick={onCreateDocument}
+      disabled={isCreatingDocument}
+      aria-label={isCreatingDocument ? "Creating document" : "Create document"}
+      >
+      <Plus size={16} aria-hidden="true" />
+      <span>New document</span>
+      </Button>
 
       {isLoading ? (
         <p className="DashboardStatus">
@@ -159,6 +154,7 @@ async function saveRename(): Promise<boolean> {
         </p>
       ) : null}
 
+      <ul className="DocumentList">
       {!isLoading ? documents.filter((doc) => {
         if (filter === "created") return doc.createdBy?.id === userId;
         if (filter === "edit") return doc.canEdit;
@@ -173,11 +169,14 @@ async function saveRename(): Promise<boolean> {
         return new Date(b[dateField]).getTime() - new Date(a[dateField]).getTime();
         })
         .map((doc) => (
+        <li key={doc.id}>
           <DocumentCard
-            key={doc.id}
             title={doc.title}
+            owner={doc.createdBy?.username ?? null}
+            updatedAt={doc.updatedAt}
             onOpen={() => openDocument(doc.id)}
             actions={documentActions(doc)}
+            canEdit={doc.canEdit}
             isEditing={documentToEdit === doc.id}
             editTitle={editTitle}
             onEditTitle={setEditTitle}
@@ -188,8 +187,9 @@ async function saveRename(): Promise<boolean> {
             }}
             editError={editError}
           />
+        </li>
         )) : null}
-
+    </ul>
     </main>
     {documentToDelete !== null && (
       <ConfirmWindow
@@ -220,6 +220,9 @@ async function saveRename(): Promise<boolean> {
 
 type DocumentCardProps = {
   title: string;
+  owner: string | null;
+  updatedAt: string;
+  canEdit: boolean;
   onOpen: () => void;
   actions: ActionItem[];
 
@@ -232,6 +235,9 @@ type DocumentCardProps = {
 };
 
 function DocumentCard({ title,
+                        owner,
+                        updatedAt,
+                        canEdit,
                         onOpen,
                         actions,
                         isEditing,
@@ -243,19 +249,12 @@ function DocumentCard({ title,
 
   const inputRef = useRef<HTMLInputElement>(null);
   const cancelRef = useRef(false);
+  const dateLabel = updatedAt ? updatedAt.slice(0, 10) : "";
 
   return (
-    <div className="DocumentCard">
-      <ActionMenu label={`Actions for ${title}`} items={actions} className="DocumentMenuButton" />
+    <div className={`DocumentCard ${canEdit ? "" : "DocumentCardReadOnly"}`}>
 
-      <button
-        type="button"
-        className="DocumentOpen"
-        onClick={onOpen}
-        aria-label={`Open ${title}`}
-      >
-        <FileText className="DocumentIcon" aria-hidden="true" strokeWidth={1.4} />
-      </button>
+      <FileText className="DocumentIcon" aria-hidden="true" strokeWidth={1.4} />
 
       {isEditing ? (
           <div className="DocumentTitleEdit">
@@ -304,9 +303,16 @@ function DocumentCard({ title,
           onClick={onOpen}
           title={title}
         >
-          {truncateTitle(title)}
+          {title}
         </button>
       )}
+    {!isEditing && (
+      <>
+        {owner && <span className="DocumentMeta DocumentMetaOwner">{owner}</span>}
+        {dateLabel && <span className="DocumentMeta DocumentMetaDate">{dateLabel}</span>}
+      </>
+    )}
+     <ActionMenu label={`Actions for ${title}`} items={actions} className="DocumentMenuButton" />
     </div>
   );
 }

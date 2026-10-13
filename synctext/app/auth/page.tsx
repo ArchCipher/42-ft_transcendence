@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getSessionToken, validateSession } from "@/lib/auth/session";
 import "./auth.css";
 import LoginForm from "./login-form";
@@ -6,6 +7,8 @@ import UserNavbar from "../components/navigation/UserNavbar";
 import StatusNotice from "../components/form/StatusNotice";
 import { isEnabled } from "@/lib/auth/oauth/identity";
 import { OAUTH_ERROR_MESSAGES, type OAuthErrorCode } from "@/lib/auth/oauth/errors";
+
+export const metadata: Metadata = { title: "Log in" };
 
 const NOTICES: Record<string, string> = {
   pending: "Verification email sent. Check your inbox.",

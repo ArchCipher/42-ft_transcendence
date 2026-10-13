@@ -9,7 +9,7 @@ import { prisma as db } from "@synctext/db";
 import { isEnabled } from "@/lib/auth/oauth/identity";
 import { OAUTH_ERROR_MESSAGES, type OAuthErrorCode } from "@/lib/auth/oauth/errors";
 
-export const metadata: Metadata = { title: "Profile — SyncText" };
+export const metadata: Metadata = { title: "Profile" };
 
 type Notice = { text: string; kind: "saved" | "error" };
 

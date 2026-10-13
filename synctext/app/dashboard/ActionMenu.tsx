@@ -1,7 +1,7 @@
 "use client";
 
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { MoreHorizontal } from "lucide-react";
+import { MoreVertical } from "lucide-react";
 import "./ActionMenu.css";
 
 export type ActionItem = {
@@ -24,7 +24,7 @@ export default function ActionMenu({ label, items, className }: ActionMenuProps)
   return (
     <DropdownMenu.Root modal={false}>
       <DropdownMenu.Trigger className={className} aria-label={label}>
-        <MoreHorizontal size={16} />
+        <MoreVertical size={16} />
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>
         <DropdownMenu.Content

@@ -1,12 +1,12 @@
 .DashboardPage {
-  padding: clamp(24px, 4vw, 48px) clamp(16px, 3vw, 32px) 60px;
+  padding: clamp(16px, 3vw, 32px);
   --dashboard-text-size: 14px;
   --dashboard-titledoc-size: 16px;
   --dashboard-title-size: 18px;
 }
 
 .DashboardFixedBar {
-  flex: 0 0 56px;
+  flex: 0 0 var(--control-height);
 
   display: flex;
   align-items: center;
@@ -21,7 +21,6 @@
   grid-row: 2;
 
   height: min(760px, calc(100dvh - 188px));
-  min-height: 540px;
   min-height: 0;
   padding: 0;
 
@@ -53,6 +52,10 @@
 .DashboardSidebar {
   grid-column: 1;
   grid-row: 2;
+  height: min(760px, calc(100dvh - 188px));
+  background: var(--app-panel-bg);
+  border: 1px solid var(--app-line-dim);
+  overflow: hidden;
 }
 
 .DashboardNavActions {
@@ -74,6 +77,12 @@
   grid-column: 2;
   justify-self: center;
 
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
   color: var(--app-accent-neon);
   font-size: var(--dashboard-title-size);
 
@@ -83,7 +92,10 @@
 }
 
 .DashboardControlsPanel {
-  padding: 12px clamp(14px, 2vw, 20px);
+  height: calc(var(--nav-height, 4rem) + 1px);
+  padding: 0px clamp(14px, 2vw, 20px);
+  display: flex;
+  align-items: center;
 }
 
 .DashboardFixedBarInner .DashboardSidebarToggle {
@@ -95,12 +107,18 @@
 }
 
 @media (max-width: 900px) {
+    .DashboardPage {
+    --dashboard-text-size: 12px;
+    --dashboard-titledoc-size: 13px;
+    --dashboard-title-size: 14px;
+  }
   .DashboardLayout {
     position: relative;
 
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto 1fr;
     column-gap: 0;
+	row-gap: 12px;
   }
 
   .DashboardControls {
@@ -128,16 +146,21 @@
     border: 0;
     background: rgba(0, 0, 0, 0.25);
   }
+
+  .DashboardControlsPanel {
+    height: auto;
+    padding: 10px clamp(14px, 2vw, 20px);
+  }
 }
 
 @media (max-width: 560px) {
   .DashboardPage {
     padding-top: 20px;
+	padding-bottom: 20px;
   }
 
   .DashboardPanel {
-    height: auto;
-    min-height: min(640px, calc(100dvh - 148px));
+    height: min(640px, calc(100dvh - 148px));
   }
 
   .DashboardFixedBarInner {

@@ -11,7 +11,7 @@ import { getCurrentDocumentActor } from "@/lib/documents/access";
 import UserNavbar from "./components/navigation/UserNavbar";
 
 export const metadata: Metadata = {
-  title: "SyncText — Write together, stay in sync",
+  title: { absolute: "SyncText — Write together, stay in sync" },
   description:
     "A focused collaborative writing space for real-time editing, contextual comments, and effortless version history.",
 };
@@ -33,8 +33,8 @@ export default async function MainPage() {
         <Hero />
         <Features />
         <FinalCTA />
-        <Footer />
       </main>
+      <Footer />
     </AppBackground>
   );
 }

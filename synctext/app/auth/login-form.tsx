@@ -78,9 +78,9 @@ export default function LoginForm({ oauthEnabled }: { oauthEnabled: boolean }) {
         await handleLogin(); // handle it with JS
       }}
     >
-      <h2 className="AuthFormTitle">
+      <h1 className="AuthFormTitle">
         <DisplayText>Pick up where you left off.</DisplayText>
-      </h2>
+      </h1>
 
       <Field
         id="email"

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { prisma as db } from "@synctext/db";
 import { hashGuestSessionToken } from "@synctext/shared";
@@ -10,6 +11,8 @@ import { identityFromGuestSession, identityFromUser } from "@/lib/sync/sync-user
 import { SyncEditorPage } from "@/components/sync/sync-editor"
 import UserNavbar from "@/app/components/navigation/UserNavbar";
 import PublicNavbar from "@/app/components/navigation/PublicNavbar";
+
+export const metadata: Metadata = { title: "Document" };
 
 async function ownsExpiredGuestDocument(documentId: string): Promise<boolean> {
   const token = await getGuestSessionToken();
@@ -53,7 +56,7 @@ export default async function DocPage({ params }: { params: Promise<{ id: string
     if (!document) notFound();
 
     return (
-      <>
+      <div className="flex min-h-full flex-1 flex-col bg-[#020110]">
         <PublicNavbar />
         <SyncEditorPage
           docId={document.id}
@@ -66,7 +69,7 @@ export default async function DocPage({ params }: { params: Promise<{ id: string
             expiresAt: actor.expiresAt.toISOString(),
           }}
         />
-      </>
+      </div>
     );
   }
 
@@ -87,7 +90,7 @@ export default async function DocPage({ params }: { params: Promise<{ id: string
   const editable = canEdit(rights)
 
   return (
-	<>
+	<div className="flex min-h-full flex-1 flex-col bg-[#020110]">
     <UserNavbar username={actor.username} avatarUrl={actor.avatarUrl} />
     <SyncEditorPage
       docId={document.id}
@@ -96,6 +99,6 @@ export default async function DocPage({ params }: { params: Promise<{ id: string
       canRename={editable}
       readOnly={!editable}
     />
-	</>
+	</div>
   )
 }

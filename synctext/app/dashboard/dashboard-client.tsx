@@ -12,7 +12,6 @@ import { Footer } from "@/app/components/footer/Footer";
 import DocumentsDashboard from "./DocumentsDashboard";
 import DashboardSidebar from "./side-panel/DashboardSidebar";
 import { TechText } from "@/app/components/typography/Typography";
-import Button from "@/app/components/ui/Button";
 import { createDocument_api, listDocuments_api } from "./document/document";
 import { groupLabel, listGroups_api } from "./group/group";
 import { Menu } from "lucide-react";
@@ -155,14 +154,14 @@ export default function DashboardClient({ userId, username, avatarUrl }: UserPro
                   {selectedGroup ? groupLabel(selectedGroup) : ""}
                 </TechText>
 
-                <Button
-                  variant="outline"
-                  compact
+                <button
+                  type="button"
                   className="DashboardSidebarToggle"
                   onClick={() => setSidebarOpen((open) => !open)}
+                  aria-label="Toggle sidebar"
                 >
-                  <Menu size={18} />
-                </Button>
+                  <Menu size={18} aria-hidden="true" />
+                </button>
 
               </div>
             </div>
@@ -187,9 +186,8 @@ export default function DashboardClient({ userId, username, avatarUrl }: UserPro
           </AppPanel>
 
         </div>
-
-        <Footer />
       </div>
+	  <Footer />
     </AppBackground>
   );
 }
