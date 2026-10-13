@@ -79,9 +79,28 @@ export async function POST(request: Request) {
 
     if (!membership) return null;
 
+    const untitledDocs = await tx.document.findMany({
+      where: {
+        groupId: membership.groupId,
+        title: { startsWith: "Untitled Document " },
+      },
+      select: { title: true},
+    });
+
+    let highestNum = 0;
+
+    for (const doc of untitledDocs)
+    {
+      const num = Number(doc.title.replace("Untitled Document ", ""));
+      if (num > highestNum)
+          highestNum = num;
+    }
+
+    const title = `Untitled Document ${highestNum + 1}`;
+
     return tx.document.create({
       data: {
-        title: "Untitled Document",
+        title,
         groupId: membership.groupId,
         createdById: userId,
         grants: { create: { membershipId: membership.id } },
