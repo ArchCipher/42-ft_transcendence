@@ -264,6 +264,7 @@
   color: var(--app-text-white);
   font-family: var(--font-geist-mono), monospace;
   letter-spacing: 0.06em;
+  padding-right: 44px;
 }
 
 .FriendsManagerDialog [data-slot="dialog-description"] {
@@ -460,25 +461,13 @@
 @media (max-width: 600px) {
   .FriendsManagerDialog {
     width: 100%;
-    max-width: 100%;
-    max-height: 100dvh;
-    min-height: 100dvh;
-    border-right: 0;
-    border-left: 0;
+    max-width: min(680px, calc(100vw - 32px));
+    max-height: calc(100vw - 32px);
+    min-height: 0;
   }
 
   .FriendsInviteControls {
     grid-template-columns: 1fr;
-  }
-
-  .FriendsManagerRow {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .FriendsManagerRowActions {
-    width: 100%;
-    justify-content: flex-start;
   }
 }
 
@@ -558,12 +547,12 @@
   }
 
   .DashboardSidebarToggle {
-    width: fit-content;
+    width: auto;
     height: 2.25rem;
-	padding: 0;
-	align-items: center;
+	  padding: 0;
+	  align-items: center;
     color: var(--app-accent-neon);
-	background: transparent;
+	  background: transparent;
     border: none;
     cursor: pointer;
     touch-action: manipulation;

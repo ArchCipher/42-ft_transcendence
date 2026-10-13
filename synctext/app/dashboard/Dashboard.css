@@ -135,7 +135,9 @@
     display: flex;
     grid-column: 3;
     justify-self: end;
-    margin-right: clamp(14px, 2vw, 20px);
+  }
+  .DashboardFixedBarInner {
+    padding: 0 12px;
   }
 
   .DashboardSidebarBackdrop {
@@ -157,14 +159,10 @@
 @media (max-width: 560px) {
   .DashboardPage {
     padding-top: 20px;
-	padding-bottom: 20px;
+    padding-bottom: 20px;
   }
 
   .DashboardPanel {
     height: min(640px, calc(100dvh - 148px));
-  }
-
-  .DashboardFixedBarInner {
-    padding: 0 12px;
   }
 }
