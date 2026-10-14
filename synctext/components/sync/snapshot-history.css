@@ -1,8 +1,13 @@
 /* keep the shared editor styles scoped to the snapshot preview */
 .SnapshotHistoryDialog {
+  background: rgb(14, 32,65);
   color: var(--app-text-white);
   border: 1px solid var(--app-line-dim);
   border-radius: 0 !important;
+  --muted-foreground: oklch(0.75 0.02 285);
+}
+.SnapshotHistoryDialog .text-muted-foreground {
+  color: var(--app-text-white);
 }
 
 .snapshot-history-preview {
