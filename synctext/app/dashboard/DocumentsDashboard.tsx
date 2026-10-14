@@ -72,7 +72,7 @@ export default function DocumentsDashboard({ userId,
   function documentActions(doc: DocumentSummary): ActionItem[] {
     if (!doc.canEdit) return [];
     return [
-      { label: "Rename", onSelect: () => { setDocumentToEdit(doc.id); setEditTitle(doc.title); setEditError(""); } },
+//      { label: "Rename", onSelect: () => { setDocumentToEdit(doc.id); setEditTitle(doc.title); setEditError(""); } },
       ...(isPrivateSpace ? [] : [{ label: "Manage editors", onSelect: () => setDocumentToShare(doc) }]),
       { label: "Delete", onSelect: () => setDocumentToDelete(doc.id), danger: true },
     ];
